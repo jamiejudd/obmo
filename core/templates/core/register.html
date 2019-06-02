@@ -1,0 +1,198 @@
+{% extends "form.html" %}
+
+{% block formcss %}
+<style type="text/css">
+#form_container {
+  padding-top:40px;
+}  
+.imgerror{
+  display:none;
+  font-size: 80%;
+  color: #dc3545;
+  margin-top: .25rem;
+}
+</style>
+{% endblock formcss %}
+
+{% block formfields %}
+<div class="form-group row">
+  <label for="id_username" class="col-sm-2 col-form-label">Public Key:</label>
+  <div class="col-sm-10">
+    <input type="text" class="form-control" id="id_username" placeholder="" name="username" autocomplete="off">
+    <div class="invalid-feedback" id="id_username_feedback">Not a </div>
+  </div>
+</div>
+<div class="form-group row">
+  <label for="id_sender_seq_no" class="col-sm-2 col-form-label"  data-toggle="tooltip" data-placement="bottom" title="Can be found on account page for your public key">Sequence Number:</label>
+  <div class="col-sm-10">
+    <input type="number" class="form-control" id="id_sender_seq_no" placeholder="" name="sender_seq_no" autocomplete="off">
+    <div class="invalid-feedback" id="id_sender_seq_no_feedback">not a</div>
+    <small id="sender_seq_no_help" class="form-text text-muted">The next sequence number for the senders account. Can be found on the senders account page.</small>
+  </div>
+</div>
+<div class="form-group row">
+  <label for="id_name" class="col-sm-2 col-form-label">Full Name:</label>
+  <div class="col-sm-10">
+    <input type="text" class="form-control" id="id_name" placeholder="" name="name" autocomplete="off">
+    <div class="invalid-feedback" id="id_name_feedback"></div>
+  </div>
+</div>     
+<div class="form-group row">
+  <label for="id_password1" class="col-sm-2 col-form-label" >Password:</label>
+  <div class="col-sm-10">
+    <input type="text" class="form-control" id="id_password1" placeholder="" name="password1">
+    <div class="invalid-feedback" id="id_password1_feedback">nsnd</div>
+  </div>
+</div>     
+
+<div class="form-group row">
+  <label class="col-sm-2 col-form-label">Photo:</label>
+  <div class="col-sm-8">
+    <div class="row justify-content-center">
+      <div style="text-align: center;margin-right:15px;">
+      <img id="image-preview"  style="height:200px; width:200px;" src="">
+      <div class="imgerror" id="id_photo_feedback">This field is required.</div>
+      </div>
+      <div  style="display: flex;align-items: center;" >
+        <button type="button" class="btn btn-light" id="chooseImage"  onclick="HandleBrowseClick('id_photo');">Choose Image</button>
+      </div>
+      <input style="display:none" type="file" class="custom-file-input" id="id_photo"  accept="image/*" onchange="updatePreview('id_photo');"  name="photo">
+    </div>
+  </div>
+</div>
+
+<div class="form-group row">
+  <label for="id_photo_hash" class="col-sm-2 col-form-label" >Photo&nbsp;Hash:</label>
+  <div class="col-sm-10">
+    <div class="input-group">
+      <textarea  rows="2" type="text"  id="id_photo_hash" readonly class="form-control form-control-readonly" aria-label="With textarea" value="htht"  name="photo_hash"></textarea>
+    </div>
+  </div>
+</div>
+{% endblock formfields %}
+
+
+
+{% block formscript %}
+<script>
+function HandleBrowseClick(input_image){
+    var fileinput = document.getElementById(input_image);
+    fileinput.click();
+}   
+
+function updatePreview(input_image){
+  var fileinput = document.getElementById(input_image);
+  document.getElementById('image-preview').src = window.URL.createObjectURL(fileinput.files[0]);
+  var reader = new FileReader();
+  var fileByteArray = [];
+  reader.readAsArrayBuffer(fileinput.files[0]);
+
+  reader.onloadend = function (event) {
+    if (event.target.readyState == FileReader.DONE) {
+       var arrayBuffer = event.target.result,
+           array = new Uint8Array(arrayBuffer);
+       for (var i = 0; i < array.length; i++) {
+           fileByteArray.push(array[i]);
+        }
+    }
+    var fileByteArray2 = new Uint8Array(fileByteArray);
+    //try eror hadling necc?
+    var PhotoHash = toHexString(nacl.hash(fileByteArray2));
+    $('#id_photo_hash').val(PhotoHash);
+    updateTxnString()
+    checkPhoto()
+  }
+}
+
+function checkName() {
+  if( $("#id_name").val() == "" ){
+    $('#id_name_feedback').text('This field is required.');
+    $("#id_name").addClass("is-invalid");
+    return false;
+  } else if($("#id_name").val().length < 6){
+    $('#id_name_feedback').text('Name must be at least 6 characters long.');
+    $("#id_name").addClass("is-invalid");
+    return false;
+  } else {
+    $("#id_name").removeClass("is-invalid");
+    return true;
+  }
+}
+
+function checkPassword() {
+  if( $("#id_password1").val() == "" ){
+    $('#id_password1_feedback').text('This field is required.');
+    $("#id_password1").addClass("is-invalid");
+    return false;
+  } else if($("#id_password1").val().length < 1){
+    $('#id_password1_feedback').text('too short.');
+    $("#id_password1").addClass("is-invalid");
+    return false;
+  } else {
+    $("#id_password1").removeClass("is-invalid");
+    return true;
+  }
+}
+
+function checkPhoto() {
+  if( $("#id_photo").get(0).files.length === 0 ){
+    $('#id_photo_feedback').text('This field is required.');
+    $("#id_photo_feedback").show();
+    return false;
+  } else {
+    $("#id_photo_feedback").hide();
+    return true
+  }
+}
+
+function checkFields() {
+  var is_valid = true;
+  is_valid = checkUsername() && is_valid;
+  is_valid = checkSeqNo() && is_valid;
+  is_valid = checkName() && is_valid;
+  is_valid = checkPassword() && is_valid;
+  is_valid = checkPhoto() && is_valid;
+  return is_valid;
+}
+
+function updateTxnString() {
+  $("#id_username").val($("#id_username").val().trim());
+  var TxnString = 'Type:Register,PublicKey:'+$("#id_username").val()+',SeqNo:'+String($("#id_sender_seq_no").val())+',Name:'+$("#id_name").val()+',PhotoHash:'+$("#id_photo_hash").val();
+  $('#txnstring').val(TxnString);
+  $('#modal_txnstring').val(TxnString);
+}
+
+
+$("#id_username,#id_sender_seq_no,#id_name").on("change paste keyup input", function() {
+  updateTxnString()
+  if( $("#id_signature").val() != ""){
+    checkSignature()
+  }
+});
+
+
+$('#id_sender_seq_no').on('blur', function() {
+  if( $(this).val() != ""){
+    checkSeqNo()
+  };
+  if( $("#id_signature").val() != ""){ 
+    checkSignature() 
+  };   
+});
+
+$('#id_name').on('blur', function() {
+  if( $(this).val() != ""){
+    checkName()
+  };
+  if( $("#id_signature").val() != ""){ 
+    checkSignature() 
+  };   
+});
+
+$('#id_password1').on('blur', function() { 
+  if( $(this).val() != ""){
+    checkPassword()
+  };  
+});
+</script>
+{% endblock formscript %}

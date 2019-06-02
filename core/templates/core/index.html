@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% block style %}  
+<style>
+    canvas {
+      display: block;
+      position:  fixed;
+      z-index: -1;
+    }
+
+    .card{
+      border:1px solid #d5f6f1;
+      margin-top:15px;
+      margin-bottom:15px;
+    }
+    .list-group-item {
+      padding: 2px 1px;
+      margin: 5px 0;
+    }
+</style>
+{% endblock %}
+
+
+{% block content %}
+<canvas id="c"></canvas>
+<div class="container" id="container">
+
+    <div class="row justify-content-md-center" id="maintitle"  style="font-family: 'Garamond'; padding-top:100px;padding-bottom:60px;">
+    <div class="col-8"><!-- make text non clickable (on this pg)-->
+      <h2 align="center"  class="noselect"  >This is a project to create a better currency system.</h2>
+    </div>
+    </div>
+
+      <div class="row justify-content-md-center" id="maincard"  >
+        <div class="col-12" id="maincard2" >
+          <div class="card" style="font-family: 'Garamond'">
+            <div class="card-body" id="card-body">
+              <h5 class="card-title"  id="card-title" style="font-family: 'Garamond'">How it works?</h5>
+              Each living human can register to recieve a daily income of 100 Utope. This is the only way the currency can come into existence. Utope derives its scarcity from the fact that each living human can register for at most one account.         Each living human can register to recieve a daily income of 100 Utope. This is the only way the currency can come into existence. Utope derives its scarcity from the fact that each living human can register for at most one account.         Each living human can register to recieve a daily income of 100 Utope. This is the only way the currency can come into existence. Utope derives its scarcity from the fact that each living human can register for at most one account.         Each living human can register to recieve a daily income of 100 Utope. This is the only way the currency can come into existence. Utope derives its scarcity from the fact that each living human can register for at most one account.    <br><br>     Each living human can register to recieve a daily income of 100 Utope. This is the only way the currency can come into existence. Utope derives its scarcity from the fact that each living human can register for at most one account.         Each living human can register to recieve a daily income of 100 Utope. This is the only way the currency can come into existence. Utope derives its scarcity from the fact that each living human can register for at most one account.         Each living human can register to recieve a daily income of 100 Utope. This is the only way the currency can come into existence. Utope derives its scarcity from the fact that each living human can register for at most one account.         Each living human can register to recieve a daily income of 100 Utope. This is the only way the currency can come into existence. Utope derives its scarcity from the fact that each living human can register for at most one account.   <br><br>      Each living human can register to recieve a daily income of 100 Utope. This is the only way the currency can come into existence. Utope derives its scarcity from the fact that each living human can register for at most one account.  Each living human can register to recieve a daily income of 100 Utope. This is the only way the currency can come into existence. Utope derives its
+            </div>
+          </div>
+        </div>
+      </div>  
+
+  <!--   <div class="row justify-content-md-center">
+    <div class="col-12">
+    <div class="card rounded-0 ">
+    <div class="card-body">
+      <h6 style="font-family: 'Garamond'">How it works:</h6>
+      <div class="table-responsive">
+        rhd
+      </div>
+    </div>
+    </div>
+    </div>
+    </div>
+
+    <ul class="list-group">
+    <li class="list-group-item">Porta ac consectetur ac....on this pg have boxes with smmarydata live like etherscan, possible with moving dots behind</li>
+    <li class="list-group-item">Vestibulum at eros</li>
+    </ul>
+
+      <h2 align="center"  class="noselect"   style="font-family: 'Garamond'; margin-top:100px;margin-bottom:60px;">Objective&nbsp;Money&nbsp;is&nbsp;a&nbsp;global&nbsp;currency&nbsp;with&nbsp;monetary&nbsp;policy&nbsp;based&nbsp;on&nbsp;a<br>universal&nbsp;dividend.</h2>
+
+    <div class="row justify-content-md-center">
+    <div class="col-12">
+    <div class="card rounded-0 ">
+    <div class="card-body">
+      <h6 style="font-family: 'Garamond'">Recent Transactions</h6>
+      <div class="table-responsive">
+        <table class="table table-sm">
+          <tbody>
+            <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;sent&nbsp;190&nbsp;to&nbsp;account&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+            <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;initiated&nbsp;challenge&nbsp;t43349yu85y&nbsp;against&nbsp;the&nbsp;accounts&nbsp;22nt34tj9yjr5y&nbsp;and&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+            <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;sent&nbsp;190&nbsp;to&nbsp;account&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+            <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;initiated&nbsp;challenge&nbsp;t43349yu85y&nbsp;against&nbsp;the&nbsp;accounts&nbsp;22nt34tj9yjr5y&nbsp;and&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+            <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;sent&nbsp;190&nbsp;to&nbsp;account&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+            <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;initiated&nbsp;challenge&nbsp;t43349yu85y&nbsp;against&nbsp;the&nbsp;accounts&nbsp;22nt34tj9yjr5y&nbsp;and&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+            <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;sent&nbsp;190&nbsp;to&nbsp;account&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+            <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;initiated&nbsp;challenge&nbsp;t43349yu85y&nbsp;against&nbsp;the&nbsp;accounts&nbsp;22nt34tj9yjr5y&nbsp;and&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    </div>
+    </div>
+    </div> -->
+
+</div>
+{% endblock %}
+
+
+{% block script %}
+<script>
+var a = document.getElementById( 'c' ),
+  c = a.getContext( '2d' );
+  a.width = window.innerWidth;
+  a.height = window.innerHeight;
+
+var W = window,
+  C = 20000, //number of particles
+  S = [], //the array that holds all of the particles
+  K = [], //holds all the old array pointers for particle coordinates
+  m = [0, 0], //mouse coordinates
+  u = true, //playing or paused
+  w, h, f, d, //width, height, imagedata, actual data array
+  M = Math;
+
+//Main loop
+function L(){
+  //Set all old particle pixels back to black (way more efficient than clearing the whole canvas)
+  for (i=0;i<K.length;i++) d[K[i]]=d[K[i]+1]=d[K[i]+2]=255;    
+
+  //Loop through all of the particles
+  for (i=0;i<C;i++) {
+    var n=S[i], //reference to current particle
+        x=m[0]-n[0], //distance between particle and mouse on the X axis
+        y=m[1]-n[1], //distance between particle and mouse on the Y axis
+        k=M.atan2(y,x), //angle in radians
+        o=20/M.sqrt(x*x+y*y+50); //gravity calculation
+
+        n[2]+=M.cos(k)*o; //Velocity change on X axis
+        n[3]+=M.sin(k)*o; //Velocity change on Y axis
+
+        n[0]+=n[2]; //Add current velocity to particle position on X axis
+        n[1]+=n[3]; //Add current velocity to particle position on Y axis
+
+        n[2]*=0.985; //Reduce the X axis velocity (drag)
+        n[3]*=0.985; //Reduce the Y axis velocity
+
+        n[0]=n[0]>=w?n[0]-w:n[0]<0?n[0]+w-1:n[0]; //Wrap particle to opposite side of screen if it goes out of bounds on X axis
+        n[1]=n[1]>=h?n[1]-h:n[1]<0?n[1]+h-1:n[1]; //Wrap particle to opposite side of screen if it goes out of bounds on Y axis
+
+    k=(n[1]+0.5>>0)*w*4+(n[0]+0.5>>0)*4; //Get which point in the imagedata array is the current particle's new position
+    K[i]=k; //Keep array position so it doesn't need to be calculated next loop (increases render speed a lot)
+    d[k] = 160; //Set the red channel
+    d[k+1]=235; //Set the green channel
+    d[k+2]=222; //Set the blue channel     // 160, 235, 222 use GREY?????(204, 230, 255)
+  }
+  c.putImageData(f, 0, 0); //Push the updated imagedata back to the canvas
+  u && requestAnimationFrame(L) //If playing, loop again
+}
+
+//Window resize handler. stretches the canvas to fit screen and refreshes imagedata array.
+function R() {
+  w=a.width=W.innerWidth;
+  h=a.height=W.innerHeight;
+  c.fillStyle="#FFFFFF";
+  c.fillRect(0,0,w,h);
+  f=c.getImageData(0,0,w,h);
+  d=f.data;
+};
+
+//Attach event handlers
+W.onresize = R;
+W.onmousemove = function(e) {m[0]=e.pageX; m[1]=e.pageY-57; }
+
+//W.onclick = function() {u=!u; u&&L()}; //Toggle playing boolean and if playing, start loop.
+W.onclick = function(e) {
+                          //e = e || event;
+                          //var el = e.srcElement || e.target;
+                          var el = e.target;
+                          console.log(el.tagName)
+                          console.log(el.className)
+                          console.log(el.id)
+/*                          if (el.tagName !='LI') {
+                            u=!u; u&&L()
+                          }*/
+                          if (el.tagName=='BODY'|| el.tagName=='H2'|| el.id =='maintitle'|| el.id =='container'||el.tagName=='CANVAS' ||el.id =='maincard'||el.id =='maincard2') {
+                            u=!u; u&&L()
+                          }
+                          //u=!u; u&&L()
+                        }; //Toggle playing boolean and if playing, start loop.
+
+R(); //Call the resize function once to size the canvas before we begin.
+
+//This fills the particle array with randomly positioned particles.
+for (i=0;i<C;i++) S.push([M.random()*w,M.random()*h,0,0]);
+
+L(); //Start the loop.
+
+</script>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block style %}  
+<style>
+body {
+    text-align: center;
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="container" style="margin-top:100px;" >
+  <h5>You can do this using an offline device instead for safety. handle enpty field error in js</h5>
+  <br>
+  <br>
+  <br>
+  <div class="form-group row">
+    <label for="id_secretKey" class="font-weight-bold col-sm-2 col-form-label">Enter Secret Key:</label>
+    <input  class="form-control col-sm-8" id="id_secretKey" placeholder="" >
+    <div class="col-sm-2">
+      <button type="button" class="btn btn-primary" id="RetrievePubKey"  onclick="RetrievePubKey();">Retrieve PubKey</button>
+    </div>
+  </div>
+  <br> 
+  <br>
+  <div class="form-group row">
+    <label for="id_publicKey" class="font-weight-bold col-sm-2 col-form-label">Your Public Key:</label>
+    <input class="form-control col-sm-8" disabled id="id_publicKey" placeholder="">
+    <div class="col-sm-2">
+      <button type="button" class="btn btn-light" id="Clear"  onclick="Clear();">Clear Text</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block script %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tweetnacl/1.0.0/nacl-fast.min.js" integrity="sha384-ZKnGpJMHpmE8VG4Tnsk9xqVKOz25Dv21zXOnaL3co+X6wFUx8G5qfs8N1ZNZy/wp" crossorigin="anonymous"></script>
+<script type="text/javascript">
+  const toHexString = bytes =>
+    bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
+  const fromHexString = hexString =>
+    new Uint8Array(hexString.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+
+  function RetrievePubKey(){
+    var publicKey = (nacl.sign.keyPair.fromSeed(fromHexString(document.getElementById("id_secretKey").value ))).publicKey ;
+    document.getElementById("id_publicKey").value = toHexString(publicKey);
+  }  
+  function Clear(){
+    document.getElementById("id_publicKey").value = '';
+    document.getElementById("id_secretKey").value = '';
+  }   
+</script>
+
+{% endblock %}
+

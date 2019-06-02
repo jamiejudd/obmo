@@ -1,0 +1,132 @@
+<!doctype html>
+{% load static %}
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+  <!--  causes problem in chrome inspector <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous"> -->
+  <title>ObjectiveMoney</title>
+  <link  rel="stylesheet" href="{% static 'core/css/base.css' %}"></link> 
+  <style type="text/css">
+    .dropdown-item:active { 
+      background-color: #6ce0cc;
+    }
+
+    .textlink{
+      color:#28bda4;
+    }
+    .textlink:hover{
+      color:#28bda4;
+    }
+
+    .card{
+      border:1px solid #d5f6f1;
+      margin-top:15px;
+      margin-bottom:15px;
+    } 
+
+    .page-link{
+    color: #42d7be;
+    }
+    .page-link:hover{
+    color: #42d7be;
+    }
+    .page-link:active{
+    color: #42d7be;
+    }
+    .page-item.active .page-link{
+    background-color: #42d7be;
+    border-color:#42d7be;
+    }
+
+    .btn-primary{color:#fff;background-color:#42d7be;border-color:#42d7be}
+    .btn-primary:hover{color:#fff;background-color:#28bda4;border-color:hsl(170, 65%, 42%)}
+    .btn-primary:focus,.btn-primary.focus{box-shadow:0 0 0 .1rem rgba(0,90,90,0.5)}
+    .btn-primary.disabled,
+    .btn-primary:disabled{color:#fff;background-color:#42d7be;border-color:#42d7be}
+    .btn-primary:not(:disabled):not(.disabled):active,
+    .btn-primary:not(:disabled):not(.disabled).active,
+    .show>.btn-primary.dropdown-toggle{color:#fff;background-color:#24a892;border-color:#24a892}
+    .btn-primary:not(:disabled):not(.disabled):active:focus,
+    .btn-primary:not(:disabled):not(.disabled).active:focus,
+    .show>.btn-primary.dropdown-toggle:focus{box-shadow:0 0 0 .01rem rgba(0,90,90,0.5)}
+  </style>
+  {% block style %}{% endblock %}
+</head>
+<body>
+  <nav class="navbar fixed-top navbar-expand-md navbar-dark shadow-sm" style="background-color: #6ce0cc;">
+  <div class="container">
+    <a class="navbar-brand noselect" href="/"><b>Objective</b>Money</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item active dropdown mx-2">
+          <a class="nav-link dropdown-toggle noselect" href="/" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            View
+          </a>
+          <div class="dropdown-menu rounded-0 bg-white" style="border-color:#eeeeee" aria-labelledby="navbarDropdown">
+            <a class="dropdown-item" href="/accounts/" >All Accounts</a>
+            <a class="dropdown-item" href="/transactions/">All Transactions</a>
+            <a class="dropdown-item" href="#">All Challenges</a>
+            <a class="dropdown-item" href="/statistics/">Statistics</a>
+            <a class="dropdown-item" href="/exchange/">Exchange</a>
+            <div class="dropdown-divider" style="border-color:#eeeeee;"></div>
+            <!--  if user.is_authenticated  -->
+            <a class="dropdown-item" href="/myaccount/">My account</a>
+          </div>
+        </li>             
+  
+        <li class="nav-item active dropdown mx-2">
+          <a class="nav-link dropdown-toggle noselect" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Tools
+          </a>
+          <div class="dropdown-menu rounded-0 bg-white" style="border-color:#eeeeee" aria-labelledby="navbarDropdown">
+            <a class="dropdown-item" href="/transfer/">Transfer</a>
+            <a class="dropdown-item" href="/register/">Register</a>
+            <a class="dropdown-item" href="#">Challenge</a>
+            <!-- <a class="dropdown-item" href="/commit/">Commit Hash</a> -->
+            <!-- <a class="dropdown-item" href="/reveal/">Reveal</a> -->
+            <div class="dropdown-divider" style="border-color:#eeeeee;"></div>
+            <a class="dropdown-item" href="/newkeypair/">Generate new keypair</a>
+           <!--  <a class="dropdown-item" href="/retrievepubkey/">Retrieve public key</a> not vital to mvp, keep the url but not in the navbar -->
+            <a class="dropdown-item" href="/resetpassword/">Reset password</a>
+          </div>
+        </li> 
+        
+        <li class="nav-item active px-2">
+          <a class="nav-link noselect" href="/faq/">FAQ</a>
+        </li>
+
+        <li class="nav-item active px-2">
+        {% if user.is_authenticated %}
+          <a class="nav-link noselect" href="/logout/">Logout</a>
+        {% else %}
+          <a class="nav-link noselect" href="/login/">Login</a>
+        {% endif %}
+        </li>
+      </ul>
+    </div>
+  </div>
+  </nav>
+  
+  {% block content %}{% endblock %}
+
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<br>
+<br>
+<br>
+<p>pk=8d6419804ad806b1009603be023401f251399a2226f5936d206babc1f15c0d73,sk=3d7ac79a8b977d8f2e8a3eb459623e0e84fbbc7f42582d779e8eef766b6c1438</p>
+<p>pk=32be9cb52f64619944ee5406b62de618318124a057e3b8546a58d9270355ff01,sk=dcd1d7313aea1f88c56ccf59942fc96ac0dedcc2b1b89f1a775b1eda737dc272</p>
+<p>pk=e0a23e53ae8b68b85d90234aa10f11f261ed59ff9ae4dea44bb617111ba831c8,sk=b91acb3d0045ac0eae8d86cc37c13a9b1e604e6b3e5d290d1c4859f513fae682</p>
+
+
+{% block script %}{% endblock %}
+
+</body>
+</html>

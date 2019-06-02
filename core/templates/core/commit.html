@@ -1,0 +1,165 @@
+{% extends "form.html" %}
+
+{% block formcss %}
+<style type="text/css">
+#form_container {
+  padding-top:140px;
+}
+#GenerateRN{
+  margin-top: 12px;
+}
+</style>
+{% endblock formcss %}
+
+{% block formfields %}
+<div style="display:none" class="text-danger" id="not_able">You already have an active committed hash, you must reveal the value for that hash before committing to a new hash.</div>
+<br>
+<br>
+<div class="form-group row">
+  <label for="id_username" class="col-sm-2 col-form-label">Sender:</label>
+  <div class="col-sm-10">
+   {% if user.is_authenticated %}
+    <input type="text" class="form-control" id="id_username" value={{user.username}} name="username" autocomplete="off">
+   {% else %}
+    <input type="text" class="form-control" id="id_username" placeholder="" name="username" autocomplete="off">
+  {% endif %}
+    <div class="invalid-feedback" id="id_username_feedback"></div>
+  </div>
+</div>
+<div class="form-group row">
+  <label for="id_sender_seq_no" class="col-sm-2 col-form-label"  data-toggle="tooltip" data-placement="bottom" title="Can be found on account page for your public key">Sequence Number:</label>
+  <div class="col-sm-10">
+   {% if user.is_authenticated %}
+    <input type="number" class="form-control" id="id_sender_seq_no" value={{account.sequence_next}}  name="sender_seq_no" autocomplete="off">
+   {% else %}
+    <input type="number" class="form-control" id="id_sender_seq_no" placeholder=""  name="sender_seq_no" autocomplete="off">
+   {% endif %}
+    <div class="invalid-feedback" id="id_sender_seq_no_feedback"></div>
+  </div>
+</div>
+
+<div class="form-group row">
+  <label for="id_value" class="col-sm-2 col-form-label">Value:</label>
+  <div class="col-sm-8" >
+    <div class="input-group">
+      <textarea rows="2" type="text" id="id_value" readonly class="form-control form-control-readonly " aria-label="With textarea" value="" autocomplete="off"></textarea>
+      <div class="invalid-feedback" id="id_value_feedback"></div>
+    </div>
+    <small id="id_value_help" class="form-text text-muted">Keep a record of this value as you will need to submit it in 1 hour.</small>
+  </div>
+  <div class="col-sm-2" > <!--style="display: flex; align-items: center;"-->
+    <button type="button" class="btn btn-light" id="GenerateRN">Random Value</button>
+  </div>
+</div>
+
+<div class="form-group row">
+  <label for="id_committed_hash" class="col-sm-2 col-form-label">Hash:</label>
+  <div class="col-sm-10">
+    <div class="input-group" >
+      <textarea  rows="2" type="text"  id="id_committed_hash"  class="form-control" aria-label="With textarea" value="" name="committed_hash" autocomplete="off"></textarea>
+      <div class="invalid-feedback" id="id_committed_hash_feedback">Incorrecthash.</div>
+    </div>
+  </div>
+</div>
+
+
+{% endblock formfields %}
+
+
+{% block formscript %}
+<script>
+function checkHash() {
+  if( $("#id_committed_hash").val() == "" ){
+    $('#id_committed_hash_feedback').text('This field is required.');
+    $("#id_committed_hash").addClass("is-invalid");
+    return false;
+  } else if(!validHash($("#id_committed_hash").val())){
+    $('#id_committed_hash_feedback').text('Not a valid SHA-512 hash.');
+    $("#id_committed_hash").addClass("is-invalid");
+    return false;
+  } else {
+    $("#id_committed_hash").removeClass("is-invalid");
+    return true;
+  };
+}
+function checkAble() {
+  var committed = "{{account.committed}}"
+  if( committed == "True" ){
+    $('#not_able').show();
+    return false;
+  } else {
+    $('#not_able').hide();
+    return true;
+  };
+}
+
+function checkFields() {
+  var is_valid = true;
+  is_valid = checkUsername() && is_valid;
+  is_valid = checkSeqNo() && is_valid;
+  is_valid = checkHash() && is_valid;
+  is_valid = checkAble() && is_valid;
+  return is_valid;
+}
+
+function updateTxnString() {
+/*  $("#id_username").val($("#id_username").val().trim());
+  $("#id_recipient_pk").val($("#id_recipient_pk").val().trim());*/
+  var TxnString = 'Type:Commit,Sender:'+ $("#id_username").val() +',SeqNo:'+ String($("#id_sender_seq_no").val()) +',Hash:'+ $("#id_committed_hash").val();
+  $('#txnstring').val(TxnString);
+  $('#modal_txnstring').val(TxnString);
+}
+
+
+$("#id_username,#id_sender_seq_no,#id_committed_hash").on("change paste keyup input", function() {
+  updateTxnString();
+  //RawTxnByteArray = new TextEncoder("utf-8").encode(RawTxnString);
+  //RawTxnByteArray2 = toUTF8Array(RawTxnString);
+  //console.log(RawTxnByteArray)
+  //console.log(RawTxnByteArray2)
+  //console.log(JSON.stringify(RawTxnByteArray)===JSON.stringify(RawTxnByteArray2)) //false typed array vs array
+  //RawTxnHex = toHexString(RawTxnByteArray);
+  //var decoded = new TextDecoder("utf-8").decode(txByteArray);
+  //$('#rawtxnhex').val(RawTxnHex);
+  if($("#id_signature").val() != ""){
+    checkSignature()
+  };
+});
+
+$('#id_sender_seq_no').on('blur', function() {
+  if( $(this).val() != ""){
+    checkSeqNo()
+  };
+  if( $("#id_signature").val() != ""){ 
+    checkSignature() 
+  };    
+});
+
+$('#id_committed_hash').on('blur', function() {
+  if( $(this).val() != ""){ 
+    checkHash() 
+  };
+  if( $("#id_signature").val() != ""){ 
+    checkSignature() 
+  };
+});
+
+
+$('#GenerateRN').on('click', function() {
+  var rand = nacl.randomBytes(64);
+  var hash = nacl.hash(rand);
+  $('#id_value').val(toHexString(rand));
+  $('#id_committed_hash').val(toHexString(hash));
+  updateTxnString();
+  if($("#id_signature").val() != ""){
+    checkSignature()
+  };
+  checkHash();
+});
+
+
+
+
+</script>
+
+{% endblock formscript %}

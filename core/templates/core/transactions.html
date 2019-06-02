@@ -1,0 +1,312 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block style %}  
+<style>
+  /*    .dropdown-menu a{color: white;}
+      .dropdown-menu a:hover{
+        color: white;
+        background-color: #22262a;
+      }*/
+</style>
+{% endblock %}
+{% block content %}
+  
+   <!--  <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+      <a class="navbar-brand" href="#">UBIcoin</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item active dropdown mx-2">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              View
+            </a>
+            <div class="dropdown-menu rounded-0 bg-dark" aria-labelledby="navbarDropdown">
+              <a class="dropdown-item" href="#">All Accounts</a>
+              <a class="dropdown-item" href="#">All Challenges</a>
+              <a class="dropdown-item" href="#">Statistics</a>
+              <a class="dropdown-item" href="#">Download Txn Chain</a>
+              <a class="dropdown-item" href="#">Create New Txn</a>
+              <div class="dropdown-divider" style="border-color:#c7ccd1;"></div>
+              <a class="dropdown-item" href="#">My account</a>
+            </div>
+          </li>    
+
+          <li class="nav-item active px-2">
+            <a class="nav-link" href="#">About</a>
+          </li>
+
+          <li class="nav-item active px-2">
+          {% if user.is_authenticated %}
+            <a class="nav-link" href="/logout/">Logout</a>
+          {% else %}
+            <a class="nav-link" href="/login/">Login</a>
+          {% endif %}
+          </li>
+        </ul>
+      </div>
+    </div>
+    </nav> -->
+   
+
+    <table>  
+  <tbody>
+       <tr>
+          <th>source</th>
+          <th>source</th>
+          <th>target</th>
+          <th>target</th>
+          <th >status</th>
+          </tr>
+                    {% for arrow in arrows %}
+              {% if arrow %}
+                  <tr>
+                  <td>{{ arrow.source.public_key }}</td>
+                  <td>{{ arrow.source.name }}</td>
+                  <td>{{ arrow.target.public_key }}</td>
+                  <td>{{ arrow.target.name }}</td>
+                  <td >{{ arrow.status }}</td>
+                  </tr>
+              {% endif %}
+          {% endfor %}
+  </tbody>
+</table>
+
+    <br>
+    <br>
+    <br>
+
+
+
+
+    <div class="container">
+      <div class="container2 mx-auto" >
+        <form>
+          <div class="form-row justify-content-md-center  border rounded p-2" style="background-color:white" >
+            <div class="col my-1">
+              <div class="form-row mb-2">
+                <div class="col-2 "><span style="font-weight: 500">Txn Type:</span></div>
+                <div class="col">
+                  <div class="form-check form-check-inline">
+                  <label class="form-check-label mr-1" for="inlineCheckbox1">Transfers</label>
+                  <input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1">
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="form-check form-check-inline">
+                  <label class="form-check-label mr-1" for="inlineCheckbox1">Registrations</label>
+                  <input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1">
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="form-check form-check-inline">
+                  <label class="form-check-label mr-1" for="inlineCheckbox1">Challenges</label>
+                  <input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1">
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="form-check form-check-inline">
+                  <label class="form-check-label mr-1" for="inlineCheckbox1">Votes</label>
+                  <input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1">
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="form-check form-check-inline">
+                  <label class="form-check-label mr-1" for="inlineCheckbox1">Links</label>
+                  <input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1">
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="form-check form-check-inline">
+                  <label class="form-check-label mr-1" for="inlineCheckbox1">Income</label>
+                  <input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1">
+                  </div>
+                </div>
+              </div>
+
+
+              <div class="form-row">
+                <div class="col-2 my-auto"><span style="font-weight: 500">Date Range:</span></div>
+                <div class="col pl-4 pr-4">
+                  <div class="row">
+                    <label class="my-auto col-2" for="inputPassword">From</label>
+                    <div class="col-6">
+                      <input class="form-control form-control-sm datepicker" data-date-format="dd/mm/yyyy" id="datepickerfrom">
+                    </div>
+                  </div>
+                </div>
+                <div class="col  pl-4 pr-4">
+                  <div class="row">
+                    <label class="my-auto col-2"  for="inputPassword">&nbsp;&nbsp;&nbsp;&nbsp;To</label>
+                    <div class="col-6">
+                      <input class="form-control form-control-sm datepicker" data-date-format="dd/mm/yyyy" id="datepickerto">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="col-auto my-1 pl-2 justify-content-center align-self-center">
+              <button type="submit" class="btn btn-secondary">Filter Transactions</button>
+            </div>
+
+          </div>
+        </form>
+      </div>
+    <br>
+  <div class="row justify-content-md-center">
+      <div class="col-12">
+      <div class="card rounded-0 ">
+        <div class="card-body">
+          <h6 style="font-family: 'Garamond'">Recent Transactions</h6>
+          <div class="table-responsive">
+            <table class="table table-sm">
+              <tbody>
+                <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;sent&nbsp;190&nbsp;to&nbsp;account&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+                <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;initiated&nbsp;challenge&nbsp;t43349yu85y&nbsp;against&nbsp;the&nbsp;accounts&nbsp;22nt34tj9yjr5y&nbsp;and&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+                <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;sent&nbsp;190&nbsp;to&nbsp;account&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+                <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;initiated&nbsp;challenge&nbsp;t43349yu85y&nbsp;against&nbsp;the&nbsp;accounts&nbsp;22nt34tj9yjr5y&nbsp;and&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+                <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;sent&nbsp;190&nbsp;to&nbsp;account&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+                <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;initiated&nbsp;challenge&nbsp;t43349yu85y&nbsp;against&nbsp;the&nbsp;accounts&nbsp;22nt34tj9yjr5y&nbsp;and&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+                <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;sent&nbsp;190&nbsp;to&nbsp;account&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+                <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;initiated&nbsp;challenge&nbsp;t43349yu85y&nbsp;against&nbsp;the&nbsp;accounts&nbsp;22nt34tj9yjr5y&nbsp;and&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+                <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;sent&nbsp;190&nbsp;to&nbsp;account&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+                <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;initiated&nbsp;challenge&nbsp;t43349yu85y&nbsp;against&nbsp;the&nbsp;accounts&nbsp;22nt34tj9yjr5y&nbsp;and&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+                <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;sent&nbsp;190&nbsp;to&nbsp;account&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+                <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;initiated&nbsp;challenge&nbsp;t43349yu85y&nbsp;against&nbsp;the&nbsp;accounts&nbsp;22nt34tj9yjr5y&nbsp;and&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+                <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;sent&nbsp;190&nbsp;to&nbsp;account&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+                <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;initiated&nbsp;challenge&nbsp;t43349yu85y&nbsp;against&nbsp;the&nbsp;accounts&nbsp;22nt34tj9yjr5y&nbsp;and&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+                <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;sent&nbsp;190&nbsp;to&nbsp;account&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+                <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;initiated&nbsp;challenge&nbsp;t43349yu85y&nbsp;against&nbsp;the&nbsp;accounts&nbsp;22nt34tj9yjr5y&nbsp;and&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+                <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;sent&nbsp;190&nbsp;to&nbsp;account&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+                <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;initiated&nbsp;challenge&nbsp;t43349yu85y&nbsp;against&nbsp;the&nbsp;accounts&nbsp;22nt34tj9yjr5y&nbsp;and&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+                <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;sent&nbsp;190&nbsp;to&nbsp;account&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+                <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;initiated&nbsp;challenge&nbsp;t43349yu85y&nbsp;against&nbsp;the&nbsp;accounts&nbsp;22nt34tj9yjr5y&nbsp;and&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+                <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;sent&nbsp;190&nbsp;to&nbsp;account&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+                <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;initiated&nbsp;challenge&nbsp;t43349yu85y&nbsp;against&nbsp;the&nbsp;accounts&nbsp;22nt34tj9yjr5y&nbsp;and&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+                <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;sent&nbsp;190&nbsp;to&nbsp;account&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+                <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;initiated&nbsp;challenge&nbsp;t43349yu85y&nbsp;against&nbsp;the&nbsp;accounts&nbsp;22nt34tj9yjr5y&nbsp;and&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      </div>
+      </div>
+    <br>
+<div class="card">
+<div class="card-body">
+
+<div class="table-responsive">
+<table class="table table-sm">
+  <thead>
+    <tr>
+      <th scope="col">Txn No.</th>
+      <th scope="col">Type</th>
+      <th scope="col">Sender</th>
+      <th scope="col">Hash</th>
+      <th scope="col">Created_at(time ago)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Mark</td>
+      <td>Otto</td>
+      <td>@mdo</td>
+      <td>@mdo</td>
+      <td>Otto</td>
+    </tr>
+    <tr>
+      <td>Mark</td>
+      <td>Otto</td>
+      <td>Otto</td>
+      <td>@mdo</td>
+      <td>Otto</td>
+    </tr>
+    <tr>
+      <td>Mark</td>
+      <td>Otto</td>
+      <td>@mdo</td>
+      <td>@mdo</td>
+      <td>Otto</td>
+    </tr>
+    <tr><td>Mark</td><td>Otto</td><td>@mdo</td><td>@mdo</td><td>Otto</td></tr>
+  </tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+<div class="card mt-3">
+<div class="card-block">
+<div class="row"><div class="col-md-12">
+<div class="table-responsive">
+<table class="table" id="txs">
+<thead><tr><th>Hash</th><th>Block</th><th>Type</th><th>From</th><th>To</th><th>Value</th><th>Fee</th><th>Gas Price</th><th>Time</th></tr></thead>
+<tbody class="font-weight-bold" style="display: table-row-group; vertical-align: middle;    border-color: inherit;">
+   <tr>      <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>    </tr>    <tr>    <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>     <td>c</td><td>d</td><td>e</td>    </tr>    <tr>    <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>     <td>j</td><td>g</td><td>x</td>    </tr>    <tr>    <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>     <td>n</td><td>a</td><td>c</td>    </tr>    <tr>    <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>     <td>s</td><td>o</td><td>s</td>    </tr>    <tr>     <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>    <td>v</td><td>u</td><td>n</td>    </tr>    <tr>    <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>     <td>w</td><td>m</td><td>a</td>    </tr>    <tr>    <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>     <td>d</td><td>u</td><td>y</td>    </tr>    <tr>     <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>    <td>a</td><td>k</td><td>z</td>    </tr>    <tr>      <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>   <td>b</td><td>b</td><td>e</td>    </tr>    <tr>   <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>      <td>d</td><td>w</td><td>s</td>    </tr>    <tr>     <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>    <td>v</td><td>y</td><td>x</td>    </tr>    <tr>       <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>  <td>g</td><td>j</td><td>q</td>    </tr>    <tr>     <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>    <td>p</td><td>x</td><td>x</td>    </tr>    <tr>    <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>     <td>r</td><td>t</td><td>g</td>    </tr>    <tr>  <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>       <td>m</td><td>a</td><td>x</td>    </tr>    <tr>       <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>  <td>n</td><td>y</td><td>h</td>    </tr>    <tr>    <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>     <td>f</td><td>u</td><td>q</td>    </tr>    <tr>      <td>c</td><td>d</td><td>x</td>    </tr>    <tr>      <td>b</td><td>q</td><td>b</td>    </tr>    <tr>      <td>b</td><td>l</td><td>k</td>    </tr>    <tr>      <td>v</td><td>l</td><td>c</td>    </tr>    <tr>      <td>v</td><td>x</td><td>h</td>    </tr>    <tr>      <td>v</td><td>k</td><td>y</td>    </tr>    <tr>      <td>i</td><td>m</td><td>d</td>    </tr>    <tr>      <td>w</td><td>f</td><td>a</td>    </tr>    <tr>      <td>y</td><td>c</td><td>s</td>    </tr>    <tr>      <td>r</td><td>k</td><td>t</td>    </tr>    <tr>      <td>t</td><td>e</td><td>d</td>    </tr>    <tr>      <td>a</td><td>w</td><td>w</td>    </tr>    <tr>      <td>p</td><td>g</td><td>r</td>    </tr>    <tr>      <td>c</td><td>a</td><td>s</td>    </tr>    <tr>      <td>h</td><td>l</td><td>h</td>    </tr>    <tr>      <td>y</td><td>n</td><td>f</td>    </tr>    <tr>      <td>s</td><td>e</td><td>e</td>    </tr>    <tr>      <td>s</td><td>i</td><td>b</td>    </tr>    <tr>      <td>a</td><td>e</td><td>p</td>    </tr>    <tr>      <td>c</td><td>r</td><td>s</td>    </tr>    <tr>      <td>w</td><td>y</td><td>s</td>    </tr>    <tr>      <td>f</td><td>v</td><td>q</td>    </tr>  
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+
+
+
+<div class="card mt-3">
+<div class="card-block">
+<h1 class="display-6 text-center mt-3"><span class="fa fa-credit-card">&nbsp;</span>Browse all Ethereum Transactions</h1>
+<div class="row"><div class="col-md-12">
+<div class="table-responsive">
+<table class="table" id="txs">
+<thead><tr><th>Hash</th><th>Block</th><th>Type</th><th>From</th><th>To</th><th>Value</th><th>Fee</th><th>Gas Price</th><th>Time</th></tr></thead>
+<tbody class="font-weight-bold" style="display: table-row-group; vertical-align: middle;    border-color: inherit;">
+   <tr>      <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>    </tr>    <tr>    <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>     <td>c</td><td>d</td><td>e</td>    </tr>    <tr>    <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>     <td>j</td><td>g</td><td>x</td>    </tr>    <tr>    <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>     <td>n</td><td>a</td><td>c</td>    </tr>    <tr>    <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>     <td>s</td><td>o</td><td>s</td>    </tr>    <tr>     <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>    <td>v</td><td>u</td><td>n</td>    </tr>    <tr>    <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>     <td>w</td><td>m</td><td>a</td>    </tr>    <tr>    <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>     <td>d</td><td>u</td><td>y</td>    </tr>    <tr>     <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>    <td>a</td><td>k</td><td>z</td>    </tr>    <tr>      <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>   <td>b</td><td>b</td><td>e</td>    </tr>    <tr>   <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>      <td>d</td><td>w</td><td>s</td>    </tr>    <tr>     <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>    <td>v</td><td>y</td><td>x</td>    </tr>    <tr>       <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>  <td>g</td><td>j</td><td>q</td>    </tr>    <tr>     <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>    <td>p</td><td>x</td><td>x</td>    </tr>    <tr>    <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>     <td>r</td><td>t</td><td>g</td>    </tr>    <tr>  <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>       <td>m</td><td>a</td><td>x</td>    </tr>    <tr>       <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>  <td>n</td><td>y</td><td>h</td>    </tr>    <tr>    <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>     <td>f</td><td>u</td><td>q</td>    </tr>    <tr>      <td>c</td><td>d</td><td>x</td>    </tr>    <tr>      <td>b</td><td>q</td><td>b</td>    </tr>    <tr>      <td>b</td><td>l</td><td>k</td>    </tr>    <tr>      <td>v</td><td>l</td><td>c</td>    </tr>    <tr>      <td>v</td><td>x</td><td>h</td>    </tr>    <tr>      <td>v</td><td>k</td><td>y</td>    </tr>    <tr>      <td>i</td><td>m</td><td>d</td>    </tr>    <tr>      <td>w</td><td>f</td><td>a</td>    </tr>    <tr>      <td>y</td><td>c</td><td>s</td>    </tr>    <tr>      <td>r</td><td>k</td><td>t</td>    </tr>    <tr>      <td>t</td><td>e</td><td>d</td>    </tr>    <tr>      <td>a</td><td>w</td><td>w</td>    </tr>    <tr>      <td>p</td><td>g</td><td>r</td>    </tr>    <tr>      <td>c</td><td>a</td><td>s</td>    </tr>    <tr>      <td>h</td><td>l</td><td>h</td>    </tr>    <tr>      <td>y</td><td>n</td><td>f</td>    </tr>    <tr>      <td>s</td><td>e</td><td>e</td>    </tr>    <tr>      <td>s</td><td>i</td><td>b</td>    </tr>    <tr>      <td>a</td><td>e</td><td>p</td>    </tr>    <tr>      <td>c</td><td>r</td><td>s</td>    </tr>    <tr>      <td>w</td><td>y</td><td>s</td>    </tr>    <tr>      <td>f</td><td>v</td><td>q</td>    </tr>  
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+
+    <div class="row justify-content-md-center">
+    <table>
+      <thead>
+        <tr>
+          <th>c1</th>
+          <th>c2</th>
+          <th>c3</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>      <td>u</td><td>b</td><td>h</td>    </tr>    <tr>      <td>c</td><td>d</td><td>e</td>    </tr>    <tr>      <td>j</td><td>g</td><td>x</td>    </tr>    <tr>      <td>n</td><td>a</td><td>c</td>    </tr>    <tr>      <td>s</td><td>o</td><td>s</td>    </tr>    <tr>      <td>v</td><td>u</td><td>n</td>    </tr>    <tr>      <td>w</td><td>m</td><td>a</td>    </tr>    <tr>      <td>d</td><td>u</td><td>y</td>    </tr>    <tr>      <td>a</td><td>k</td><td>z</td>    </tr>    <tr>      <td>b</td><td>b</td><td>e</td>    </tr>    <tr>      <td>d</td><td>w</td><td>s</td>    </tr>    <tr>      <td>v</td><td>y</td><td>x</td>    </tr>    <tr>      <td>g</td><td>j</td><td>q</td>    </tr>    <tr>      <td>p</td><td>x</td><td>x</td>    </tr>    <tr>      <td>r</td><td>t</td><td>g</td>    </tr>    <tr>      <td>m</td><td>a</td><td>x</td>    </tr>    <tr>      <td>n</td><td>y</td><td>h</td>    </tr>    <tr>      <td>f</td><td>u</td><td>q</td>    </tr>    <tr>      <td>c</td><td>d</td><td>x</td>    </tr>    <tr>      <td>b</td><td>q</td><td>b</td>    </tr>    <tr>      <td>b</td><td>l</td><td>k</td>    </tr>    <tr>      <td>v</td><td>l</td><td>c</td>    </tr>    <tr>      <td>v</td><td>x</td><td>h</td>    </tr>    <tr>      <td>v</td><td>k</td><td>y</td>    </tr>    <tr>      <td>i</td><td>m</td><td>d</td>    </tr>    <tr>      <td>w</td><td>f</td><td>a</td>    </tr>    <tr>      <td>y</td><td>c</td><td>s</td>    </tr>    <tr>      <td>r</td><td>k</td><td>t</td>    </tr>    <tr>      <td>t</td><td>e</td><td>d</td>    </tr>    <tr>      <td>a</td><td>w</td><td>w</td>    </tr>    <tr>      <td>p</td><td>g</td><td>r</td>    </tr>    <tr>      <td>c</td><td>a</td><td>s</td>    </tr>    <tr>      <td>h</td><td>l</td><td>h</td>    </tr>    <tr>      <td>y</td><td>n</td><td>f</td>    </tr>    <tr>      <td>s</td><td>e</td><td>e</td>    </tr>    <tr>      <td>s</td><td>i</td><td>b</td>    </tr>    <tr>      <td>a</td><td>e</td><td>p</td>    </tr>    <tr>      <td>c</td><td>r</td><td>s</td>    </tr>    <tr>      <td>w</td><td>y</td><td>s</td>    </tr>    <tr>      <td>f</td><td>v</td><td>q</td>    </tr>  
+      </tbody>
+    </table>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.7.1/js/bootstrap-datepicker.min.js"></script>
+<script type="text/javascript">
+    $('.datepicker').datepicker({
+        weekStart: 1,
+        autoclose: true,
+    });
+    $('.datepicker').datepicker("setDate", new Date());
+    $('.datepicker').val('');
+</script>
+{% endblock %} 

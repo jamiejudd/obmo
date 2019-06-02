@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block style %}  
+<style>
+body {
+  text-align: center;
+
+}
+
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top:100px;">
+<!-- <div class="card ">
+<div class="card-body"> -->
+  <button type="button" class="btn btn-primary" style="margin-bottom:50px;" id="GenerateKeypair"  onclick="GenerateKeypair();">Generate new Keypair</button>
+  <div class="row">
+    <div class="col-sm-10">
+        <div class="row">
+          <label for="id_publicKey" class="col-sm-2"><strong>Public Key:</strong></label>
+          <div class="col-sm-10" id="id_publicKey" ></div>
+        </div>
+        <div class="row">
+          <label for="id_secretKey" class="col-sm-2"><strong>Secret Key:</strong></label>
+          <div class="col-sm-10" id="id_secretKey" ></div>
+        </div>
+    </div>
+    <div class="col-sm-2">
+      <button type="button" class="btn btn-light" id="Clear"  onclick="Clear();" style="margin-top:10px">Clear</button>
+    </div>
+  </div>
+<!-- </div>
+</div> -->
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tweetnacl/1.0.0/nacl-fast.min.js" integrity="sha384-ZKnGpJMHpmE8VG4Tnsk9xqVKOz25Dv21zXOnaL3co+X6wFUx8G5qfs8N1ZNZy/wp" crossorigin="anonymous"></script>
+<script type="text/javascript">
+const toHexString = bytes =>
+  bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
+
+function GenerateKeypair(){
+  var keypair = nacl.sign.keyPair();
+  document.getElementById("id_publicKey").innerText = toHexString(keypair.publicKey);
+  document.getElementById("id_secretKey").innerText = toHexString(keypair.secretKey).slice(0, 64);
+}  
+function Clear(){
+  document.getElementById("id_publicKey").innerText = '';
+  document.getElementById("id_secretKey").innerText = '';
+}   
+</script>
+{% endblock %}
+
+

@@ -1,0 +1,164 @@
+{% extends "form.html" %}
+
+{% block formcss %}
+<style type="text/css">
+#form_container {
+  padding-top:140px;
+}
+</style>
+{% endblock formcss %}
+
+
+{% block formfields %}
+<div style="display:none" id="not_able" class="text-danger">You do not have an active committed hash, you must first <a class="alert-link" href="/commit/">commit</a> a hash.</div>
+<div style="display:none" id="too_soon" class="text-danger">It is too soon to reveal the value for your committed hash, please wait 22.</div>
+<div style="display:none" id="too_late" class="text-danger">It is too late to reveal the value for your committed hash.</div>
+<br>
+<div class="form-group row">
+  <label for="id_username" class="col-sm-2 col-form-label">Sender:</label>
+  <div class="col-sm-10">
+   {% if user.is_authenticated %}
+    <input type="text" class="form-control" id="id_username" value={{user.username}} name="username" autocomplete="off">
+   {% else %}
+    <input type="text" class="form-control" id="id_username" placeholder="" name="username" autocomplete="off">
+  {% endif %}
+    <div class="invalid-feedback" id="id_username_feedback"></div>
+  </div>
+</div>
+<div class="form-group row">
+  <label for="id_sender_seq_no" class="col-sm-2 col-form-label"  data-toggle="tooltip" data-placement="bottom" title="Can be found on account page for your public key">Sequence Number:</label>
+  <div class="col-sm-10">
+   {% if user.is_authenticated %}
+    <input type="number" class="form-control" id="id_sender_seq_no" value={{account.sequence_next}}  name="sender_seq_no" autocomplete="off">
+   {% else %}
+    <input type="number" class="form-control" id="id_sender_seq_no" placeholder=""  name="sender_seq_no" autocomplete="off">
+   {% endif %}
+    <div class="invalid-feedback" id="id_sender_seq_no_feedback"></div>
+  </div>
+</div>
+
+<div class="form-group row">
+  <label for="id_committed_hash" class="col-sm-2 col-form-label">Hash:</label>
+  <div class="col-sm-10" >
+    <div class="input-group">
+      {% if user.is_authenticated and account.committed %}
+      <textarea rows="2" type="text" id="id_committed_hash" readonly class="form-control form-control-readonly " aria-label="With textarea" autocomplete="off">{{account.committed_hash}}</textarea>
+      {% else %}
+      <textarea rows="2" type="text" id="id_committed_hash" readonly class="form-control form-control-readonly " aria-label="With textarea" autocomplete="off"></textarea>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="form-group row">
+  <label for="id_revealed_value" class="col-sm-2 col-form-label">Value:</label>
+  <div class="col-sm-10">
+    <small id="id_revealed_value_help" class="form-text text-muted">Enter the value that produces the hash above.</small>
+    <div class="input-group" >
+      <textarea  rows="2" type="text"  id="id_revealed_value"  class="form-control" aria-label="With textarea" value="" name="revealed_value" autocomplete="off"></textarea>
+      <div class="invalid-feedback" id="id_revealed_value_feedback"></div>
+      <div class="valid-feedback">This value gives the correct hash.</div>
+    </div>
+  </div>
+</div>
+{% endblock formfields %}
+
+
+{% block formscript %}
+<script>
+function checkValue() {
+  if( $("#id_revealed_value").val() == "" ){
+    $('#id_revealed_value_feedback').text('This field is required.');
+    $("#id_revealed_value").removeClass("is-valid");
+    $("#id_revealed_value").addClass("is-invalid");
+    return false;
+  } else if(!validHash($("#id_revealed_value").val())){
+    $('#id_revealed_value_feedback').text('Not a valid 64 byte hex string.');
+    $("#id_revealed_value").removeClass("is-valid");
+    $("#id_revealed_value").addClass("is-invalid");
+    return false;
+  } else if( toHexString(nacl.hash(fromHexString($("#id_revealed_value").val()))) != $("#id_committed_hash").val()){
+    $('#id_revealed_value_feedback').text('Incorrect value for your committed hash.');
+    $("#id_revealed_value").removeClass("is-valid");
+    $("#id_revealed_value").addClass("is-invalid");
+    return false;
+  } else {
+    $("#id_revealed_value").removeClass("is-invalid");
+    $("#id_revealed_value").addClass("is-valid");
+    return true;
+  };
+}
+function checkAble() {
+  var committed = "{{account.committed}}"
+  var time_status = "{{time_status}}"
+  if( committed == "False" ){
+    $('#not_able').show();
+    return false;
+  } else if( time_status == 'early' ){
+    $('#too_soon').show();
+    return false;
+  } else if( time_status == 'late' ){
+    $('#too_late').show();
+    return false;
+  } else {
+    $('#not_able').hide();
+    $('#too_soon').hide();
+    $('#too_late').hide();
+    return true;
+  };
+}
+function checkFields() {
+  var is_valid = true;
+  is_valid = checkUsername() && is_valid;
+  is_valid = checkSeqNo() && is_valid;
+  is_valid = checkValue() && is_valid;
+  is_valid = checkAble() && is_valid;
+  return is_valid;
+}
+
+function updateTxnString() {
+/*  $("#id_username").val($("#id_username").val().trim());
+  $("#id_recipient_pk").val($("#id_recipient_pk").val().trim());*/
+  var TxnString = 'Type:Reveal,Sender:'+ $("#id_username").val() +',SeqNo:'+ String($("#id_sender_seq_no").val()) +',Value:'+ $("#id_revealed_value").val();
+  $('#txnstring').val(TxnString);
+  $('#modal_txnstring').val(TxnString);
+}
+
+
+$("#id_username,#id_sender_seq_no,#id_revealed_value").on("change paste keyup input", function() {
+  updateTxnString();
+  //RawTxnByteArray = new TextEncoder("utf-8").encode(RawTxnString);
+  //RawTxnByteArray2 = toUTF8Array(RawTxnString);
+  //console.log(RawTxnByteArray)
+  //console.log(RawTxnByteArray2)
+  //console.log(JSON.stringify(RawTxnByteArray)===JSON.stringify(RawTxnByteArray2)) //false typed array vs array
+  //RawTxnHex = toHexString(RawTxnByteArray);
+  //var decoded = new TextDecoder("utf-8").decode(txByteArray);
+  //$('#rawtxnhex').val(RawTxnHex);
+  if($("#id_signature").val() != ""){
+    checkSignature()
+  };
+});
+
+$('#id_sender_seq_no').on('blur', function() {
+  if( $(this).val() != ""){
+    checkSeqNo()
+  };
+  if( $("#id_signature").val() != ""){ 
+    checkSignature() 
+  };    
+});
+
+$('#id_revealed_value').on('blur', function() {
+  if( $(this).val() != ""){ 
+    checkValue() 
+  };
+  if( $("#id_signature").val() != ""){ 
+    checkSignature() 
+  };
+});
+
+
+</script>
+
+{% endblock formscript %}

@@ -1,0 +1,387 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block style %}  
+<style>
+textarea {
+    resize: none;
+}
+.modal-body{
+  word-break: break-all;
+}
+#idSignTxn{
+  margin-top: 12px;
+}
+.form-control-readonly:focus {
+  border-color: #ced4da;
+  box-shadow: none;
+}   
+
+/*fix shift left caused by modal opening*/  
+.modal {
+    overflow-y: auto;
+}
+.modal-open {
+    overflow: auto;
+}
+.modal-open[style] {
+    padding-right: 0px !important;
+}  
+</style>
+{% block formcss %}
+{% endblock formcss %}
+{% endblock style %}
+
+{% block content %}
+<!-- Modal -->
+<div class="modal fade" id="signatureModal" tabindex="-1" role="dialog" aria-labelledby="signatureModal" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="modal_txnstring" class="font-weight-bold">Message to sign:</label>
+            <div class="input-group" >
+              <textarea  rows="4" type="text"  id="modal_txnstring" readonly class="form-control-plaintext" aria-label="With textarea" value=""></textarea>
+            </div>
+        </div>
+        <div class="form-group">
+          <label for="modalsecretkey" class="font-weight-bold">Secret Key:</label>
+          <input type="password" class="form-control" id="modalsecretkey" placeholder="">
+          <div class="invalid-feedback" id="modalsecretkey_feedback">That is not a valid secret key.</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary"  id="CloseModal">Close</button>
+        <button type="button" class="btn btn-primary" data-dismiss="modal" id="GenerateSig" >Generate Signature</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% block formcontent %}
+{% endblock formcontent %}
+{% endblock content %}
+
+
+{% block script %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tweetnacl/1.0.0/nacl-fast.min.js" integrity="sha384-ZKnGpJMHpmE8VG4Tnsk9xqVKOz25Dv21zXOnaL3co+X6wFUx8G5qfs8N1ZNZy/wp" crossorigin="anonymous"></script>
+
+
+<!-- 
+{% load static %}
+<script src="{% static 'core/javascript/tweetnacl.js' %}"></script> 
+ -->
+
+<!-- 
+<script>
+    if (typeof window.nacl === 'undefined') {
+        console.log('nacl undefined')
+        console.log('<script src=\x22\x7B\x25 static \x27core/javascript/tweetnacl.js\x27 \x25\x7D\x22\x3E\x3C/script>');
+        document.write('<script src=\x22\x7B\x25 static \x27core/javascript/tweetnacl.js\x27 \x25\x7D\x22\x3E\x3C/script>');
+    }
+</script>
+-->
+<!--<script src="https://cdn.jsdelivr.net/npm/tweetnacl-util@0.15.0/nacl-util.min.js"></script>-->
+
+
+<!-- 
+{% load static %}
+<script src="{% static 'core/javascript/form_validation.js' %}"></script>  -->
+
+
+<script type="text/javascript">
+  const fromHexString = hexString =>
+    new Uint8Array(hexString.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+  const toHexString = bytes =>
+    bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
+
+  function validHex(string) {
+    return (toHexString(fromHexString(string)) === string.toLowerCase()) ;
+  }
+  function validPubKey(string) {
+    return (validHex(string) && string.length == 64) ;
+  }
+/*
+  function validHex(string) {
+    if(string===undefined){
+      return false;
+    }
+    return ( toHexString(fromHexString(string)) === string.toLowerCase()) ;
+  }
+  function validPubKey(string) {
+    if(string===undefined){
+      return false;
+    }
+    if(string===null){
+      return false;
+    }
+    return (validHex(string) && string.length==64) ;
+  }
+*/
+  function checkUsername() {
+    if( $("#id_username").val() == "" ){
+      $('#id_username_feedback').text('This field is required.');
+      $("#id_username").addClass("is-invalid");
+      return false;
+    } else if(!validPubKey($("#id_username").val())){
+      $('#id_username_feedback').text('Not a valid public key.');
+      $("#id_username").addClass("is-invalid");
+      return false;
+    } else {
+      $("#id_username").removeClass("is-invalid");
+      return true;
+    };
+  }
+
+  function checkSeqNo() {
+    if( $("#id_sender_seq_no").val() == "" ){
+      $('#id_sender_seq_no_feedback').text('This field is required.');
+      $("#id_sender_seq_no").addClass("is-invalid");
+      return false;
+    } else if(!($("#id_sender_seq_no").val() >= 1)){        //!( Number.isInteger($(this).val())
+      $('#id_sender_seq_no_feedback').text('Must be a positive number.');
+      $("#id_sender_seq_no").addClass("is-invalid");
+      return false;
+    } else {
+      $("#id_sender_seq_no").removeClass("is-invalid");
+      return true;
+    };
+  }
+
+function checkSignature() {
+  var Sender = $("#id_username").val();
+  var TxnString = $("#txnstring").val();
+  //var TxnString = 'Type:Transfer,Sender:'+ $("#id_username").val() +',SeqNo:'+ String($("#id_sender_seq_no").val()) +',Recipient:'+ $("#id_recipient_pk").val() +',Amount:'+ String($("#id_amount").val());
+  //if(TxnString != $("#txnstring").val()){alert('txnstring mismatch!!')};  
+  var TxnByteArray = new TextEncoder("utf-8").encode(TxnString);
+  var Signature = document.getElementById("id_signature").value;
+  try {
+    if(nacl.sign.detached.verify(TxnByteArray, fromHexString(Signature), fromHexString(Sender))){
+      $("#id_signature").removeClass("is-invalid");
+      $("#id_signature").addClass("is-valid");
+      return true;
+    } else {
+      $("#id_signature").removeClass("is-valid");
+      $("#id_signature").addClass("is-invalid");
+      return false;
+    }
+  } catch(e) {
+    //console.log('sig error')
+    //console.log(e.message)
+    $("#id_signature").removeClass("is-valid");
+    $("#id_signature").addClass("is-invalid");
+    return false;
+  }
+}
+
+
+$('#id_username').on('blur', function() {
+  if( $(this).val() != ""){ 
+    checkUsername()
+  }
+  if( $("#id_signature").val() != "" ){
+    checkSignature()
+  };
+});
+
+$('#id_signature').on('blur change paste keyup input', function() {
+  if( $(this).val() != ""){
+    checkSignature()
+  } else {
+    $(this).removeClass("is-invalid");
+  }
+});
+
+
+$('#idSignTxn').on('click', function() {
+  if(checkFields()){
+    $('#signatureModal').modal('show');
+  }
+});
+
+
+/*      $('#signatureModal').on('hide.bs.modal', function () {
+  $('#modalsecretkey').val('');
+  $("#modalsecretkey").removeClass("is-invalid");
+})*/
+
+$('#CloseModal').on('click', function() {
+  $('#modalsecretkey').val('');
+  $("#modalsecretkey").removeClass("is-invalid");
+  $('#signatureModal').modal('hide');
+});
+
+
+$('#GenerateSig').on('click', function() {
+  var TxnByteArray = new TextEncoder("utf-8").encode($('#modal_txnstring').val());
+  try{
+    //console.log('secretKey')
+    //console.log($('#modalsecretkey').val())
+    //console.log('secretKeybytes')
+    //console.log(fromHexString($('#modalsecretkey').val()) )
+    //console.log('keypair.secretKey')
+    //console.log(toHexString(( nacl.sign.keyPair.fromSeed(fromHexString($('#modalsecretkey').val())) ).secretKey ))
+    var Signature = nacl.sign.detached( TxnByteArray, ( nacl.sign.keyPair.fromSeed(fromHexString($('#modalsecretkey').val())) ).secretKey );
+    $("#modalsecretkey").removeClass("is-invalid");
+  } catch(e) {
+    //console.log('bad secret key')
+    //console.log(e.message)
+    //$('#modalsecretkey').val('');
+    $("#modalsecretkey").addClass("is-invalid");
+    //throw new Exception();
+    //throw new Error(e.message);
+    //throw "exit";
+    return false;
+  }
+  $('#id_signature').val(toHexString(Signature));
+  console.log(toHexString(Signature))
+  $('#modalsecretkey').val('');
+  $('#signatureModal').modal('hide');
+  checkSignature()
+  //console.log( new TextDecoder("utf-8").decode(Signature)) ;
+  //console.log( new TextDecoder("utf-8").decode(nacl.sign.open(Signature, keypair.publicKey)));
+});
+
+function validateForm() {
+  return checkFields() && checkSignature()
+}
+
+</script>
+
+{% block formscript %}
+{% endblock formscript %}
+
+
+<script>
+      /*
+      $('#checkSig').on('click', function() {
+        console.log('gd');
+        Signature = $("#id_signature").val();
+        console.log('gdf');
+        if (nacl.sign.detached.verify( RawTxnByteArray, fromHexString(Signature), fromHexString(Sender))) {
+          $("#id_signature").removeClass("is-invalid");
+          $("#id_signature").addClass("is-valid");
+        } else {
+          $("#id_signature").removeClass("is-valid");
+          $("#id_signature").addClass("is-invalid");
+        }
+      });
+      */
+      /*
+      $("TransferForm").submit(function (e) {
+        var validationFailed = false;
+        Type =  $("#id_txn_type").val();
+        Sender =  $("#id_sender").val();
+        //SeqNo =  $("#id_sender_seq_no").val();
+        //Recipient =  $("#id_recipient").val();
+        //Amount =  $("#id_amount").val();
+        //RawTxnString = '{"Type":"'+Type+'","Sender":"'+Sender+'","SeqNo":'+SeqNo+',"Recipient":"'+Recipient+'","Amount":'+Amount+'}';
+        //RawTxnByteArray = new TextEncoder("utf-8").encode(RawTxnString);
+
+         if (Sender=='') {
+            console.log('nope')
+            e.preventDefault();
+            return false;
+         }
+      }); 
+      */
+
+// Example starter JavaScript for disabling form submissions if there are invalid fields
+/*
+(function() {
+  'use strict';
+  window.addEventListener('load', function() {
+    // Fetch all the forms we want to apply custom Bootstrap validation styles to
+    var forms = document.getElementsByClassName('needs-validation');
+    // Loop over them and prevent submission
+    var validation = Array.prototype.filter.call(forms, function(form) {
+      form.addEventListener('submit', function(event) {
+        if (form.checkValidity() === false) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+      }, false);
+    });
+  }, false);
+})();
+*/
+
+</script>
+
+<script>
+
+        /*
+        for(var b in window) { 
+          if(window.hasOwnProperty(b)) console.log(b); 
+        }
+        */
+
+
+// Example starter JavaScript for disabling form submissions if there are invalid fields
+/*
+(function() {
+  'use strict';
+  window.addEventListener('load', function() {
+    // Fetch all the forms we want to apply custom Bootstrap validation styles to
+    var forms = document.getElementsByClassName('needs-validation');
+    // Loop over them and prevent submission
+    var validation = Array.prototype.filter.call(forms, function(form) {
+      form.addEventListener('submit', function(event) {
+        if (form.checkValidity() === false) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+      }, false);
+    });
+  }, false);
+})();
+*/
+</script>
+<script>
+
+        /*
+ 
+      function toUTF8Array(str) {
+          var utf8 = [];
+          for (var i=0; i < str.length; i++) {
+              var charcode = str.charCodeAt(i);
+              if (charcode < 0x80) utf8.push(charcode);
+              else if (charcode < 0x800) {
+                  utf8.push(0xc0 | (charcode >> 6), 
+                            0x80 | (charcode & 0x3f));
+              }
+              else if (charcode < 0xd800 || charcode >= 0xe000) {
+                  utf8.push(0xe0 | (charcode >> 12), 
+                            0x80 | ((charcode>>6) & 0x3f), 
+                            0x80 | (charcode & 0x3f));
+              }
+              // surrogate pair
+              else {
+                  i++;
+                  // UTF-16 encodes 0x10000-0x10FFFF by
+                  // subtracting 0x10000 and splitting the
+                  // 20 bits of 0x0-0xFFFFF into two halves
+                  charcode = 0x10000 + (((charcode & 0x3ff)<<10)
+                            | (str.charCodeAt(i) & 0x3ff));
+                  utf8.push(0xf0 | (charcode >>18), 
+                            0x80 | ((charcode>>12) & 0x3f), 
+                            0x80 | ((charcode>>6) & 0x3f), 
+                            0x80 | (charcode & 0x3f));
+              }
+          }
+          return utf8;
+      }
+*/
+</script>
+
+
+<!--         <div class="form-group row">
+          <label for="id_txn_type" class="col-sm-2 col-form-label">Transaction Type:</label>
+          <div class="col-sm-10">
+            <input type="text" readonly class="form-control-plaintext" id="id_txn_type" value="Transfer" name="txn_type" autocomplete="off">
+          </div>
+        </div> -->
+
+{% endblock script %}

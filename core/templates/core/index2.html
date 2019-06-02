@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <title>ObjectiveMoney</title>
+    {% load static %}
+    <link  rel="stylesheet" href="{% static 'core/css/base.css' %}"></link> 
+    <style>
+      canvas {
+        display: block;
+        position:  fixed;
+        z-index: -1;
+      }
+      .card{
+        border:1px solid #f2f2f2;
+        margin-top:15px;
+        margin-bottom:15px;
+      }
+      .list-group-item {
+        padding: 2px 1px;
+        margin: 5px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar fixed-top navbar-expand-lg nav-custom navbar-light">
+    <div class="container">
+      <a class="navbar-brand noselect" href="/"><b>Objective</b>Money</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item active dropdown mx-2">
+            <a class="nav-link dropdown-toggle noselect" href="/" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              View
+            </a>
+            <div class="dropdown-menu rounded-0 bg-white" style="border-color:#eeeeee" aria-labelledby="navbarDropdown">
+              <a class="dropdown-item" href="/accounts/">All Accounts</a>
+              <a class="dropdown-item" href="/transactions/">All Transactions</a>
+              <a class="dropdown-item" href="#">All Challenges</a>
+              <a class="dropdown-item" href="#">Statistics</a>
+              <a class="dropdown-item" href="#">Exchange</a>
+              <div class="dropdown-divider" style="border-color:#eeeeee;"></div>
+              {% if user.is_authenticated %}
+              <a class="dropdown-item" href="/accounts/{{ user.username }}/">My account</a>
+              {% else %}
+              <a class="dropdown-item disabled"  data-toggle="tooltip" data-placement="bottom" title="Need to login first" href="#">My account</a>
+              {% endif %}
+            </div>
+          </li>             
+    
+          
+          <li class="nav-item active dropdown mx-2">
+            <a class="nav-link dropdown-toggle noselect" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Tools
+            </a>
+            <div class="dropdown-menu rounded-0 bg-white" style="border-color:#eeeeee" aria-labelledby="navbarDropdown">
+              <a class="dropdown-item" href="/transfer/">Transfer</a>
+              <a class="dropdown-item" href="/register/">Register</a>
+              <a class="dropdown-item" href="#">Challenge</a>
+              <div class="dropdown-divider" style="border-color:#eeeeee;"></div>
+              <a class="dropdown-item" href="/newkeypair/">Generate new keypair</a>
+              <a class="dropdown-item" href="/retrievepubkey/">Retrieve public key</a>
+              <a class="dropdown-item" href="/resetpassword/">Reset password</a>
+            </div>
+          </li> 
+          
+          <li class="nav-item active px-2">
+            <a class="nav-link noselect" href="/faq/">FAQ</a>
+          </li>
+
+          <li class="nav-item active px-2">
+          {% if user.is_authenticated %}
+            <a class="nav-link noselect" href="/logout/">Logout</a>
+          {% else %}
+            <a class="nav-link noselect" href="/login/">Login</a>
+          {% endif %}
+          </li>
+        </ul>
+      </div>
+    </div>
+    </nav>
+
+    <canvas id="c"></canvas>
+
+    <div class="container">
+      <br>
+      <br>
+      <br>
+      <div class="row justify-content-md-center">
+        <div class="col-8"><!-- make text non clickable (on this pg)-->
+          <h2 align="center"  class="noselect"   style="font-family: 'Garamond'; margin-top:100px;margin-bottom:60px;">Objective&nbsp;Money&nbsp;is&nbsp;a&nbsp;global&nbsp;currency&nbsp;with&nbsp;monetary&nbsp;policy&nbsp;based&nbsp;on&nbsp;a<br>universal&nbsp;dividend.</h2>
+        </div>
+      </div>
+    
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+            <p>on this pg have boxes with smmarydata live like etherscan, possible with moving dots behind</p>
+
+      <br>
+      <ul class="list-group">
+        <li class="list-group-item">Porta ac consectetur ac</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+      </ul>
+
+
+      <div class="row justify-content-md-center">
+      <div class="col-12">
+      <div class="card rounded-0 ">
+        <div class="card-body">
+          <h6 style="font-family: 'Garamond'">Recent Transactions</h6>
+          <div class="table-responsive">
+            <table class="table table-sm">
+              <tbody>
+                <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;sent&nbsp;190&nbsp;to&nbsp;account&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+                <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;initiated&nbsp;challenge&nbsp;t43349yu85y&nbsp;against&nbsp;the&nbsp;accounts&nbsp;22nt34tj9yjr5y&nbsp;and&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+                <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;sent&nbsp;190&nbsp;to&nbsp;account&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+                <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;initiated&nbsp;challenge&nbsp;t43349yu85y&nbsp;against&nbsp;the&nbsp;accounts&nbsp;22nt34tj9yjr5y&nbsp;and&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+                <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;sent&nbsp;190&nbsp;to&nbsp;account&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+                <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;initiated&nbsp;challenge&nbsp;t43349yu85y&nbsp;against&nbsp;the&nbsp;accounts&nbsp;22nt34tj9yjr5y&nbsp;and&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+                <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;sent&nbsp;190&nbsp;to&nbsp;account&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+                <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;initiated&nbsp;challenge&nbsp;t43349yu85y&nbsp;against&nbsp;the&nbsp;accounts&nbsp;22nt34tj9yjr5y&nbsp;and&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      </div>
+      </div>
+    <br>
+    <br>
+    <br>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+    <script>
+
+    var a = document.getElementById( 'c' ),
+      c = a.getContext( '2d' );
+      a.width = window.innerWidth;
+      a.height = window.innerHeight;
+
+    var W = window,
+      C = 30000, //number of particles
+      S = [], //the array that holds all of the particles
+      K = [], //holds all the old array pointers for particle coordinates
+      m = [0, 0], //mouse coordinates
+      u = true, //playing or paused
+      w, h, f, d, //width, height, imagedata, actual data array
+      M = Math;
+
+    //Main loop
+    function L(){
+      //Set all old particle pixels back to black (way more efficient than clearing the whole canvas)
+      for (i=0;i<K.length;i++) d[K[i]]=d[K[i]+1]=d[K[i]+2]=255;    
+
+      //Loop through all of the particles
+      for (i=0;i<C;i++) {
+        var n=S[i], //reference to current particle
+            x=m[0]-n[0], //distance between particle and mouse on the X axis
+            y=m[1]-n[1], //distance between particle and mouse on the Y axis
+            k=M.atan2(y,x), //angle in radians
+            o=20/M.sqrt(x*x+y*y+50); //gravity calculation
+
+            n[2]+=M.cos(k)*o; //Velocity change on X axis
+            n[3]+=M.sin(k)*o; //Velocity change on Y axis
+
+            n[0]+=n[2]; //Add current velocity to particle position on X axis
+            n[1]+=n[3]; //Add current velocity to particle position on Y axis
+
+            n[2]*=0.985; //Reduce the X axis velocity (drag)
+            n[3]*=0.985; //Reduce the Y axis velocity
+
+            n[0]=n[0]>=w?n[0]-w:n[0]<0?n[0]+w-1:n[0]; //Wrap particle to opposite side of screen if it goes out of bounds on X axis
+            n[1]=n[1]>=h?n[1]-h:n[1]<0?n[1]+h-1:n[1]; //Wrap particle to opposite side of screen if it goes out of bounds on Y axis
+
+        k=(n[1]+0.5>>0)*w*4+(n[0]+0.5>>0)*4; //Get which point in the imagedata array is the current particle's new position
+        K[i]=k; //Keep array position so it doesn't need to be calculated next loop (increases render speed a lot)
+        d[k] = 150; //Set the red channel
+        d[k+1]=150; //Set the green channel
+        d[k+2]=150; //Set the blue channel     // use GREY?????(204, 230, 255)
+      }
+      c.putImageData(f, 0, 0); //Push the updated imagedata back to the canvas
+      u && requestAnimationFrame(L) //If playing, loop again
+    }
+
+    //Window resize handler. stretches the canvas to fit screen and refreshes imagedata array.
+    function R() {
+      w=a.width=W.innerWidth;
+      h=a.height=W.innerHeight;
+      c.fillStyle="#FFFFFF";
+      c.fillRect(0,0,w,h);
+      f=c.getImageData(0,0,w,h);
+      d=f.data;
+    };
+
+    //Attach event handlers
+    W.onresize = R;
+    W.onmousemove = function(e) {m[0]=e.pageX; m[1]=e.pageY-57; }
+
+    //W.onclick = function() {u=!u; u&&L()}; //Toggle playing boolean and if playing, start loop.
+    W.onclick = function(e) {
+                              //e = e || event;
+                              //var el = e.srcElement || e.target;
+                              var el = e.target;
+                              console.log(el.tagName)
+                              if (el.tagName !='LI') {
+                                u=!u; u&&L()
+                              }
+                              //u=!u; u&&L()
+                            }; //Toggle playing boolean and if playing, start loop.
+
+    R(); //Call the resize function once to size the canvas before we begin.
+
+    //This fills the particle array with randomly positioned particles.
+    for (i=0;i<C;i++) S.push([M.random()*w,M.random()*h,0,0]);
+
+    L(); //Start the loop.
+
+    </script>
+  </body>
+</html>

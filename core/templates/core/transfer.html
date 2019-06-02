@@ -1,0 +1,150 @@
+{% extends "form.html" %}
+
+{% block formcss %}
+<style type="text/css">
+#form_container {
+  padding-top:140px;
+}
+</style>
+{% endblock formcss %}
+
+{% block formfields %}
+<div class="form-group row">
+  <label for="id_username" class="col-sm-2 col-form-label">Sender:</label>
+  <div class="col-sm-10">
+   {% if user.is_authenticated %}
+    <input type="text" class="form-control" id="id_username" value={{user.username}} name="username" autocomplete="off">
+   {% else %}
+    <input type="text" class="form-control" id="id_username" placeholder="" name="username" autocomplete="off">
+  {% endif %}
+    <div class="invalid-feedback" id="id_username_feedback"></div>
+  </div>
+</div>
+<div class="form-group row">
+  <label for="id_sender_seq_no" class="col-sm-2 col-form-label"  data-toggle="tooltip" data-placement="bottom" title="Can be found on account page for your public key">Sequence Number:</label>
+  <div class="col-sm-10">
+   {% if user.is_authenticated %}
+    <input type="number" class="form-control" id="id_sender_seq_no" value={{account.sequence_next}}  name="sender_seq_no" autocomplete="off">
+   {% else %}
+    <input type="number" class="form-control" id="id_sender_seq_no" placeholder=""  name="sender_seq_no" autocomplete="off">
+   {% endif %}
+    <div class="invalid-feedback" id="id_sender_seq_no_feedback"></div>
+     <small id="sender_seq_no_help" class="form-text text-muted">The next sequence number for the senders account. Can be found on the senders account page.</small>
+  </div>
+</div>
+<div class="form-group row">
+  <label for="id_recipient_pk" class="col-sm-2 col-form-label">Recipient:</label>
+  <div class="col-sm-10">
+    <input type="text" class="form-control" id="id_recipient_pk" placeholder="" name="recipient_pk" autocomplete="off">
+    <div class="invalid-feedback" id="id_recipient_pk_feedback"></div>
+  </div>
+</div>
+<div class="form-group row">
+  <label for="id_amount" class="col-sm-2 col-form-label">Amount:</label>
+  <div class="col-sm-10">
+    <input type="number" class="form-control" id="id_amount" placeholder="" name="amount" autocomplete="off">
+    <div class="invalid-feedback" id="id_amount_feedback"></div>
+  </div>
+</div>
+{% endblock formfields %}
+
+
+
+{% block formscript %}
+<script>
+function checkRecipient() {
+  if( $("#id_recipient_pk").val() == "" ){
+    $('#id_recipient_pk_feedback').text('This field is required.');
+    $("#id_recipient_pk").addClass("is-invalid");
+    return false;
+  } else if(!validPubKey($("#id_recipient_pk").val())){
+    $('#id_recipient_pk_feedback').text('Not a valid public key.');
+    $("#id_recipient_pk").addClass("is-invalid");
+    return false;
+  } else if($("#id_recipient_pk").val() == $("#id_username").val()){
+    $('#id_recipient_pk_feedback').text('Recipient cannot be same as sender.');
+    $("#id_recipient_pk").addClass("is-invalid");
+    return false;
+  } else {
+    $("#id_recipient_pk").removeClass("is-invalid");
+    return true;
+  };
+}
+
+function checkAmount() {
+  if( $("#id_amount").val() == "" ){
+    $('#id_amount_feedback').text('This field is required.');
+    $("#id_amount").addClass("is-invalid");
+    return false;
+  } else if(!(200000000 >= $("#id_amount").val() >= 1)){
+    $('#id_amount_feedback').text('Must be a between 1 and 20000000.');
+    $("#id_amount").addClass("is-invalid");
+    return false;
+  } else {
+    $("#id_amount").removeClass("is-invalid");
+    return true;
+  };
+}
+
+function checkFields() {
+  var is_valid = true;
+  is_valid = checkUsername() && is_valid;
+  is_valid = checkSeqNo() && is_valid;
+  is_valid = checkRecipient() && is_valid;
+  is_valid = checkAmount() && is_valid;
+  return is_valid;
+}
+
+function updateTxnString() {
+/*  $("#id_username").val($("#id_username").val().trim());
+  $("#id_recipient_pk").val($("#id_recipient_pk").val().trim());*/
+  var TxnString = 'Type:Transfer,Sender:'+ $("#id_username").val() +',SeqNo:'+ String($("#id_sender_seq_no").val()) +',Recipient:'+ $("#id_recipient_pk").val() +',Amount:'+ String($("#id_amount").val());
+  $('#txnstring').val(TxnString);
+  $('#modal_txnstring').val(TxnString);
+}
+
+
+$("#id_username,#id_sender_seq_no,#id_recipient_pk,#id_amount").on("change paste keyup input", function() {
+  updateTxnString();
+  //RawTxnByteArray = new TextEncoder("utf-8").encode(RawTxnString);
+  //RawTxnByteArray2 = toUTF8Array(RawTxnString);
+  //console.log(RawTxnByteArray)
+  //console.log(RawTxnByteArray2)
+  //console.log(JSON.stringify(RawTxnByteArray)===JSON.stringify(RawTxnByteArray2)) //false typed array vs array
+  //RawTxnHex = toHexString(RawTxnByteArray);
+  //var decoded = new TextDecoder("utf-8").decode(txByteArray);
+  //$('#rawtxnhex').val(RawTxnHex);
+  if($("#id_signature").val() != ""){
+    checkSignature()
+  };
+});
+
+$('#id_sender_seq_no').on('blur', function() {
+  if( $(this).val() != ""){
+    checkSeqNo()
+  };
+  if( $("#id_signature").val() != ""){ 
+    checkSignature() 
+  };    
+});
+
+$('#id_recipient_pk').on('blur', function() {
+  if( $(this).val() != ""){ 
+    checkRecipient() 
+  };
+  if( $("#id_signature").val() != ""){ 
+    checkSignature() 
+  };
+});
+
+$('#id_amount').on('blur', function() { 
+  if( $(this).val() != ""){
+    checkAmount()
+  }
+  if( $("#id_signature").val() != ""){
+    checkSignature()
+  }  
+});
+</script>
+
+{% endblock formscript %}
