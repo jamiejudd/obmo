@@ -18,7 +18,7 @@ class Account(models.Model): # an account never gets deleted, it costs a txn fee
     registered_date = models.DateTimeField(null=True)
     linked = models.BooleanField(default=False) 
     degree = models.IntegerField(default=0)
-    
+
     key = models.DecimalField(max_digits = 1000, decimal_places = 999, null=True)  #this is the max pprecision allowed
 
     committed = models.BooleanField(default=False)
@@ -47,8 +47,8 @@ class Account(models.Model): # an account never gets deleted, it costs a txn fee
 
 
 class Arrow(models.Model):  #here we use double entry, need to ensure integrity (i.e one arrow exists iff its opposite does)  #never deleted,so we can foreign key to them. created by us, epired by us.   
-    source = models.ForeignKey(Account, related_name='outgoing_arrows')  #no cascade??not relevent as account 'never' gets deleted  #also this never gets deleted
-    target = models.ForeignKey(Account, related_name='incoming_arrows')
+    source = models.ForeignKey(Account, related_name='outgoing_arrows',on_delete=models.CASCADE)  #no cascade??not relevent as account 'never' gets deleted  #also this never gets deleted
+    target = models.ForeignKey(Account, related_name='incoming_arrows',on_delete=models.CASCADE)
     status_choices = ((0, 'Neutral'),(1, 'Trust'),(-1, 'Distrust'))   #change to yes/no?
     status = models.IntegerField(choices=status_choices, default = 0)
     matched = models.BooleanField(default=False)
@@ -110,11 +110,11 @@ class Event(models.Model):
 
 # by user
 class Txn(models.Model):
-    event = models.OneToOneField(Event)
+    event = models.OneToOneField(Event,on_delete=models.CASCADE)
     txn_previous_hash = models.CharField(max_length=128)
     txn_type_choices = (('Transfer','Transfer'),('Commitment','Commitment'),('Revealation','Revealation'),('Registration','Registration'),('ChangeVote','ChangeVote'),('Challenge','Challenge'),('ChangeChallengeVote','ChangeChallengeVote'))
     txn_type = models.CharField(max_length=20, choices = txn_type_choices)
-    sender = models.ForeignKey(Account) 
+    sender = models.ForeignKey(Account,on_delete=models.CASCADE) 
     sender_seq_no = models.IntegerField()
     txn_message = models.CharField(max_length=328)
     signature = models.CharField(max_length=128)
@@ -122,28 +122,28 @@ class Txn(models.Model):
     txn_hash = models.CharField(max_length=128) #this is hash of txn_data
 
 class Registration(models.Model):
-    txn = models.OneToOneField(Txn)
+    txn = models.OneToOneField(Txn,on_delete=models.CASCADE)
     name = models.TextField(max_length=30) #text or char?
     photo_hash = models.CharField(max_length=128)
 
 class Transfer(models.Model): 
-    txn = models.OneToOneField(Txn)
-    recipient = models.ForeignKey(Account, related_name = 'transfers_recieved')
+    txn = models.OneToOneField(Txn,on_delete=models.CASCADE)
+    recipient = models.ForeignKey(Account, related_name = 'transfers_recieved',on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits = 20, decimal_places = 2)
 
 
 class Commitment(models.Model): 
-    txn = models.OneToOneField(Txn)
+    txn = models.OneToOneField(Txn,on_delete=models.CASCADE)
     committed_hash = models.CharField(max_length=128)  
 class Revelation(models.Model): 
-    txn = models.OneToOneField(Txn)
-    commitment = models.OneToOneField(Commitment)
+    txn = models.OneToOneField(Txn,on_delete=models.CASCADE)
+    commitment = models.OneToOneField(Commitment,on_delete=models.CASCADE)
     revealed_value = models.CharField(max_length=128)
    
 
 class ArrowUpdate(models.Model): 
-    txn = models.OneToOneField(Txn)
-    arrow = models.ForeignKey(Arrow)
+    txn = models.OneToOneField(Txn,on_delete=models.CASCADE)
+    arrow = models.ForeignKey(Arrow,on_delete=models.CASCADE)
     #target = models.ForeignKey(Account)
     arrowupdate_choices = (('N', 'neutral'),('T', 'trust'),('D', 'distrust'))   #setting to t or d is like making a bet so need bal>minbal
     arrowupdate = models.CharField(max_length=1, choices = arrowupdate_choices)
@@ -164,8 +164,8 @@ class ArrowUpdate(models.Model):
 # by us
 
 class BalanceUpdate(models.Model):  
-    event = models.OneToOneField(Event)
-    account = models.ForeignKey(Account) 
+    event = models.OneToOneField(Event,on_delete=models.CASCADE)
+    account = models.ForeignKey(Account,on_delete=models.CASCADE) 
     amount = models.DecimalField(max_digits = 20, decimal_places = 2, null=True)
 
 

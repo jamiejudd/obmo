@@ -36,7 +36,7 @@ class Command(BaseCommand):
         #be sure to update verified when ever votes or degree changes, i.e keep veified up to date
         #this code always needs to be run just before we update verified (just the version for a single account tho)
 
-        #BALANCE_DUE_UPDATE
+        #BALANCE_DUE_UPDATE ll
 
         ubi_per_second = Decimal(constants.UBI_RATE/24/3600)
         for x in Account.objects.values_list('id',flat=True):

@@ -408,7 +408,7 @@ def transfer(request):
             return render(request, 'core/transfer.html',{'form_errors':form.errors})
     else:
         form = TransferForm()
-        if request.user.is_authenticated():
+        if request.user.is_authenticated:
             account = Account.objects.get(public_key = request.user.username)
             return render(request, 'core/transfer.html',{'account':account})
         else:
