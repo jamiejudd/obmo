@@ -137,7 +137,7 @@ class Commitment(models.Model):
     committed_hash = models.CharField(max_length=128)  
 class Revelation(models.Model): 
     txn = models.OneToOneField(Txn,on_delete=models.CASCADE)
-    commitment = models.OneToOneField(Commitment,on_delete=models.CASCADE)
+    commitment = models.OneToOneField(Commitment,on_delete=models.CASCADE,related_name='revelation')
     revealed_value = models.CharField(max_length=128)
    
 

@@ -44,7 +44,7 @@ class Command(BaseCommand):
                 account = Account.objects.select_for_update().get(id=x)
                 current_time = timezone.now()
                 if (account.verified == True):
-                    elapsed_time = current_time-account.balance_due_last_updated 
+                    elapsed_time = current_time - account.balance_due_last_updated 
                     elapsed_time_seconds = Decimal(elapsed_time.total_seconds())
                     dividend = elapsed_time_seconds*Decimal(0.0011574074)  # 100/24*3600=0.0011574074
                     account.balance_due += dividend
@@ -62,11 +62,11 @@ class Command(BaseCommand):
         amount = constants.UBI_AMOUNT
         for x in range(1, Account.objects.count()+1):
             with transaction.atomic():
-                account = Account.objects.select_for_update().get(pk=x)
+                event_counter = EventCounter.objects.select_for_update().first() 
+                account = Account.objects.get(pk=x)
                 if (account.balance_due >= amount):
                     #dividend = 100*(account.dividend_due/100)
                     current_time = timezone.now()
-                    event_counter = EventCounter.objects.select_for_update().first()  #nowait=true??
                     new_event = Event.objects.create(id=event_counter.last_event_no+1,timestamp=current_time, event_type='BU') #handle integrity error for create
                     new_balance_update = BalanceUpdate.objects.create(event=new_event,account=account,amount=amount)
 

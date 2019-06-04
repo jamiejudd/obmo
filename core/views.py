@@ -452,7 +452,7 @@ def register(request):
             #     sender.photo = photo
             #     sender.photo_hash = photo_hash
             #     sender.registered = True
-            #     sender.registered_time = current_time
+            #     sender.registered_date = current_time
             #     sender.linked = True
             #     sender.verified = True
             #     sender.sequence_next += 1
