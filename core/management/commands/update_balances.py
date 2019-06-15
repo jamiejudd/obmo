@@ -7,22 +7,15 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from decimal import Decimal
 from django.utils import timezone
-
 import core.constants as constants
-
-
 
 #update verified
 #update balance_due
 #update balance, ie send 100 to balance
-
 class Command(BaseCommand):
-    
     def add_arguments(self, parser):
         pass
-
     def handle(self, *args, **options):
-
         # for x in range(1, Account.objects.count()):
         #     with transaction.atomic():
         #         account = Account.objects.select_for_update().get(pk=x)
@@ -31,19 +24,18 @@ class Command(BaseCommand):
         #         else:
         #             account.verified = False
 
-
-  
         #be sure to update verified when ever votes or degree changes, i.e keep veified up to date
         #this code always needs to be run just before we update verified (just the version for a single account tho)
 
         #BALANCE_DUE_UPDATE ll
-
         ubi_per_second = Decimal(constants.UBI_RATE/24/3600)
         for x in Account.objects.values_list('id',flat=True):
             with transaction.atomic():
                 account = Account.objects.select_for_update().get(id=x)
+                print(account.balance_due_last_updated)
                 current_time = timezone.now()
-                if (account.verified == True):
+                print(current_time)
+                if (account.zone == 'Good'):
                     elapsed_time = current_time - account.balance_due_last_updated 
                     elapsed_time_seconds = Decimal(elapsed_time.total_seconds())
                     dividend = elapsed_time_seconds*Decimal(0.0011574074)  # 100/24*3600=0.0011574074
@@ -51,14 +43,16 @@ class Command(BaseCommand):
                     #account.total_ubi_generated += dividend
                     account.balance_due_last_updated = current_time
                     account.save()
+                    print(elapsed_time.total_seconds())
+                    print(elapsed_time_seconds)
+                    print(dividend)
+                    print(account.balance_due)
+                    print(current_time)
                 else:
                     account.balance_due_last_updated = current_time
                     account.save()
-              
-
 
         #BALANCE_UPDATE
-
         amount = constants.UBI_AMOUNT
         for x in range(1, Account.objects.count()+1):
             with transaction.atomic():

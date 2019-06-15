@@ -42,7 +42,24 @@
         color: white;
         background-color: #22262a;
       }
+ thead>tr>th {
+    font-size:9px;
+  }
 
+table { width:250px;table-layout:fixed; }
+table tr { height:1em;  }
+td { overflow:hidden;
+  white-space:nowrap;
+  text-overflow: ellipsis;
+  font-size:10px; 
+}
+.popover{
+    max-width: 500px; /* Max Width of the popover (depending on the container!) */
+}
+
+.popover-body {
+  word-break: break-all;
+}
     </style>
   </head>
   <body>
@@ -96,6 +113,10 @@
               <th>id</th>
               <th>balance</th>
               <th>sequence_next</th>
+              <th>registered</th>
+              <th>registered_date</th>
+              <th>linked</th>
+              <th>key</th>
               <th>verified</th>
               <th>balance_due</th>
               <th>balance_due_last_updated</th>
@@ -108,10 +129,49 @@
               <td>{{ account.id }}</td>
               <td>{{ account.balance }}</td>
               <td>{{ account.sequence_next }}</td>
+              <td>{{ account.registered }}</td>
+              <td>{{ account.registered_date }}</td>
+              <td>{{ account.linked }}</td>
+              <td data-container="body" data-toggle="popover" data-placement="bottom" data-content='{{account.key}}'>{{account.key}}</td>
               <td>{{ account.verified }}</td>
               <td>{{ account.balance_due }}</td>
               <td>{{ account.balance_due_last_updated }}</td>
               <td>{{ account.degree }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table> 
+      </div>
+    </div>
+  </div>
+ <div class="card ">
+    <div class="card-body">
+     <h6 style="text-align: center;margin-bottom: 5px;">accounts</h6>
+      <div class="table-responsive table-borderless">
+        <table class="table table-sm">
+          <thead>
+            <tr class="custom_centered">
+              <th>id</th>
+              <th>public_key</th>
+              <th>committed</th>
+              <th>committed_time</th>
+              <th>committed_hash</th>
+              <th>settlement_countdown</th>
+              <th>last_position</th>
+              <th>net_votes</th>
+             </tr>
+          </thead>
+          <tbody>
+            {% for account in accounts %}
+            <tr>
+              <td>{{ account.id }}</td>
+              <td>{{ account.public_key }}</td>
+              <td>{{ account.committed }}</td>
+              <td>{{ account.committed_time }}</td>
+              <td data-container="body" data-toggle="popover" data-placement="bottom" data-content='{{account.committed_hash}}'>{{account.committed_hash}}</td>
+              <td>{{ account.settlement_countdown }}</td>
+              <td>{{ account.last_position }}</td>
+              <td>{{ account.net_votes }}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -145,6 +205,64 @@
               <td>{{ arrow.matched }}</td>
               <td>{{ arrow.position }}</td>
               <td>{{ arrow.expired }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table> 
+      </div>
+    </div>
+  </div>
+
+ <div class="card ">
+    <div class="card-body">
+         <h6 style="text-align: center;margin-bottom: 5px;">commitments</h6>
+      <div class="table-responsive table-borderless">
+        <table class="table table-sm">
+          <thead>
+            <tr class="custom_centered">
+              <th>id</th>
+              <th>txn__sender</th>
+              <th>txn__event__timestamp</th>
+              <th>committed_hash</th>
+           </tr>
+          </thead>
+          <tbody>
+            {% for commitment in commitments %}
+            <tr>
+              <td>{{ commitment.id }}</td>
+              <td>{{ commitment__txn__sender }}</td>
+              <td>{{ commitment__txn__event__timestamp }}</td>
+              <td>{{ commitment.committed_hash }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table> 
+      </div>
+    </div>
+  </div>
+
+ <div class="card ">
+    <div class="card-body">
+         <h6 style="text-align: center;margin-bottom: 5px;">revelations</h6>
+      <div class="table-responsive table-borderless">
+        <table class="table table-sm">
+          <thead>
+            <tr class="custom_centered">
+              <th>id</th>
+              <th>commitment</th>
+              <th>txn__sender</th>
+              <th>txn__event__timestamp</th>
+              <th>revealed_value</th>
+           </tr>
+          </thead>
+          <tbody>
+            {% for revelation in revelations %}
+            <tr>
+              <td>{{ revelation.id }}</td>
+              <td>{{ revelation.commitment.id }}</td>
+              <td>{{ commitment__txn__sender }}</td>
+              <td>{{ commitment__txn__event__timestamp }}</td>
+              <td>{{ revelation.revealed_value }}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -661,6 +779,15 @@
         });
         $('.datepicker').datepicker("setDate", new Date());
         $('.datepicker').val('');
+
+        $('[data-toggle="popover"]').popover();
+        $(document).on('click', function (e) {
+            $('[data-toggle="popover"],[data-original-title]').each(function () {
+                if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {                
+                    (($(this).popover('hide').data('bs.popover')||{}).inState||{}).click = false  
+                }
+            });
+        });
     </script>
 
 

@@ -17,6 +17,7 @@ from django.conf.urls import url
 #from django.contrib import admin  #we dont want an admin site?
 from core import views as core_views
 from django.contrib.auth import views as auth_views
+#from django.contrib.auth.views import LogoutView
 
 from django.conf.urls.static import static
 from django.conf import settings
@@ -45,7 +46,8 @@ urlpatterns = [
     url(r'^retrievepubkey/$', core_views.retrievepubkey, name='retrievepubkey'),
 
     url(r'^login/$', auth_views.LoginView.as_view(),  name='login'),
-    url(r'^logout/$', auth_views.LogoutView.as_view(), {'next_page': '/'}, name='logout'),
+    #url(r'^logout/$', auth_views.LogoutView.as_view(), {'next_page': '/'}, name='logout'),
+    url(r'^logout/$',core_views.logout_view, name='logout'),
 
     url(r'^transfer/$', core_views.transfer, name='transfer'),
     url(r'^register/$', core_views.register, name='register'),
@@ -55,7 +57,8 @@ urlpatterns = [
     # url(r'^challenge/$', core_views.challenge, name='challenge'),
     # url(r'^changevote-challenge/$', core_views.updatevote, name='updatevote'),
     url(r'^resetpassword/$', core_views.resetpassword, name='resetpassword'),
-
+    
+    #url(r'^admin/', include("someUrlpattern", namespace="admin"))
     #url(r'^admin/', admin.site.urls),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

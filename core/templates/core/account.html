@@ -115,7 +115,7 @@ td {  overflow:hidden;
               <td style="vertical-align: middle;"><img src="{% get_media_prefix %}{{ arrow.source.photo }}" height="70" width="70"></td>
                <td style="vertical-align: middle;font-size:14px;">{{arrow.source.name}}</td>
               <td style="vertical-align: middle;font-size:13px;"><a style="color:#28bda4" href="/accounts/{{ arrow.source.public_key }}/">{{ arrow.source.public_key }}</a></td>
-              <td style="vertical-align: middle;font-size:14px;">{% if arrow.status == 'Trust' %}<span class="text-success">Trust</span>{% elif arrow.status == 'Distrust' %}<span class="text-danger">Distrust</span>{% else %}<span class="text-secondary">Neutral</span>{% endif %}</td>
+              <td style="vertical-align: middle;font-size:14px;">{% if arrow.status == 1 %}<span class="text-success">Trust</span>{% elif arrow.status == -1 %}<span class="text-danger">Distrust</span>{% else %}<span class="text-secondary">Neutral</span>{% endif %}</td>
               <td style="vertical-align: middle;font-size:14px;">{% if arrow.opposite.status == 'Trust' %}<span class="text-success">Trust</span>{% elif arrow.opposite.status == 'Distrust' %}<span class="text-danger">Distrust</span>{% else %}<span class="text-secondary">Neutral</span>{% endif %}</td>
               <!--                   <td style="vertical-align: middle;font-size:14px;">{% if account.verified %}<span class="text-success">Verified</span>{% else %}<span class="text-secondary">Not&nbsp;Verified</span>{% endif %}</td> -->
             </tr>

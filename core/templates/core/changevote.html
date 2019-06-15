@@ -1,97 +1,14 @@
-{% extends "base.html" %}
+{% extends "form.html" %}
 
-{% block style %}  
-<style>
-textarea {
-    resize: none;
-}
-.modal-body{
-  word-break: break-all;
-}
-#idSignTxn{
-  margin-top: 12px;
-}
-.form-control-readonly:focus {
-  border-color: #ced4da;
-  box-shadow: none;
-}   
-
-/*fix shift left caused by modal opening*/  
-.modal {
-    overflow-y: auto;
-}
-.modal-open {
-    overflow: auto;
-}
-.modal-open[style] {
-    padding-right: 0px !important;
-}  
-
+{% block formcss %}
+<style type="text/css">
 #form_container {
   padding-top:140px;
 }
 </style>
-{% block formcss %}
 {% endblock formcss %}
-{% endblock style %}
 
-{% block content %}
-<!-- Modal -->
-<div class="modal fade" id="signatureModal" tabindex="-1" role="dialog" aria-labelledby="signatureModal" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-    <div class="modal-content">
-      <div class="modal-body">
-        <div class="form-group">
-          <label for="modal_txnstring" class="font-weight-bold">Message to sign:</label>
-            <div class="input-group" >
-              <textarea  rows="4" type="text"  id="modal_txnstring" readonly class="form-control-plaintext" aria-label="With textarea" value=""></textarea>
-            </div>
-        </div>
-        <div class="form-group">
-          <label for="modalsecretkey" class="font-weight-bold">Secret Key:</label>
-          <input type="password" class="form-control" id="modalsecretkey" placeholder="">
-          <div class="invalid-feedback" id="modalsecretkey_feedback">That is not a valid secret key.</div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary"  id="CloseModal">Close</button>
-        <button type="button" class="btn btn-primary" data-dismiss="modal" id="GenerateSig" >Generate Signature</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-<div class="container">
-<div id="form_container">
-  {% if messages %}
-  {% for message in messages %}
-  {% if message.tags == 'error' %}
-  <div class="alert alert-danger alert-dismissible" role="alert">
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-      <span aria-hidden="true">&times;</span>
-    </button>
-    {{ message }}
-  </div>
-  {% endif %}
-  {% if message.tags == 'success' %}
-  <div class="alert alert-success alert-dismissible" role="alert">
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-      <span aria-hidden="true">&times;</span>
-    </button>
-    {{ message }}
-  </div>
-  {% endif %}
-  {% endfor %}
-  {% endif %}
-
-
-  {{form_errors}}
-
-
-  <form id="mainform" onsubmit="return validateForm()" method="post" role="form" autocomplete="off" novalidate>
-    {% csrf_token %}
-
+{% block formfields %}
 <div class="form-group row">
   <label for="id_username" class="col-sm-2 col-form-label">Sender:</label>
   <div class="col-sm-10">
@@ -115,6 +32,7 @@ textarea {
      <small id="sender_seq_no_help" class="form-text text-muted">The next sequence number for the senders account. Can be found on the senders account page.</small>
   </div>
 </div>
+
 <div class="form-group row">
   <label for="id_target_pk" class="col-sm-2 col-form-label">Target:</label>
   <div class="col-sm-10">
@@ -127,168 +45,26 @@ textarea {
   </div>
 </div>
 
- 
-
-  <div class="form-group row">
-    <label for="id_arrow_status" class="col-sm-2 col-form-label">Change vote to:</label>
-    <div class="col-sm-10">
-        <select class="custom-select" id="id_arrow_status" name="arrow_status">
-          <option value="">Choose update...</option>
-          <option value="Neutral">Neutral</option>
-          <option value="Trust">Trust</option>
-          <option value="Distrust">Distrust</option>
-        </select>
-        <div class="invalid-feedback" id="id_arrow_status_feedback"></div>
-    </div>
+<div class="form-group row">
+  <label for="id_arrow_status" class="col-sm-2 col-form-label">Change vote to:</label>
+  <div class="col-sm-10">
+      <select class="custom-select" id="id_arrow_status" name="arrow_status">
+        <option value="">Choose update...</option>
+        <option value="Neutral">Neutral</option>
+        <option value="Trust">Trust</option>
+        <option value="Distrust">Distrust</option>
+      </select>
+      <div class="invalid-feedback" id="id_arrow_status_feedback"></div>
   </div>
-
-
-  <div class="form-group row">
-    <label for="txnstring" class="col-sm-2 col-form-label" >Message to sign:</label>
-    <div class="col-sm-10" >
-      <div class="input-group">
-        <textarea rows="3" type="text" id="txnstring" readonly class="form-control form-control-readonly " aria-label="With textarea" value="" autocomplete="off"></textarea>
-      </div>
-    </div>
-  </div>
-
-  <div class="form-group row">
-    <label for="id_signature" class="col-sm-2 col-form-label">Signature:</label>
-    <div class="col-sm-8">
-      <div class="input-group" >
-        <textarea  rows="2" type="text"  id="id_signature"  class="form-control" aria-label="With textarea" value="" name="signature" autocomplete="off"></textarea>
-        <div class="invalid-feedback">Incorrect signature for message.</div>
-        <div class="valid-feedback">Correct signature for message.</div>
-      </div>
-    </div>
-    <div class="col-sm-2" > <!--style="display: flex; align-items: center;"-->
-      <button type="button" class="btn btn-light" id="idSignTxn"><!-- data-toggle="modal" data-target="#signatureModal"--> <!--data-toggle="tooltip" data-placement="top" title="This is risky" --> Sign transaction</button>
-    </div>
-  </div>
-
-  <div class="form-row text-center justify-content-center" style="margin-top:20px;">
-    <div class="col" >
-      <button type="submit" class="btn btn-primary btn-lg">Submit</button>
-    </div>
-  </div>
-</form>
-<br>
-<br>
 </div>
-</div>
-{% endblock content %}
 
 
-{% block script %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/tweetnacl/1.0.0/nacl-fast.min.js" integrity="sha384-ZKnGpJMHpmE8VG4Tnsk9xqVKOz25Dv21zXOnaL3co+X6wFUx8G5qfs8N1ZNZy/wp" crossorigin="anonymous"></script>
+{% endblock formfields %}
 
 
-<!-- 
-{% load static %}
-<script src="{% static 'core/javascript/tweetnacl.js' %}"></script> 
- -->
 
-<!-- 
+{% block formscript %}
 <script>
-    if (typeof window.nacl === 'undefined') {
-        console.log('nacl undefined')
-        console.log('<script src=\x22\x7B\x25 static \x27core/javascript/tweetnacl.js\x27 \x25\x7D\x22\x3E\x3C/script>');
-        document.write('<script src=\x22\x7B\x25 static \x27core/javascript/tweetnacl.js\x27 \x25\x7D\x22\x3E\x3C/script>');
-    }
-</script>
--->
-<!--<script src="https://cdn.jsdelivr.net/npm/tweetnacl-util@0.15.0/nacl-util.min.js"></script>-->
-
-
-<!-- 
-{% load static %}
-<script src="{% static 'core/javascript/form_validation.js' %}"></script>  -->
-
-
-<script type="text/javascript">
-  const fromHexString = hexString =>
-    new Uint8Array(hexString.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
-  const toHexString = bytes =>
-    bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
-
-  function validHex(string) {
-    return (toHexString(fromHexString(string)) === string.toLowerCase()) ;
-  }
-  function validPubKey(string) {
-    return (validHex(string) && string.length == 64) ;
-  }
-/*
-  function validHex(string) {
-    if(string===undefined){
-      return false;
-    }
-    return ( toHexString(fromHexString(string)) === string.toLowerCase()) ;
-  }
-  function validPubKey(string) {
-    if(string===undefined){
-      return false;
-    }
-    if(string===null){
-      return false;
-    }
-    return (validHex(string) && string.length==64) ;
-  }
-*/
-  function checkUsername() {
-    if( $("#id_username").val() == "" ){
-      $('#id_username_feedback').text('This field is required.');
-      $("#id_username").addClass("is-invalid");
-      return false;
-    } else if(!validPubKey($("#id_username").val())){
-      $('#id_username_feedback').text('Not a valid public key.');
-      $("#id_username").addClass("is-invalid");
-      return false;
-    } else {
-      $("#id_username").removeClass("is-invalid");
-      return true;
-    };
-  }
-
-  function checkSeqNo() {
-    if( $("#id_sender_seq_no").val() == "" ){
-      $('#id_sender_seq_no_feedback').text('This field is required.');
-      $("#id_sender_seq_no").addClass("is-invalid");
-      return false;
-    } else if(!($("#id_sender_seq_no").val() >= 1)){        //!( Number.isInteger($(this).val())
-      $('#id_sender_seq_no_feedback').text('Must be a positive number.');
-      $("#id_sender_seq_no").addClass("is-invalid");
-      return false;
-    } else {
-      $("#id_sender_seq_no").removeClass("is-invalid");
-      return true;
-    };
-  }
-
-function checkSignature() {
-  var Sender = $("#id_username").val();
-  var TxnString = $("#txnstring").val();
-  //var TxnString = 'Type:Transfer,Sender:'+ $("#id_username").val() +',SeqNo:'+ String($("#id_sender_seq_no").val()) +',Target:'+ $("#id_target_pk").val() +',Status:'+ String($("#id_arrow_status").val());
-  //if(TxnString != $("#txnstring").val()){alert('txnstring mismatch!!')};  
-  var TxnByteArray = new TextEncoder("utf-8").encode(TxnString);
-  var Signature = document.getElementById("id_signature").value;
-  try {
-    if(nacl.sign.detached.verify(TxnByteArray, fromHexString(Signature), fromHexString(Sender))){
-      $("#id_signature").removeClass("is-invalid");
-      $("#id_signature").addClass("is-valid");
-      return true;
-    } else {
-      $("#id_signature").removeClass("is-valid");
-      $("#id_signature").addClass("is-invalid");
-      return false;
-    }
-  } catch(e) {
-    //console.log('sig error')
-    //console.log(e.message)
-    $("#id_signature").removeClass("is-valid");
-    $("#id_signature").addClass("is-invalid");
-    return false;
-  }
-}
 function checkTarget() {
   if( $("#id_target_pk").val() == "" ){
     $('#id_target_pk_feedback').text('This field is required.');
@@ -308,12 +84,12 @@ function checkTarget() {
   };
 }
 
-function checkStatus() {
+function checkVote() {
   if( $("#id_arrow_status").val() == "" ){
     $('#id_arrow_status_feedback').text('This field is required.');
     $("#id_arrow_status").addClass("is-invalid");
     return false;
-  } else if(!( $("#id_arrow_status").val() )){
+  } else if($("#id_arrow_status").val()!="Trust" && $("#id_arrow_status").val()!="Distrust" && $("#id_arrow_status").val()!="Neutral"){
     $('#id_arrow_status_feedback').text('Must be a between 1 and 20000000.');
     $("#id_arrow_status").addClass("is-invalid");
     return false;
@@ -328,13 +104,13 @@ function checkFields() {
   is_valid = checkUsername() && is_valid;
   is_valid = checkSeqNo() && is_valid;
   is_valid = checkTarget() && is_valid;
-  is_valid = checkStatus() && is_valid;
+  is_valid = checkVote() && is_valid;
   return is_valid;
 }
 
 function updateTxnString() {
 /*  $("#id_username").val($("#id_username").val().trim());
-  $("#id_target_pk").val($("#id_target_pk").val().trim());*/
+  $("#id_recipient_pk").val($("#id_recipient_pk").val().trim());*/
   var TxnString = 'Type:ChangeVote,Sender:'+ $("#id_username").val() +',SeqNo:'+ String($("#id_sender_seq_no").val()) +',Target:'+ $("#id_target_pk").val() +',Vote:'+ String($("#id_arrow_status").val());
   $('#txnstring').val(TxnString);
   $('#modal_txnstring').val(TxnString);
@@ -367,7 +143,7 @@ $('#id_sender_seq_no').on('blur', function() {
 
 $('#id_target_pk').on('blur', function() {
   if( $(this).val() != ""){ 
-    checkTarget() 
+    checkRecipient() 
   };
   if( $("#id_signature").val() != ""){ 
     checkSignature() 
@@ -376,84 +152,12 @@ $('#id_target_pk').on('blur', function() {
 
 $('#id_arrow_status').on('blur', function() { 
   if( $(this).val() != ""){
-    checkStatus()
+    checkAmount()
   }
   if( $("#id_signature").val() != ""){
     checkSignature()
   }  
 });
-
-$('#id_username').on('blur', function() {
-  if( $(this).val() != ""){ 
-    checkUsername()
-  }
-  if( $("#id_signature").val() != "" ){
-    checkSignature()
-  };
-});
-
-$('#id_signature').on('blur change paste keyup input', function() {
-  if( $(this).val() != ""){
-    checkSignature()
-  } else {
-    $(this).removeClass("is-invalid");
-  }
-});
-
-
-$('#idSignTxn').on('click', function() {
-  if(checkFields()){
-    $('#signatureModal').modal('show');
-  }
-});
-
-
-/*      $('#signatureModal').on('hide.bs.modal', function () {
-  $('#modalsecretkey').val('');
-  $("#modalsecretkey").removeClass("is-invalid");
-})*/
-
-$('#CloseModal').on('click', function() {
-  $('#modalsecretkey').val('');
-  $("#modalsecretkey").removeClass("is-invalid");
-  $('#signatureModal').modal('hide');
-});
-
-
-$('#GenerateSig').on('click', function() {
-  var TxnByteArray = new TextEncoder("utf-8").encode($('#modal_txnstring').val());
-  try{
-    //console.log('secretKey')
-    //console.log($('#modalsecretkey').val())
-    //console.log('secretKeybytes')
-    //console.log(fromHexString($('#modalsecretkey').val()) )
-    //console.log('keypair.secretKey')
-    //console.log(toHexString(( nacl.sign.keyPair.fromSeed(fromHexString($('#modalsecretkey').val())) ).secretKey ))
-    var Signature = nacl.sign.detached( TxnByteArray, ( nacl.sign.keyPair.fromSeed(fromHexString($('#modalsecretkey').val())) ).secretKey );
-    $("#modalsecretkey").removeClass("is-invalid");
-  } catch(e) {
-    //console.log('bad secret key')
-    //console.log(e.message)
-    //$('#modalsecretkey').val('');
-    $("#modalsecretkey").addClass("is-invalid");
-    //throw new Exception();
-    //throw new Error(e.message);
-    //throw "exit";
-    return false;
-  }
-  $('#id_signature').val(toHexString(Signature));
-  console.log(toHexString(Signature))
-  $('#modalsecretkey').val('');
-  $('#signatureModal').modal('hide');
-  checkSignature()
-  //console.log( new TextDecoder("utf-8").decode(Signature)) ;
-  //console.log( new TextDecoder("utf-8").decode(nacl.sign.open(Signature, keypair.publicKey)));
-});
-
-function validateForm() {
-  return checkFields() && checkSignature()
-}
-
 </script>
 
-{% endblock script %}
+{% endblock formscript %}

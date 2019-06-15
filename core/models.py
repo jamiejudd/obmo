@@ -10,6 +10,7 @@ class Account(models.Model): # an account never gets deleted, it costs a txn fee
     balance = models.DecimalField(max_digits = 20, decimal_places = 2, default=0) #IntegerField?
     sequence_next = models.IntegerField(default=1)  #PositiveIntegerField
     registered = models.BooleanField(default=False) #if true then minbalance=beta is in effect
+    verified = models.BooleanField(default=False)  #if true then generating ubi
 
     name = models.CharField(max_length=20, null=True) 
     photo = models.ImageField(upload_to = 'account_photos/', null=True) #can exist before reg=true?
@@ -18,16 +19,12 @@ class Account(models.Model): # an account never gets deleted, it costs a txn fee
     registered_date = models.DateTimeField(null=True)
     linked = models.BooleanField(default=False) 
     degree = models.IntegerField(default=0)
-
     key = models.DecimalField(max_digits = 1000, decimal_places = 999, null=True)  #this is the max pprecision allowed
 
     committed = models.BooleanField(default=False)
     committed_time = models.DateTimeField(null=True)
     committed_hash = models.CharField(max_length=128,null=True)
 
-
-
-    verified = models.BooleanField(default=False)  #if true then generating ubi
     balance_due = models.DecimalField(max_digits = 20, decimal_places = 2, default=0) #IntegerField?
     balance_due_last_updated = models.DateTimeField(default=timezone.now)
     #total_ubi_generated = models.DecimalField(max_digits = 20, decimal_places = 2)  #include if its a stat we will want to display
@@ -88,16 +85,8 @@ class Arrow(models.Model):  #here we use double entry, need to ensure integrity 
 #     beta = models.DecimalField(max_digits = 20, decimal_places = 2)
 #     alpha = models.IntegerField()
 
-
-# class RandomNumber(models.Model):    
-#     value = models.IntegerField(null=True)
-#     status_choices = (('Commit', 'Commit'),('Reveal', 'Reveal'),('Finished', 'Finished')) 
-#     status = models.CharField(max_length=10, choices = status_choices)
-
-
 class EventCounter(models.Model):  #used for selectforupdate #rename Tracker? or GlobalState?
     last_event_no = models.IntegerField()
-
 
 
 # --------- TRANSACTIONS ----------- (i.e. ops that change the state) they are only added, never deleted or changed, and certain ones need to be easy to query
@@ -139,14 +128,15 @@ class Revelation(models.Model):
     txn = models.OneToOneField(Txn,on_delete=models.CASCADE)
     commitment = models.OneToOneField(Commitment,on_delete=models.CASCADE,related_name='revelation')
     revealed_value = models.CharField(max_length=128)
-   
 
 class ArrowUpdate(models.Model): 
     txn = models.OneToOneField(Txn,on_delete=models.CASCADE)
     arrow = models.ForeignKey(Arrow,on_delete=models.CASCADE)
     #target = models.ForeignKey(Account)
-    arrowupdate_choices = (('N', 'neutral'),('T', 'trust'),('D', 'distrust'))   #setting to t or d is like making a bet so need bal>minbal
-    arrowupdate = models.CharField(max_length=1, choices = arrowupdate_choices)
+    arrowupdate_choices = ((0, 'Neutral'),(1, 'Trust'),(-1, 'Distrust'))   #change to yes/no?
+    arrowupdate = models.IntegerField(choices=arrowupdate_choices)
+    #arrowupdate_choices = (('N', 'neutral'),('T', 'trust'),('D', 'distrust')) #setting to t or d is like making a bet so need bal>minbal
+    #arrowupdate = models.CharField(max_length=1, choices = arrowupdate_choices)
 
 # class ChallengeCreation(models.Model):
 #     txn = models.OneToOneField(Txn)
