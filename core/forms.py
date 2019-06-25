@@ -438,6 +438,86 @@ class ResetPasswordForm(forms.Form):
 
 
 
+class ChallengeForm(forms.Form):
+    username = forms.CharField(label='Sender', min_length=64, max_length=64)
+    sender_seq_no = forms.IntegerField(label='Seq No.')
+    account_1 = forms.CharField(label='Account 1', min_length=64, max_length=64)
+    account_2 = forms.CharField(label='Account 2', min_length=64, max_length=64)
+    signature = forms.CharField(label='Signature', min_length=128, max_length=128)
+
+    class Meta:
+        fields = ('username','sender_seq_no', 'account_1','account_2','signature')
+
+    def clean_username(self):
+        username = self.cleaned_data['username']
+        try:
+            username_decoded = binascii.unhexlify(username) #no need new variable
+        except binascii.Error as err: 
+            #messages.error(request, err)
+            raise forms.ValidationError("username is not a proper hex string:: ")
+        #except all other errors?
+        return username
+
+    def clean_account_1(self):
+        account_1 = self.cleaned_data['account_1']
+        try:
+            account_1_decoded = binascii.unhexlify(account_1) #no need new variable
+        except binascii.Error as err: 
+            #messages.error(request, err)
+            raise forms.ValidationError("account_1 is not a proper hex string:: ")
+        #except all other errors?
+        return account_1
+
+    def clean_account_2(self):
+        account_2 = self.cleaned_data['account_2']
+        try:
+            account_2_decoded = binascii.unhexlify(account_2) #no need new variable
+        except binascii.Error as err: 
+            #messages.error(request, err)
+            raise forms.ValidationError("account_2 is not a proper hex string:: ")
+        #except all other errors?
+        return account_2
+
+    def clean(self):
+        cleaned_data = super().clean()
+        username = cleaned_data.get("username")
+        sender_seq_no = cleaned_data.get("sender_seq_no")
+        account_1 = cleaned_data.get("account_1")
+        account_2 = cleaned_data.get("account_2")
+        signature = cleaned_data.get("signature")
+        if username and account_1 and account_2:
+            try:
+                verify_key = nacl.signing.VerifyKey(username,encoder=nacl.encoding.HexEncoder) # Create a VerifyKey object from a hex serialized public key
+            except nacl.exceptions.CryptoError as err:
+                #messages.error(request, 'problem creating verify key (serious!!):  ')
+                #messages.error(request, type(err).__name__)
+                #messages.error(request, err)
+                raise forms.ValidationError("problem creating verify key (serious!!): ")
+            #except all other errors? shouldnt be any other error right?
+
+            message_string = 'Type:Challenge,Sender:'+username+',SeqNo:'+str(sender_seq_no)+',Account1:'+account_1+',Account2:'+account_2  #bad name?
+
+            try:
+                signature_bytes = bytes.fromhex(signature)
+            except ValueError as err:
+                #messages.error(request, type(err).__name__)
+                #messages.error(request, err)
+                raise forms.ValidationError("problem with sig ")
+
+            try:
+                message_string_encoded = message_string.encode(encoding='utf-8',errors='strict')
+            except Exception as err:
+                #messages.error(request, 'message_string_encoded not working .')
+                #messages.error(request, type(err).__name__)
+                #messages.error(request, err)
+                raise forms.ValidationError("message_string_encoded not working ")
+            try:
+                verify_key.verify(message_string_encoded, signature_bytes)  
+            except nacl.exceptions.BadSignatureError:
+                #messages.error(request, 'Incorrect signature.')
+                raise forms.ValidationError("Incorrect signature.")
+
+
 '''
 class BusinessRegisterForm(UserCreationForm):
     business_name = forms.CharField(help_text='Required. For')

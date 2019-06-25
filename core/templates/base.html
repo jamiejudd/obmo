@@ -7,8 +7,14 @@
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
   <!--  causes problem in chrome inspector <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous"> -->
   <title>ObjectiveMoney</title>
-  <link  rel="stylesheet" href="{% static 'core/css/base.css' %}"></link> 
   <style type="text/css">
+    html {
+      overflow-y: scroll;
+    }
+    body {
+      padding-top: 57px;
+    }
+
     .dropdown-item:active { 
       background-color: #6ce0cc;
     }
@@ -25,7 +31,14 @@
       margin-top:15px;
       margin-bottom:15px;
     } 
-
+    .noselect {
+      -webkit-touch-callout: none; /* iOS Safari */
+      -webkit-user-select: none; /* Safari */
+      -khtml-user-select: none; /* Konqueror HTML */
+      -moz-user-select: none; /* Firefox */
+      -ms-user-select: none; /* Internet Explorer/Edge */
+      user-select: none; /* Non-prefixed version, currently supported by Chrome and Opera */
+    }
     .page-link{
     color: #42d7be;
     }
@@ -70,7 +83,7 @@
           <div class="dropdown-menu rounded-0 bg-white" style="border-color:#eeeeee" aria-labelledby="navbarDropdown">
             <a class="dropdown-item" href="/accounts/" >All Accounts</a>
             <a class="dropdown-item" href="/transactions/">All Transactions</a>
-            <a class="dropdown-item" href="#">All Challenges</a>
+            <a class="dropdown-item" href="/challenges/">All Challenges</a>
             <a class="dropdown-item" href="/statistics/">Statistics</a>
             <a class="dropdown-item" href="/exchange/">Exchange</a>
             <div class="dropdown-divider" style="border-color:#eeeeee;"></div>
@@ -86,7 +99,7 @@
           <div class="dropdown-menu rounded-0 bg-white" style="border-color:#eeeeee" aria-labelledby="navbarDropdown">
             <a class="dropdown-item" href="/transfer/">Transfer</a>
             <a class="dropdown-item" href="/register/">Register</a>
-            <a class="dropdown-item" href="#">Challenge</a>
+            <a class="dropdown-item" href="/challenge/">Challenge</a>
             <!-- <a class="dropdown-item" href="/commit/">Commit Hash</a> -->
             <!-- <a class="dropdown-item" href="/reveal/">Reveal</a> -->
             <div class="dropdown-divider" style="border-color:#eeeeee;"></div>

@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
-from core.models import Account,EventCounter,Event,BalanceUpdate
+from core.models import Account,Arrow,EventCounter,Event,Txn,Registration, Transfer,Commitment,Revelation,ArrowUpdate,BalanceUpdate,ArrowCreation,MarketSettlement,MarketSettlementTransfer
 
 from django.db import transaction
 from django.db import IntegrityError
@@ -28,7 +28,6 @@ class Command(BaseCommand):
         #this code always needs to be run just before we update verified (just the version for a single account tho)
 
         #BALANCE_DUE_UPDATE ll
-        ubi_per_second = Decimal(constants.UBI_RATE/24/3600)
         for x in Account.objects.values_list('id',flat=True):
             with transaction.atomic():
                 account = Account.objects.select_for_update().get(id=x)
@@ -37,14 +36,14 @@ class Command(BaseCommand):
                 print(current_time)
                 if (account.zone == 'Good'):
                     elapsed_time = current_time - account.balance_due_last_updated 
-                    elapsed_time_seconds = Decimal(elapsed_time.total_seconds())
-                    dividend = elapsed_time_seconds*Decimal(0.0011574074)  # 100/24*3600=0.0011574074
+                    dividend = Decimal(elapsed_time.total_seconds())*Decimal(constants.UBI_RATE/24/3600)
                     account.balance_due += dividend
                     #account.total_ubi_generated += dividend
                     account.balance_due_last_updated = current_time
                     account.save()
                     print(elapsed_time.total_seconds())
-                    print(elapsed_time_seconds)
+                    print(Decimal(elapsed_time.total_seconds()))
+                    print(Decimal(constants.UBI_RATE/24/3600))
                     print(dividend)
                     print(account.balance_due)
                     print(current_time)
@@ -53,19 +52,18 @@ class Command(BaseCommand):
                     account.save()
 
         #BALANCE_UPDATE
-        amount = constants.UBI_AMOUNT
         for x in range(1, Account.objects.count()+1):
             with transaction.atomic():
                 event_counter = EventCounter.objects.select_for_update().first() 
                 account = Account.objects.get(pk=x)
-                if (account.balance_due >= amount):
+                if (account.balance_due >= constants.UBI_AMOUNT):
                     #dividend = 100*(account.dividend_due/100)
                     current_time = timezone.now()
                     new_event = Event.objects.create(id=event_counter.last_event_no+1,timestamp=current_time, event_type='BU') #handle integrity error for create
-                    new_balance_update = BalanceUpdate.objects.create(event=new_event,account=account,amount=amount)
+                    new_balance_update = BalanceUpdate.objects.create(event=new_event,account=account,amount=constants.UBI_AMOUNT)
 
-                    account.balance += amount
-                    account.balance_due -= amount
+                    account.balance += constants.UBI_AMOUNT
+                    account.balance_due -= constants.UBI_AMOUNT
                     account.save()
 
                     event_counter.last_event_no += 1

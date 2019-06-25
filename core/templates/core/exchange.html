@@ -118,9 +118,11 @@ td { overflow:hidden;
               <th>linked</th>
               <th>key</th>
               <th>verified</th>
+              <th>net_votes</th>
+              <th>degree</th>
+              <th>zone</th>
               <th>balance_due</th>
               <th>balance_due_last_updated</th>
-              <th>degree</th>
            </tr>
           </thead>
           <tbody>
@@ -134,9 +136,11 @@ td { overflow:hidden;
               <td>{{ account.linked }}</td>
               <td data-container="body" data-toggle="popover" data-placement="bottom" data-content='{{account.key}}'>{{account.key}}</td>
               <td>{{ account.verified }}</td>
+              <td>{{ account.net_votes }}</td>
+              <td>{{ account.degree }}</td>
+              <td>{{ account.zone }}</td>
               <td>{{ account.balance_due }}</td>
               <td>{{ account.balance_due_last_updated }}</td>
-              <td>{{ account.degree }}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -205,6 +209,68 @@ td { overflow:hidden;
               <td>{{ arrow.matched }}</td>
               <td>{{ arrow.position }}</td>
               <td>{{ arrow.expired }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table> 
+      </div>
+    </div>
+  </div>
+ <div class="card ">
+    <div class="card-body">
+     <h6 style="text-align: center;margin-bottom: 5px;">challenges</h6>
+      <div class="table-responsive table-borderless">
+        <table class="table table-sm">
+          <thead>
+            <tr class="custom_centered">
+              <th>id</th>
+              <th>challenger</th>
+              <th>defendant_1</th>
+              <th>defendant_2</th>
+              <th>created</th>
+              <th>linked</th>
+              <th>degree</th>
+           </tr>
+          </thead>
+          <tbody>
+            {% for challenge in challenges %}
+            <tr>
+              <td>{{ challenge.id }}</td>
+              <td>{{ challenge.challenger.public_key }}</td>
+              <td>{{ challenge.defendant_1.public_key }}</td>
+              <td>{{ challenge.defendant_2.public_key }}</td>
+              <td>{{ challenge.created }}</td>
+              <td>{{ challenge.linked }}</td>
+              <td>{{ challenge.degree }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table> 
+      </div>
+    </div>
+  </div>
+<div class="card ">
+    <div class="card-body">
+     <h6 style="text-align: center;margin-bottom: 5px;">challengelinks</h6>
+      <div class="table-responsive table-borderless">
+        <table class="table table-sm">
+          <thead>
+            <tr class="custom_centered">
+              <th>id</th>
+              <th>challenge</th>
+              <th>voter</th>
+              <th>status</th>
+              <th>status_who</th>
+           </tr>
+          </thead>
+          <tbody>
+            {% for challengelink in challengelinks %}
+            <tr>
+              <td>{{ challengelink.id }}</td>
+              <td>{{ challengelink.challenge.id }}</td>
+              <td>{{ challengelink.voter.public_key }}</td>
+              <td>{{ challengelink.status }}</td>
+              <td>{{ challengelink.status_who }}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -442,6 +508,63 @@ td { overflow:hidden;
               <td>{{ balance_update.event_id }}</td>
               <td>{{ balance_update.account_id }}</td>
               <td>{{ balance_update.amount }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table> 
+      </div>
+    </div>
+  </div>
+
+
+ <div class="card ">
+    <div class="card-body">
+                     <h6 style="text-align: center;margin-bottom: 5px;">MarketSettlements</h6>
+      <div class="table-responsive table-borderless">
+        <table class="table table-sm">
+          <thead>
+            <tr class="custom_centered">
+              <th>id</th>
+              <th>event_id</th>
+              <th>account_id</th>
+              <th>amount</th>
+           </tr>
+          </thead>
+          <tbody>
+            {% for MarketSettlement in MarketSettlements %}
+            <tr>
+              <td>{{ MarketSettlement.id }}</td>
+              <td>{{ MarketSettlement.event_id }}</td>
+              <td>{{ MarketSettlement.account_id }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table> 
+      </div>
+    </div>
+  </div>
+
+ <div class="card ">
+    <div class="card-body">
+                     <h6 style="text-align: center;margin-bottom: 5px;">MarketSettlementTransfers</h6>
+      <div class="table-responsive table-borderless">
+        <table class="table table-sm">
+          <thead>
+            <tr class="custom_centered">
+              <th>id</th>
+              <th>event_id</th>
+              <th>account_id</th>
+              <th>amount</th>
+           </tr>
+          </thead>
+          <tbody>
+            {% for MarketSettlementTransfer in MarketSettlementTransfers %}
+            <tr>
+              <td>{{ MarketSettlementTransfer.id }}</td>
+              <td>{{ MarketSettlementTransfer.event_id }}</td>
+              <td>{{ MarketSettlementTransfer.market_settlement_id }}</td>
+              <td>{{ MarketSettlementTransfer.payee_id }}</td>
+              <td>{{ MarketSettlementTransfer.amount }}</td>
             </tr>
             {% endfor %}
           </tbody>

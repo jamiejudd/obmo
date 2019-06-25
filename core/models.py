@@ -10,7 +10,6 @@ class Account(models.Model): # an account never gets deleted, it costs a txn fee
     balance = models.DecimalField(max_digits = 20, decimal_places = 2, default=0) #IntegerField?
     sequence_next = models.IntegerField(default=1)  #PositiveIntegerField
     registered = models.BooleanField(default=False) #if true then minbalance=beta is in effect
-    verified = models.BooleanField(default=False)  #if true then generating ubi
 
     name = models.CharField(max_length=20, null=True) 
     photo = models.ImageField(upload_to = 'account_photos/', null=True) #can exist before reg=true?
@@ -35,11 +34,22 @@ class Account(models.Model): # an account never gets deleted, it costs a txn fee
     net_votes = models.IntegerField(default=0)
     matched_count = models.IntegerField(default=0)
 
+    #suspended = models.BooleanField(default=False)
+
+    chalenges_degree = models.IntegerField(default=0)
+    chalenges_key = models.DecimalField(max_digits = 1000, decimal_places = 999, null=True) 
+
     def zone(self):
         if 2*self.net_votes >= self.degree:
             return 'Good'
         else:
             return 'Bad'
+
+    def verified(self):
+        if 2*self.net_votes >= self.degree and self.linked == True:
+            return True
+        else:
+            return False
 
 
 
@@ -55,21 +65,43 @@ class Arrow(models.Model):  #here we use double entry, need to ensure integrity 
         return Arrow.objects.get(source=self.target, target=self.source, expired=False) #only works for aactive arrows
 
    
-# class Challenge(models.Model):  #here we need to ensure exclusivity on 12 and 21    
-#     challenger = models.ForeignKey(Account, related_name = 'challenges_created')
-#     defendant_1 = models.ForeignKey(Account, related_name = 'challenges_against_1')
-#     defendant_2 = models.ForeignKey(Account, related_name = 'challenges_against_2')
-#     created = models.DateTimeField(null=True) 
-#     finished = models.BooleanField(default=False)
+class Challenge(models.Model):  #here we need to ensure exclusivity on 12 and 21    
+    challenger = models.ForeignKey(Account, related_name = 'challenges_created',on_delete=models.CASCADE)
+    defendant_1 = models.ForeignKey(Account, related_name = 'challenges_against_1',on_delete=models.CASCADE)
+    defendant_2 = models.ForeignKey(Account, related_name = 'challenges_against_2',on_delete=models.CASCADE)
+    created = models.DateTimeField(null=True)
+    linked = models.BooleanField(default=False) 
 
-# class ChallengeLink(models.Model):  #no double entry here, all towards challenge   
-#     challenge = models.ForeignKey(Challenge, related_name = 'challengelinks')
-#     voter = models.ForeignKey(Account, related_name = 'challengelinks') #same name should be fine here
-#     created = models.DateTimeField(null=True)
-#     status_choices = (('N', 'neutral'),('D1', 'd1guilty'),('D2', 'd2gulty')) 
-#     status = models.CharField(max_length=2, choices = status_choices)
-#     matched = models.BooleanField(default=False)
-#     expired = models.BooleanField(default=False)
+    degree = models.IntegerField(default=0)
+
+    finished = models.BooleanField(default=False)
+
+    settlement_countdown = models.DateTimeField(null=True) 
+
+    last_position = models.IntegerField(default=0)
+    net_votes = models.IntegerField(default=0)
+    matched_count = models.IntegerField(default=0)
+
+    last_position_who = models.IntegerField(default=0)
+    net_votes_who = models.IntegerField(default=0)
+    matched_count_who = models.IntegerField(default=0)
+
+
+class ChallengeLink(models.Model):   
+    challenge = models.ForeignKey(Challenge, related_name = 'challengelinks',on_delete=models.CASCADE)
+    voter = models.ForeignKey(Account, related_name = 'challengelinks',on_delete=models.CASCADE) #same name should be fine here
+
+    status_choices = ((0, 'neutral'),(1, 'support'),(-1, 'oppose')) 
+    status = models.IntegerField(choices=status_choices, default = 0)
+    matched = models.BooleanField(default=False)
+    position = models.IntegerField(null=True)
+
+    status_who_choices = ((0, 'neutral'),(1, 'd1good'),(-1, 'd2good')) 
+    status_who = models.IntegerField(choices=status_who_choices, default = 0)
+    matched_who = models.BooleanField(default=False)
+    position_who = models.IntegerField(null=True)
+
+    expired = models.BooleanField(default=False)
 
 
 # class Statistic(models.Model): #global output vars
@@ -120,7 +152,6 @@ class Transfer(models.Model):
     recipient = models.ForeignKey(Account, related_name = 'transfers_recieved',on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits = 20, decimal_places = 2)
 
-
 class Commitment(models.Model): 
     txn = models.OneToOneField(Txn,on_delete=models.CASCADE)
     committed_hash = models.CharField(max_length=128)  
@@ -138,10 +169,10 @@ class ArrowUpdate(models.Model):
     #arrowupdate_choices = (('N', 'neutral'),('T', 'trust'),('D', 'distrust')) #setting to t or d is like making a bet so need bal>minbal
     #arrowupdate = models.CharField(max_length=1, choices = arrowupdate_choices)
 
-# class ChallengeCreation(models.Model):
-#     txn = models.OneToOneField(Txn)
-#     defendant_1 = models.ForeignKey(Account, related_name = 'challenges_against_1')
-#     defendant_2 = models.ForeignKey(Account, related_name = 'challenges_against_2')
+class ChallengeCreation(models.Model):
+    txn = models.OneToOneField(Txn,on_delete=models.CASCADE)
+    defendant_1 = models.ForeignKey(Account, related_name = 'challengecreations_against_1',on_delete=models.CASCADE)
+    defendant_2 = models.ForeignKey(Account, related_name = 'challengecreations_against_2',on_delete=models.CASCADE)
 
 # class ChallengeLinkUpdate(models.Model): 
 #     txn = models.OneToOneField(Txn)
@@ -158,27 +189,25 @@ class BalanceUpdate(models.Model):
     account = models.ForeignKey(Account,on_delete=models.CASCADE) 
     amount = models.DecimalField(max_digits = 20, decimal_places = 2, null=True)
 
-
-
-# class ArrowCreation(models.Model):  
-#     event = models.OneToOneField(Event)
-#     arrow = models.OneToOneField(Arrow)
+class ArrowCreation(models.Model):  
+    event = models.OneToOneField(Event,on_delete=models.CASCADE)
+    arrow = models.OneToOneField(Arrow,on_delete=models.CASCADE)
 # class ArrowExpiration(models.Model): 
 #     event = models.OneToOneField(Event)
 #     arrow = models.OneToOneField(Arrow)
 
-# class MarketSettlement(models.Model):  
-#     event = models.OneToOneField(Event)
-#     account = models.ForeignKey(Account) 
-# class MarketSettlementTransfer(models.Model):
-#     event = models.OneToOneField(Event)
-#     market_settlement = models.ForeignKey(MarketSettlement) 
-#     payee = models.ForeignKey(Account) 
-#     amount = models.DecimalField(max_digits = 20, decimal_places = 2)
+class MarketSettlement(models.Model):  
+    event = models.OneToOneField(Event,on_delete=models.CASCADE)
+    account = models.ForeignKey(Account,on_delete=models.CASCADE) 
+class MarketSettlementTransfer(models.Model):
+    event = models.OneToOneField(Event,on_delete=models.CASCADE)
+    market_settlement = models.ForeignKey(MarketSettlement,on_delete=models.CASCADE) 
+    payee = models.ForeignKey(Account,on_delete=models.CASCADE) 
+    amount = models.DecimalField(max_digits = 20, decimal_places = 2)
 
-# class ChallengeLinkCreation(models.Model):
-#     event = models.OneToOneField(Event)
-#     challengelink = models.ForeignKey(ChallengeLink, related_name = '+')
+class ChallengeLinkCreation(models.Model):
+    event = models.OneToOneField(Event,on_delete=models.CASCADE)
+    challengelink = models.ForeignKey(ChallengeLink, related_name = '+',on_delete=models.CASCADE)
 # class ChallengeLinkExpiration(models.Model):  
 #     event = models.OneToOneField(Event)
 #     challengelink = models.ForeignKey(ChallengeLink, related_name = '+')

@@ -1,0 +1,153 @@
+{% extends "form.html" %}
+
+{% block formcss %}
+<style type="text/css">
+#form_container {
+  padding-top:140px;
+}
+</style>
+{% endblock formcss %}
+
+{% block formfields %}
+<div class="form-group row">
+  <label for="id_username" class="col-sm-2 col-form-label">Sender:</label>
+  <div class="col-sm-10">
+   {% if user.is_authenticated %}
+    <input type="text" class="form-control" id="id_username" value={{user.username}} name="username" autocomplete="off">
+   {% else %}
+    <input type="text" class="form-control" id="id_username" placeholder="" name="username" autocomplete="off">
+  {% endif %}
+    <div class="invalid-feedback" id="id_username_feedback"></div>
+  </div>
+</div>
+<div class="form-group row">
+  <label for="id_sender_seq_no" class="col-sm-2 col-form-label"  data-toggle="tooltip" data-placement="bottom" title="Can be found on account page for your public key">Sequence Number:</label>
+  <div class="col-sm-10">
+   {% if user.is_authenticated %}
+    <input type="number" class="form-control" id="id_sender_seq_no" value={{account.sequence_next}}  name="sender_seq_no" autocomplete="off">
+   {% else %}
+    <input type="number" class="form-control" id="id_sender_seq_no" placeholder=""  name="sender_seq_no" autocomplete="off">
+   {% endif %}
+    <div class="invalid-feedback" id="id_sender_seq_no_feedback"></div>
+     <small id="sender_seq_no_help" class="form-text text-muted">The next sequence number for the senders account. Can be found on the senders account page.</small>
+  </div>
+</div>
+<div class="form-group row">
+  <label for="id_account_1" class="col-sm-2 col-form-label">Account 1:</label>
+  <div class="col-sm-10">
+    <input type="text" class="form-control" id="id_account_1" placeholder="" name="account_1" autocomplete="off">
+    <div class="invalid-feedback" id="id_account_1_feedback"></div>
+  </div>
+</div>
+<div class="form-group row">
+  <label for="id_account_2" class="col-sm-2 col-form-label">Account 2:</label>
+  <div class="col-sm-10">
+    <input type="text" class="form-control" id="id_account_2" placeholder="" name="account_2" autocomplete="off">
+    <div class="invalid-feedback" id="id_account_2_feedback"></div>
+  </div>
+</div>
+{% endblock formfields %}
+
+
+
+{% block formscript %}
+<script>
+function checkAccount1() {
+  if( $("#id_account_1").val() == "" ){
+    $('#id_account_1_feedback').text('This field is required.');
+    $("#id_account_1").addClass("is-invalid");
+    return false;
+  } else if(!validPubKey($("#id_account_1").val())){
+    $('#id_account_1_feedback').text('Not a valid public key.');
+    $("#id_account_1").addClass("is-invalid");
+    return false;
+  } else if($("#id_account_1").val() == $("#id_account_2").val()){
+    $('#id_account_1_feedback').text('Account1 cannot be same as Account2.');
+    $("#id_account_1").addClass("is-invalid");
+    return false;
+  } else {
+    $("#id_account_1").removeClass("is-invalid");
+    return true;
+  };
+}
+function checkAccount2() {
+  if( $("#id_account_2").val() == "" ){
+    $('#id_account_2_feedback').text('This field is required.');
+    $("#id_account_2").addClass("is-invalid");
+    return false;
+  } else if(!validPubKey($("#id_account_2").val())){
+    $('#id_account_2_feedback').text('Not a valid public key.');
+    $("#id_account_2").addClass("is-invalid");
+    return false;
+  } else if($("#id_account_2").val() == $("#id_account_1").val()){
+    $('#id_account_2_feedback').text('Account1 cannot be same as Account2.');
+    $("#id_account_2").addClass("is-invalid");
+    return false;
+  } else {
+    $("#id_account_2").removeClass("is-invalid");
+    return true;
+  };
+}
+
+function checkFields() {
+  var is_valid = true;
+  is_valid = checkUsername() && is_valid;
+  is_valid = checkSeqNo() && is_valid;
+  is_valid = checkAccount1() && is_valid;
+  is_valid = checkAccount2() && is_valid;
+  return is_valid;
+}
+
+function updateTxnString() {
+/*  $("#id_username").val($("#id_username").val().trim());
+  $("#id_recipient_pk").val($("#id_recipient_pk").val().trim());*/
+  var TxnString = 'Type:Challenge,Sender:'+ $("#id_username").val() +',SeqNo:'+ String($("#id_sender_seq_no").val()) +',Account1:'+ $("#id_account_1").val() +',Account2:'+ $("#id_account_2").val();
+  $('#txnstring').val(TxnString);
+  $('#modal_txnstring').val(TxnString);
+}
+
+
+$("#id_username,#id_sender_seq_no,#id_account_1,#id_account_2").on("change paste keyup input", function() {
+  updateTxnString();
+  //RawTxnByteArray = new TextEncoder("utf-8").encode(RawTxnString);
+  //RawTxnByteArray2 = toUTF8Array(RawTxnString);
+  //console.log(RawTxnByteArray)
+  //console.log(RawTxnByteArray2)
+  //console.log(JSON.stringify(RawTxnByteArray)===JSON.stringify(RawTxnByteArray2)) //false typed array vs array
+  //RawTxnHex = toHexString(RawTxnByteArray);
+  //var decoded = new TextDecoder("utf-8").decode(txByteArray);
+  //$('#rawtxnhex').val(RawTxnHex);
+  if($("#id_signature").val() != ""){
+    checkSignature()
+  };
+});
+
+$('#id_sender_seq_no').on('blur', function() {
+  if( $(this).val() != ""){
+    checkSeqNo()
+  };
+  if( $("#id_signature").val() != ""){ 
+    checkSignature() 
+  };    
+});
+
+$('#id_account_1').on('blur', function() {
+  if( $(this).val() != ""){ 
+    checkAccount1() 
+  };
+  if( $("#id_signature").val() != ""){ 
+    checkSignature() 
+  };
+});
+
+$('#id_account_2').on('blur', function() { 
+  if( $(this).val() != ""){
+    checkAccount2()
+  }
+  if( $("#id_signature").val() != ""){
+    checkSignature()
+  }  
+});
+</script>
+
+{% endblock formscript %}

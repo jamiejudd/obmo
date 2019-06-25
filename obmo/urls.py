@@ -33,8 +33,8 @@ urlpatterns = [
     url(r'^myaccount/$', core_views.myaccount,  name='myaccount'),
     url(r'^myaccount/history/$', core_views.myaccount_history,  name='myaccount_history'),
 
-    #url(r'^challenges/$', core_views.challenges, name='challenges'),
-    #url(r'^challenges/(?P<challengeid>[\dabcdefABCDEF]{64})/$', core_views.single_challenge, name='single_challenge'),  #last!!??
+    url(r'^challenges/$', core_views.challenges, name='challenges'),
+    url(r'^challenges/(?P<challengeid>[1-9][0-9]*)/$', core_views.single_challenge, name='single_challenge'),  #last!!??
 
     url(r'^transactions/$', core_views.txns, name='txns'),  #explore txnchain
     url(r'^transactions/(?P<txno>[1-9][0-9]*)/$', core_views.txn, name='txn'),  #last!!??
@@ -54,7 +54,7 @@ urlpatterns = [
     url(r'^commit/$', core_views.commit, name='commit'),
     url(r'^reveal/$', core_views.reveal, name='reveal'),
     url(r'^changevote/$', core_views.arrowupdate, name='arrowupdate'),
-    # url(r'^challenge/$', core_views.challenge, name='challenge'),
+    url(r'^challenge/$', core_views.challenge, name='challenge'),
     # url(r'^changevote-challenge/$', core_views.updatevote, name='updatevote'),
     url(r'^resetpassword/$', core_views.resetpassword, name='resetpassword'),
     

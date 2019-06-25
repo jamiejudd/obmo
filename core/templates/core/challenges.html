@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block style %} 
+<style type="text/css">
+  thead>tr>th {
+    font-size:11px;
+  }
+
+table { width:250px;table-layout:fixed; }
+table tr { height:1em;  }
+td { overflow:hidden;
+  white-space:nowrap;
+  text-overflow: ellipsis;
+  font-size:14px; 
+}
+
+</style>
+{% endblock style %}
+{% block content %}
+<div class="container" style="margin-top:40px;">
+  <div class="card ">
+    <div class="card-body">
+      <div class="table-responsive table-borderless">
+        <table class="table table-sm">
+          <thead>
+            <tr class="custom_centered">
+              <th>Challenge ID</th>
+              <th>Challenger</th>
+              <th>Account 1</th>
+              <th>Account 2</th>
+              <th>Settlement Countdown</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for challenge in challenges %}
+            {% if challenge %}
+            <tr>
+              <td style="vertical-align: middle;font-size:13px;"><a class="textlink" href="/challenges/{{ challenge.id}}/">{{ challenge.id }}</a></td>
+              <td style="vertical-align: middle;font-size:13px;"><a class="textlink" href="/accounts/{{ challenge.challenger.public_key}}/">{{ challenge.challenger.public_key }}</a></td>
+              <td style="vertical-align: middle;font-size:13px;"><a class="textlink" href="/accounts/{{ challenge.defendant_1.public_key}}/">{{ challenge.defendant_1.public_key }}</a></td>
+              <td style="vertical-align: middle;font-size:13px;"><a class="textlink" href="/accounts/{{ challenge.defendant_2.public_key}}/">{{ challenge.defendant_2.public_key }}</a></td>
+              <td style="vertical-align: middle;font-size:14px;">{{ challenge.settlement_countdown }}</td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>    
+
+<!-- as number of txns gets large update to show page = current +/- 2 -->
+<nav>
+  <ul class="pagination justify-content-center">
+    {% if challenges.paginator.num_pages < 9 %}
+        {% for num in challenges.paginator.page_range %}
+            {% if num == challenges.number %}
+                <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+            {% else %}
+                <li class="page-item"><a class="page-link" href="?page={{num}}">{{num}}</a></li>
+            {% endif %}
+        {% endfor %}
+    {% else %}
+        {% if challenges.number < 5 %}
+            {% for num in challenges.paginator.page_range %}
+                {% if num == challenges.number %}
+                    <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+                {% elif num < 6%}
+                    <li class="page-item"><a class="page-link" href="?page={{num}}">{{num}}</a></li>
+                {% endif %}
+            {% endfor %}
+            <li class="page-item" ><span style="vertical-align: middle;">&nbsp;.....&nbsp;</span></li>
+            <li class="page-item"><a class="page-link" href="?page={{challenges.paginator.num_pages}}">{{challenges.paginator.num_pages}}</a></li>
+        {% elif challenges.number > challenges.paginator.num_pages|add:"-4" %}
+            <li class="page-item"><a class="page-link" href="?page=1">1</a></li>
+            <li class="page-item" ><span style="vertical-align: middle;">&nbsp;.....&nbsp;</span></li>
+            {% for num in challenges.paginator.page_range %}
+                {% if num == challenges.number %}
+                    <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+                {% elif num > challenges.paginator.num_pages|add:"-5" %}
+                    <li class="page-item"><a class="page-link" href="?page={{num}}">{{num}}</a></li>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <li class="page-item"><a class="page-link" href="?page=1">1</a></li>
+            <li class="page-item" ><span style="vertical-align: middle;">&nbsp;.....&nbsp;</span></li>
+            <li class="page-item"><a class="page-link" href="?page={{ challenges.previous_page_number }}">{{ challenges.previous_page_number }}</a></li>
+            <li class="page-item active"><a class="page-link" href="#">{{challenges.number}}</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ challenges.next_page_number }}">{{ challenges.next_page_number }}</a></li>
+            <li class="page-item" ><span style="vertical-align: middle;">&nbsp;.....&nbsp;</span></li>
+            <li class="page-item"><a class="page-link" href="?page={{challenges.paginator.num_pages}}">{{challenges.paginator.num_pages}}</a></li>
+        {% endif %}
+    {% endif %}
+  </ul>
+</nav>
+
+{% endblock %}
+
+{% block script %}
+
+{% endblock script %} 
+
+   
