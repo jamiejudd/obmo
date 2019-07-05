@@ -1,10 +1,19 @@
 from django.db import models
 from django.utils import timezone
+import core.constants as constants
+from decimal import *
 
-#from django.contrib.postgres.fields import ArrayField
+import nacl.signing
+from nacl.hash import sha512
+import nacl.encoding
+import nacl.exceptions
+import binascii
 
-#  --------------  STATE  ---------------  (keep track of enough state so that we dont need to do 'run thru txn history' computations to figure out a piece of state we desire to know)
+from django.db import transaction
+from django.db import IntegrityError
+from django.core.exceptions import ObjectDoesNotExist
 
+#  --------------  STATE  --------------- 
 class Account(models.Model): # an account never gets deleted, it costs a txn fee to create an account. i.e. when a new pk get money we create an account.
     public_key = models.CharField(max_length=64, unique=True)#PRIMARYKEY no as longer??  # fixed forever, this will be accid in the recovery setting. 
     balance = models.DecimalField(max_digits = 20, decimal_places = 2, default=0) #IntegerField?
@@ -15,12 +24,12 @@ class Account(models.Model): # an account never gets deleted, it costs a txn fee
     photo = models.ImageField(upload_to = 'account_photos/', null=True) #can exist before reg=true?
     photo_hash = models.CharField(max_length=128,null=True)
 
-    registered_date = models.DateTimeField(null=True)
-    linked = models.BooleanField(default=False) 
+    registered_date = models.DateTimeField(null=True) #change to time
+    linked = models.BooleanField(default=False) #iff deg>0
     degree = models.IntegerField(default=0)
-    key = models.DecimalField(max_digits = 1000, decimal_places = 999, null=True)  #this is the max pprecision allowed
+    #key = models.DecimalField(max_digits = 999, decimal_places = 998, null=True)  #this is the max pprecision allowed
 
-    committed = models.BooleanField(default=False)
+    committed = models.BooleanField()
     committed_time = models.DateTimeField(null=True)
     committed_hash = models.CharField(max_length=128,null=True)
 
@@ -29,15 +38,16 @@ class Account(models.Model): # an account never gets deleted, it costs a txn fee
     #total_ubi_generated = models.DecimalField(max_digits = 20, decimal_places = 2)  #include if its a stat we will want to display
 
     #market_active = models.BooleanField(default=False) #iff matched_count >0
-    settlement_countdown = models.DateTimeField(null=True)  #not null if market active
+    #zone_last_changed = models.DateTimeField(null=True)  #not null if market active 
+    settlement_countdown = models.DateTimeField(null=True)  #not null if market active  
+    #matched_count_last_increased = models.DateTimeField(null=True)  #not null if market active
     last_position = models.IntegerField(default=0)
     net_votes = models.IntegerField(default=0)
     matched_count = models.IntegerField(default=0)
 
-    #suspended = models.BooleanField(default=False)
-
+    suspended = models.BooleanField(default=False)
     chalenges_degree = models.IntegerField(default=0)
-    chalenges_key = models.DecimalField(max_digits = 1000, decimal_places = 999, null=True) 
+    #chalenges_key = models.DecimalField(max_digits = 200, decimal_places = 199, null=True) 
 
     def zone(self):
         if 2*self.net_votes >= self.degree:
@@ -51,7 +61,20 @@ class Account(models.Model): # an account never gets deleted, it costs a txn fee
         else:
             return False
 
+    def update_balance_due(self,timestamp): #run this any time verified changes , just before
+        if self.verified() == True:
+            elapsed_time = timestamp - self.balance_due_last_updated 
+            self.balance_due += Decimal(elapsed_time.total_seconds())*Decimal(constants.UBI_RATE/24/3600)
+            self.balance_due_last_updated = timestamp
+        else:
+            self.balance_due_last_updated = timestamp
+        # return smthin?
 
+    # def suspend(self):
+    #     self.suspended = True
+    #     self.save()
+        #del links
+        #
 
 class Arrow(models.Model):  #here we use double entry, need to ensure integrity (i.e one arrow exists iff its opposite does)  #never deleted,so we can foreign key to them. created by us, epired by us.   
     source = models.ForeignKey(Account, related_name='outgoing_arrows',on_delete=models.CASCADE)  #no cascade??not relevent as account 'never' gets deleted  #also this never gets deleted
@@ -61,6 +84,7 @@ class Arrow(models.Model):  #here we use double entry, need to ensure integrity 
     matched = models.BooleanField(default=False)
     position = models.IntegerField(null=True)
     expired = models.BooleanField(default=False)
+
     def opposite(self):
         return Arrow.objects.get(source=self.target, target=self.source, expired=False) #only works for aactive arrows
 
@@ -103,6 +127,35 @@ class ChallengeLink(models.Model):
 
     expired = models.BooleanField(default=False)
 
+# class Task(models.Model):
+#     time_due = models.DateTimeField()
+#     action_choices = (('SettleMkt','SettleMkt'),('CreateLinks','CreateLinks'))
+#     action = models.CharField(max_length=20, choices = action_choices)
+#     account = models.ForeignKey(Account, related_name = 'tasks',on_delete=models.CASCADE) 
+#     completed = models.BooleanField(default=False)
+
+#     def doit(self):
+
+#         # if self.completed == True:
+#         #     raise ValueError('A very specific bad thing happened.')
+
+#         if self.action == 'CreateLinks':
+#             account = self.account
+#             outcome = account.create_links()
+#         elif self.action == 'SettleMkt':
+#             account = self.account
+#             account.settle_mkts()
+#         else:
+#             pass
+#         if outcome == 'task_done':
+#             self.completed = True
+#             self.save()
+
+
+class EventCounter(models.Model):  #used for selectforupdate #rename Tracker? or GlobalState?
+    last_event_no = models.IntegerField()
+
+
 
 # class Statistic(models.Model): #global output vars
 #     supply = models.DecimalField(max_digits = 20, decimal_places = 2)
@@ -117,8 +170,7 @@ class ChallengeLink(models.Model):
 #     beta = models.DecimalField(max_digits = 20, decimal_places = 2)
 #     alpha = models.IntegerField()
 
-class EventCounter(models.Model):  #used for selectforupdate #rename Tracker? or GlobalState?
-    last_event_no = models.IntegerField()
+
 
 
 # --------- TRANSACTIONS ----------- (i.e. ops that change the state) they are only added, never deleted or changed, and certain ones need to be easy to query
@@ -133,7 +185,7 @@ class Event(models.Model):
 class Txn(models.Model):
     event = models.OneToOneField(Event,on_delete=models.CASCADE)
     txn_previous_hash = models.CharField(max_length=128)
-    txn_type_choices = (('Transfer','Transfer'),('Commitment','Commitment'),('Revealation','Revealation'),('Registration','Registration'),('ChangeVote','ChangeVote'),('Challenge','Challenge'),('ChangeChallengeVote','ChangeChallengeVote'))
+    txn_type_choices = (('Transfer','Transfer'),('Commitment','Commitment'),('Revealation','Revealation'),('Register','Register'),('ChangeVote','ChangeVote'),('Challenge','Challenge'),('ChangeChallengeVote','ChangeChallengeVote'))
     txn_type = models.CharField(max_length=20, choices = txn_type_choices)
     sender = models.ForeignKey(Account,on_delete=models.CASCADE) 
     sender_seq_no = models.IntegerField()

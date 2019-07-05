@@ -23,6 +23,32 @@ td {  overflow:hidden;
 }
 
 </style>
+<script type="text/javascript">
+//   function startTimer(duration, display) {
+//     var timer = duration, minutes, seconds;
+//     setInterval(function () {
+//         minutes = parseInt(timer / 60, 10);
+//         seconds = parseInt(timer % 60, 10);
+
+//         minutes = minutes < 10 ? "0" + minutes : minutes;
+//         seconds = seconds < 10 ? "0" + seconds : seconds;
+
+//         display.textContent = minutes + ":" + seconds;
+
+//         if (--timer < 0) {
+//             timer = duration;
+//         }
+//     }, 1000);
+// }
+
+// window.onload = function () {
+//     var fiveMinutes = {{timer}},
+//         display = document.querySelector('#time');
+//     startTimer(fiveMinutes, display);
+// };
+
+
+</script>
 {% endblock %}
 {% block content %}
 <div class="container" style="margin-top:50px;">
@@ -86,10 +112,13 @@ td {  overflow:hidden;
     </div>
   </div>
 
+
   <div class="card" style="margin-top:50px;">
     <div class="card-body">
-      <h6 style="text-align: center;font-size:14px;"><b>Vote totals:</b> Trust=6, Distrust=2, Neutral=12</h6>
-      <h6 style="text-align: center;font-size:14px;"><b>Countdown timer:</b>&nbsp;  Not active</h6>
+      <h6 style="text-align: center;font-size:14px;"><b>Vote totals:</b> Trust={{total_trust}}, Distrust={{total_distrust}}, Neutral={{total_neutral}}</h6>
+      <h6 style="text-align: center;font-size:14px;"><b>Verification&nbsp;score:</b>&nbsp;{{score}}&#37;</h6>
+      <h6 style="text-align: center;font-size:14px;"><b>No. matched votes:</b>&nbsp;{{account.matched_count}}</h6>
+      <h6 style="text-align: center;font-size:14px;"><b>Countdown timer:</b>&nbsp; <span id="time" style="width:110px;display: inline-block;">{{countdown}}</span></h6>
       <div class="table-responsive table-borderless">
         <table class="table table-sm">
           <colgroup>
@@ -116,7 +145,7 @@ td {  overflow:hidden;
                <td style="vertical-align: middle;font-size:14px;">{{arrow.source.name}}</td>
               <td style="vertical-align: middle;font-size:13px;"><a style="color:#28bda4" href="/accounts/{{ arrow.source.public_key }}/">{{ arrow.source.public_key }}</a></td>
               <td style="vertical-align: middle;font-size:14px;">{% if arrow.status == 1 %}<span class="text-success">Trust</span>{% elif arrow.status == -1 %}<span class="text-danger">Distrust</span>{% else %}<span class="text-secondary">Neutral</span>{% endif %}</td>
-              <td style="vertical-align: middle;font-size:14px;">{% if arrow.opposite.status == 'Trust' %}<span class="text-success">Trust</span>{% elif arrow.opposite.status == 'Distrust' %}<span class="text-danger">Distrust</span>{% else %}<span class="text-secondary">Neutral</span>{% endif %}</td>
+              <td style="vertical-align: middle;font-size:14px;">{% if arrow.opposite.status == 1 %}<span class="text-success">Trust</span>{% elif arrow.opposite.status == -1 %}<span class="text-danger">Distrust</span>{% else %}<span class="text-secondary">Neutral</span>{% endif %}</td>
               <!--                   <td style="vertical-align: middle;font-size:14px;">{% if account.verified %}<span class="text-success">Verified</span>{% else %}<span class="text-secondary">Not&nbsp;Verified</span>{% endif %}</td> -->
             </tr>
             {% endif %}
@@ -230,6 +259,30 @@ $(document).on('click', function (e) {
         }
     });
 });  
+
+
+
+
+
+var total_seconds = "{{total_seconds}}";
+if (total_seconds != 'None') {
+  var distance = parseInt(total_seconds)
+  var x = setInterval(function() {
+    distance--;
+    var days = Math.floor(distance / 86400);
+    var hours = Math.floor((distance % 86400) / 3600);
+    var minutes = Math.floor((distance % 3600) /  60);
+    var seconds = Math.floor(distance %  60 );
+
+    document.getElementById("time").innerHTML = days + "d " + hours + "h "
+    + minutes + "m " + seconds + "s ";
+
+    if (distance < 0) {
+      clearInterval(x);
+      document.getElementById("time").innerHTML = "mkt not active";
+    }
+  }, 1000);
+}
 
 
 </script>

@@ -25,7 +25,7 @@ SECRET_KEY = '77!1##-%^a2yfmd^s%3uyva=85!myi9ri6is$sh-i1pd0o(5)k'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1','localhost','testserver']
 
 
 # Application definition
@@ -77,7 +77,7 @@ WSGI_APPLICATION = 'obmo.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql', 
-        'NAME': 'obmo5', 
+        'NAME': 'obmo6', 
         'USER': 'postgres', 
         'PASSWORD': 'toithichmia', 
         'HOST': 'localhost', 

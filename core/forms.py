@@ -202,9 +202,12 @@ class RegisterForm(forms.Form):
         username = cleaned_data.get("username")
         sender_seq_no = cleaned_data.get("sender_seq_no")
         name = cleaned_data.get("name")
+        photo = cleaned_data.get("photo")
         photo_hash = cleaned_data.get("photo_hash")
         signature = cleaned_data.get("signature")
-        if username and sender_seq_no and name and photo_hash and signature:
+        if username and sender_seq_no and name and photo and photo_hash and signature:
+
+            #CHECK HASH(PHOTO)==PHOTOHASH
             try:
                 verify_key = nacl.signing.VerifyKey(username,encoder=nacl.encoding.HexEncoder) # Create a VerifyKey object from a hex serialized public key
             except nacl.exceptions.CryptoError as err:
@@ -318,7 +321,7 @@ class ArrowUpdateForm(forms.Form):
     username = forms.CharField(min_length=64, max_length=64)
     sender_seq_no = forms.IntegerField()
     target_pk = forms.CharField(min_length=64, max_length=64)
-    arrow_status_choices = (('Neutral', 'Neutral'),('Trust', 'Trust'),('Distrust', 'Distrust'))   #change to yes/no?
+    arrow_status_choices = (('Neutral', 'Neutral'),('Trust', 'Trust'),('Distrust', 'Distrust'))   #does this give error if arrow_status = "Trustish"
     arrow_status = forms.ChoiceField(choices = arrow_status_choices)
     signature = forms.CharField(min_length=128, max_length=128)
 
@@ -516,156 +519,3 @@ class ChallengeForm(forms.Form):
             except nacl.exceptions.BadSignatureError:
                 #messages.error(request, 'Incorrect signature.')
                 raise forms.ValidationError("Incorrect signature.")
-
-
-'''
-class BusinessRegisterForm(UserCreationForm):
-    business_name = forms.CharField(help_text='Required. For')
-    logo = forms.ImageField()
-    class Meta:
-        model = User
-        fields = ('username',  'password1', 'password2','business_name','email','logo' )
-
-
-'''
-'''
-class CashierForm(UserCreationForm):
-    location = forms.CharField(help_text='Required. Format: YYYY-MM-DD')
-
-    class Meta:
-        model = User
-        fields = ('username', 'location', 'password1','password2', )
-
-
-
-  def __init__(self, *args, **kwargs): #this line changed
-        choice = kwargs.pop('choice', None) #this line added
-        self.fields['choices'] = forms.ChoiceField(choices=[ (o.id, str(o)) for o in choice])
-        super(SomeForm, self).__init__(*args, **kwargs)
-'''
-
-'''
-
-class CashierForm(UserCreationForm):
-    class Meta:
-        model = User
-        fields = ('username',  'password1', 'password2' )   
-
-class SetlimitForm(forms.Form):
-    amount = forms.DecimalField(label='Amount', max_digits = 15, decimal_places = 2)
-    class Meta:
-        fields = ('amount')
-
-class CreditForm(forms.Form):
-    customer = forms.CharField(label='Customer', max_length=30)
-    amount = forms.DecimalField(label='Amount', max_digits = 15, decimal_places = 2)
-    class Meta:
-        #fields = ('retailer')
-        fields = ('customer', 'amount')
-
-class DebitForm(forms.Form):
-    retailer = forms.CharField(label='Currency', max_length=30)
-    amount = forms.DecimalField(label='Amount', max_digits = 15, decimal_places = 2)
-    pin = forms.CharField(max_length=4)
-
-    class Meta:
-        fields = ('retailer', 'amount','pin')
-
-
-class TransferForm(forms.Form):
-    retailer = forms.CharField(label='Currency', max_length=30)
-    payee = forms.CharField(label='Payee', max_length=30)
-    amount = forms.DecimalField(label='Amount', max_digits = 15, decimal_places = 2)
-    pin = forms.CharField(max_length=4)
-    class Meta:
-        #fields = ('retailer')
-        fields = ('payee','retailer', 'amount','pin')
-
-
-class NewPayeeForm(forms.Form):
-    newpayee = forms.CharField(label='NewPayee', max_length=30,)
-    class Meta:
-        fields = ('newpayee',)
-
-
-
-class NewRateForm(forms.Form):
-    newrate = forms.DecimalField(label='Rate', max_digits = 4, decimal_places = 2)
-    class Meta:
-        fields = ('newrate', )
-
-class EditBusinessNameForm(forms.Form):
-    newbusinessname = forms.CharField(label='New Business Name', max_length=30)
-    class Meta:
-        fields = ('newbusinessname', )
-
-class EditLogoForm(forms.Form):
-    newlogo = forms.ImageField(label='New Logo')
-    class Meta:
-        fields = ('newlogo', )
-
-class EditBusinessEmailForm(forms.Form):
-    newbusinessemail = forms.CharField(label='New Email', max_length=30)
-    class Meta:
-        fields = ('newbusinessemail', )
-
-
-class ImageUploadForm(forms.Form):
-    """Image upload form."""
-    image = forms.ImageField()
-
-
-'''
-
-'''
-
-  
-class TransferForm_Customer(forms.Form):
-
-    def __init__(self, foo_choices, *args, **kwargs):
-        self.base_fields['foo'].choices = foo_choices
-        #self.fields['foo'] = foo_choices
-        super(TransferForm_Customer, self).__init__(*args, **kwargs)
-        super(TransferForm_Customer, self).full_clean()
-
-    foo = forms.ChoiceField(choices=(), required=True)
-'''
-
-
-'''
-
-
-            <ul class="nav nav-tabs" role="tablist">
-              <li class="nav-item">
-                <a class="nav-link active" href="#profile" role="tab" data-toggle="tab">Select from contacts</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#buzz" role="tab" data-toggle="tab">Enter a new Payee</a>
-              </li>
-            </ul>
-
-            <div class="tab-content">
-              <div role="tabpanel" class="tab-pane fade in active" id="profile">
-                  ege
-                  <div class="form-group">
-                    <label  class="col-sm-2 control-label" for="id_retailer">Currency</label>
-                    <div class="col-sm-10">
-                        <select  class="form-control" id="id_retailer" required="" name="retailer">
-                        <option value="" disabled selected>Choose Currency...</option>
-                        {% for account in accounts %}
-                            {% if account %}
-                                <option value="{{ account.retailer }}">{{ account.retailer }}</option>
-                            {% endif %}
-                        {% endfor %}
-                        <option value="1">One</option>
-                      </select>
-                    </div>
-                  </div>
-              </div>
-              <div role="tabpanel" class="tab-pane fade" id="buzz">
-              bbb
-              </div>
-            </div>
-
-
-            '''

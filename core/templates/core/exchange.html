@@ -117,8 +117,11 @@ td { overflow:hidden;
               <th>registered_date</th>
               <th>linked</th>
               <th>key</th>
+              <th>settlement_countdown</th>
+              <th>last_position</th>
               <th>verified</th>
               <th>net_votes</th>
+              <th>matched_count</th>
               <th>degree</th>
               <th>zone</th>
               <th>balance_due</th>
@@ -135,8 +138,11 @@ td { overflow:hidden;
               <td>{{ account.registered_date }}</td>
               <td>{{ account.linked }}</td>
               <td data-container="body" data-toggle="popover" data-placement="bottom" data-content='{{account.key}}'>{{account.key}}</td>
+              <td>{{ account.settlement_countdown }}</td>
+              <td>{{ account.last_position }}</td>
               <td>{{ account.verified }}</td>
               <td>{{ account.net_votes }}</td>
+              <td>{{ account.matched_count }}</td>
               <td>{{ account.degree }}</td>
               <td>{{ account.zone }}</td>
               <td>{{ account.balance_due }}</td>
@@ -160,9 +166,6 @@ td { overflow:hidden;
               <th>committed</th>
               <th>committed_time</th>
               <th>committed_hash</th>
-              <th>settlement_countdown</th>
-              <th>last_position</th>
-              <th>net_votes</th>
              </tr>
           </thead>
           <tbody>
@@ -173,9 +176,6 @@ td { overflow:hidden;
               <td>{{ account.committed }}</td>
               <td>{{ account.committed_time }}</td>
               <td data-container="body" data-toggle="popover" data-placement="bottom" data-content='{{account.committed_hash}}'>{{account.committed_hash}}</td>
-              <td>{{ account.settlement_countdown }}</td>
-              <td>{{ account.last_position }}</td>
-              <td>{{ account.net_votes }}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -183,6 +183,38 @@ td { overflow:hidden;
       </div>
     </div>
   </div>
+
+ <div class="card ">
+    <div class="card-body">
+     <h6 style="text-align: center;margin-bottom: 5px;">tasks</h6>
+      <div class="table-responsive table-borderless">
+        <table class="table table-sm">
+          <thead>
+            <tr class="custom_centered">
+              <th>id</th>
+              <th>time_due</th>
+              <th>action</th>
+              <th>account</th>
+              <th>completed</th>
+             </tr>
+          </thead>
+          <tbody>
+            {% for task in tasks %}
+            <tr>
+              <td>{{ task.id }}</td>
+              <td>{{ task.time_due }}</td>
+              <td>{{ task.action }}</td>
+              <td>{{ task.account.id }}</td>
+              <td>{{ task.completed }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table> 
+      </div>
+    </div>
+  </div>
+
+
  <div class="card ">
     <div class="card-body">
      <h6 style="text-align: center;margin-bottom: 5px;">arrows</h6>
@@ -396,6 +428,7 @@ td { overflow:hidden;
             <tr class="custom_centered">
               <th>id</th>
               <th>event_id</th>
+              <th>txn_type</th>
            </tr>
           </thead>
           <tbody>
@@ -403,6 +436,7 @@ td { overflow:hidden;
             <tr>
               <td>{{ txn.id }}</td>
               <td>{{ txn.event_id }}</td>
+              <td>{{ txn.txn_type }}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -414,7 +448,7 @@ td { overflow:hidden;
 
  <div class="card ">
     <div class="card-body">
-                     <h6 style="text-align: center;margin-bottom: 5px;">registrations</h6>
+     <h6 style="text-align: center;margin-bottom: 5px;">registrations</h6>
       <div class="table-responsive table-borderless">
         <table class="table table-sm">
           <thead>
@@ -527,7 +561,6 @@ td { overflow:hidden;
               <th>id</th>
               <th>event_id</th>
               <th>account_id</th>
-              <th>amount</th>
            </tr>
           </thead>
           <tbody>
@@ -553,7 +586,8 @@ td { overflow:hidden;
             <tr class="custom_centered">
               <th>id</th>
               <th>event_id</th>
-              <th>account_id</th>
+              <th>market_settlement_id</th>
+              <th>payee_id</th>
               <th>amount</th>
            </tr>
           </thead>

@@ -1,23 +1,32 @@
 from django.core.management.base import BaseCommand, CommandError
 from core.models import Account,Arrow,EventCounter,Event,Txn,Registration, Transfer,Commitment,Revelation,ArrowUpdate,BalanceUpdate,ArrowCreation,MarketSettlement,MarketSettlementTransfer
-from django.utils import timezone
-import nacl.signing
-from nacl.hash import sha512
-import nacl.encoding
-import nacl.exceptions
+
 import binascii
 from django.utils import timezone
 from random import randint
 import time
 import core.constants as constants
 from decimal import *
-getcontext().prec = 4
+
+
+from django.db import transaction
+from django.db import IntegrityError
+from django.core.exceptions import ObjectDoesNotExist
 
 
 import nacl.signing
 from nacl.hash import sha512
 import nacl.encoding
 import nacl.exceptions
+
+import random, string
+from requests import Session
+
+import threading
+from django.contrib.messages import get_messages
+from django.test.utils import setup_test_environment
+
+from core.my_custom_functions2 import do_next_create_links_if_ready, do_next_settle_mkts_if_ready, update_arrow, commit, reveal, register, transfer
 
 # create EventCounter.objects.create(id=1,last_event_no=0)
 # register first account u1, using the special register view
@@ -25,16 +34,155 @@ import nacl.exceptions
 # run update_balances to get some money in the system
 # send transfers to create new accounts
 # register those other accs, use rn to make links
+
+
+def always_do_next_create_links_if_ready(end_time):
+    while timezone.now() < end_time:
+        time.sleep(0.1)
+        do_next_create_links_if_ready()
+
+def always_do_next_settle_mkts_if_ready(end_time):
+    while timezone.now() < end_time:
+        time.sleep(0.1)
+        do_next_settle_mkts_if_ready()
+        
+
+def create_new_accounts(master,sks):
+    for i in range(1,18):
+        sk = nacl.signing.SigningKey.generate()
+        #print(sk.verify_key.encode(encoder=nacl.encoding.RawEncoder).hex())
+        sks.append(sk)
+        response = transfer(master,sk,1)
+        # for c in response.cookies:
+        #     print(c.name, c.value)
+        #t = transfer(master,i+1,sk,1)
+        # t_messages = [msg for msg in get_messages(t.wsgi_request)]
+        # for message in t_messages:
+        #     print('transfer'+str(i)+':   '+sk.verify_key.encode(encoder=nacl.encoding.RawEncoder).hex()+'    '+str(message))
+    return sks
+
+def register_new_accounts(sks):
+    for sk in sks:
+        print('register: {}'.format(timezone.now()))
+        response = register(sk)
+        time.sleep(1)
+        #print(response.cookies['messages'].value)
+        # r_messages = [msg for msg in get_messages(r.wsgi_request)]
+        # for message in r_messages:
+        #     print('register:   '+sk.verify_key.encode(encoder=nacl.encoding.RawEncoder).hex()+'    '+str(message))
+        #if r.context is not None:
+            #print(dir(r))
+            #print(r.__dict__)
+            #print(r.context['form_errors'])
+
+def commit_and_reveal(master,end_time):
+    while timezone.now() < end_time:
+        r = randint(0, 2**512)
+        print('commit: {}'.format(timezone.now()))
+        com = commit(master,r)
+        # com_messages = [msg for msg in get_messages(com.wsgi_request)]
+        # for message in com_messages:
+        #     print('commit:     '+str(message))
+        time.sleep(constants.TIMEDELTA_1_HOURS)
+        mstr = Account.objects.get(public_key=master.verify_key.encode(encoder=nacl.encoding.RawEncoder).hex())
+        #print('commited= '+str(mstr.committed))
+        print('reveal: {}'.format(timezone.now()))
+        rev = reveal(master,r)
+        # rev_messages = [msg for msg in get_messages(rev.wsgi_request)]
+        # for message in rev_messages:
+        #     print('reveal:     '+str(message))
+
+
+def update_arrows(end_time,sks):
+    while timezone.now() < end_time:
+        sk = random.choice(sks)
+        try:
+            account = Account.objects.get(public_key=sk.verify_key.encode(encoder=nacl.encoding.RawEncoder).hex())
+            # if account.key > 1:
+            #     print('{:f}'.format(account.key))
+            target_pk = Arrow.objects.filter(source=account).order_by('?').first().target.public_key
+            r = randint(1, 11)
+            if r == 1:
+                update_arrow(sk,target_pk,'Distrust')
+            elif r == 2:
+                update_arrow(sk,target_pk,'Neutral')
+            else:
+                update_arrow(sk,target_pk,'Trust')
+        except:
+            pass
+            #print('couldnt find account')
+
+
 class Command(BaseCommand):    
     def add_arguments(self, parser):
         pass
-    #accounts = {}
-    #def new_account():
 
     def handle(self, *args, **options):
-        event_counter = EventCounter.objects.create(id=1,last_event_no=0)
+        #setup_test_environment()
 
-        # event_counter = EventCounter.objects.create(id=1,last_event_no=2)
+        event_counter = EventCounter.objects.create(id=1,last_event_no=0)
+        end_time = timezone.now() + timezone.timedelta(seconds=30)
+        end_time2 = timezone.now() + timezone.timedelta(seconds=50)
+        sks = []
+        master = nacl.signing.SigningKey.generate()
+        #print(master.verify_key.encode(encoder=nacl.encoding.RawEncoder).hex())
+        r = register(master)
+        # all_messages = [msg for msg in get_messages(r.wsgi_request)]
+        # for message in all_messages:
+        #     print(str(message))
+        # for c in r.cookies:
+        #     print(c.name, c.value)
+        # print(r.context)
+        # print(dir(r))
+        #sks.append(master)
+
+        # sk = nacl.signing.SigningKey.generate()
+        # transfer(master,sk,1)
+        # register(sk)
+        # time.sleep(2)
+        # update_links()
+        # target_pk = sk.verify_key.encode(encoder=nacl.encoding.RawEncoder).hex()
+
+        # while timezone.now() < end_time:
+        #     update_arrow(master,target_pk,'Trust')
+        #     update_arrow(master,target_pk,'Neutral')
+
+        # update_arrow(master,target_pk,'Trust')
+        # while timezone.now() < end_time:
+        #     pass
+        # update_arrow(master,target_pk,'Neutral')
+
+
+
+        thread = threading.Thread(target=create_new_accounts, args=(master, sks))
+        thread.start()
+        thread.join()
+
+        thread1 = threading.Thread(target=commit_and_reveal, args=(master, end_time,))
+        thread2 = threading.Thread(target=register_new_accounts, args=(sks,))
+        thread3 = threading.Thread(target=always_do_next_create_links_if_ready, args=(end_time,))
+
+        thread1.start()
+        thread2.start()
+        thread3.start()
+
+
+        thread1.join()
+        thread2.join()
+        thread3.join()
+
+        time.sleep(2)
+
+        thread4 = threading.Thread(target=always_do_next_settle_mkts_if_ready, args=(end_time2,))
+        thread5 = threading.Thread(target=update_arrows, args=(end_time2, sks))
+
+        thread4.start()
+        thread5.start()
+  
+
+
+
+
 
         # print('u1 reg date ' +str(timezone.now()))
         # u1 = Account.objects.create(public_key='8d6419804ad806b1009603be023401f251399a2226f5936d206babc1f15c0d73',balance=100,registered=True,registered_date=timezone.now(),linked=True,sequence_next=2,name='jffhdfghh')
@@ -106,15 +254,6 @@ class Command(BaseCommand):
 
 
 
-        # signing_key = nacl.signing.SigningKey.generate()
-        # signed = signing_key.sign(b"Attack at Dawn")
-        # verify_key = signing_key.verify_key
-        # verify_key_hex = verify_key.encode(encoder=nacl.encoding.HexEncoder)
-
-        # print(signing_key)
-        # print(verify_key)
-        # print(signing_key.encode(encoder=nacl.encoding.RawEncoder).hex())
-        # print(verify_key.encode(encoder=nacl.encoding.RawEncoder).hex())
 
 
 
@@ -134,44 +273,45 @@ class Command(BaseCommand):
         # d2=0
         # e=0
         # f=0
-        # for i in range(100000):
+        # for i in range(1000000):
         #     r1 = randint(0, 2**512)
         #     b1 = r1.to_bytes(64, byteorder='big')
         #     x1 = b1.hex()
-        #     r2 = randint(0, 2**512)
-        #     b2 = r2.to_bytes(64, byteorder='big')
-        #     x2 = b2.hex()
-        #     random_input_string = ''+x1+x2
-        #     random_input_string += pk
+            # r2 = randint(0, 2**512)
+            # b2 = r2.to_bytes(64, byteorder='big')
+            # x2 = b2.hex()
+            #random_input_string = ''+x1+x2
+            # random_input_string = ''+x1
+            # random_input_string += pk
 
-        #     random_string1 = random_input_string + pk1
-        #     random_bytes1 = bytes.fromhex(random_string1)
-        #     random_number1 = nacl.hash.sha512(random_bytes1, encoder=nacl.encoding.RawEncoder)
-        #     random_int1 = int.from_bytes(random_number1, byteorder='big')
-        #     u1 = Decimal(random_int1)/Decimal(2**512)
+            # random_string1 = random_input_string + pk1
+            # random_bytes1 = bytes.fromhex(random_string1)
+            # random_number1 = nacl.hash.sha512(random_bytes1, encoder=nacl.encoding.RawEncoder)
+            # random_int1 = int.from_bytes(random_number1, byteorder='big')
+            # u1 = Decimal(random_int1)/Decimal(2**512)
 
-        #     random_string2 = random_input_string + pk2
-        #     random_bytes2 = bytes.fromhex(random_string2)
-        #     random_number2 = nacl.hash.sha512(random_bytes2, encoder=nacl.encoding.RawEncoder)
-        #     random_int2 = int.from_bytes(random_number2, byteorder='big')
-        #     u2 = Decimal(random_int2)/Decimal(2**512)
+            # random_string2 = random_input_string + pk2
+            # random_bytes2 = bytes.fromhex(random_string2)
+            # random_number2 = nacl.hash.sha512(random_bytes2, encoder=nacl.encoding.RawEncoder)
+            # random_int2 = int.from_bytes(random_number2, byteorder='big')
+            # u2 = Decimal(random_int2)/Decimal(2**512)
 
-        #     if u1<0.01:
-        #         c1+=1
-        #     if u2<0.01:
-        #         c2+=1
-        #     if u1>0.99:
-        #         d1+=1
-        #     if u2>0.99:
-        #         d2+=1
-        #     if u1<0.01 and u2>0.99:
-        #         e+=1
-        #     if u1>0.99 and u2<0.01:
-        #         f+=1
+            #if u1<0.0001:
+            #    c1+=1
+            # if u2<0.01:
+            #     c2+=1
+            # if u1>0.99:
+            #     d1+=1
+            # if u2>0.99:
+            #     d2+=1
+            # if u1<0.01 and u2>0.99:
+            #     e+=1
+            # if u1>0.99 and u2<0.01:
+            #     f+=1
 
 
 
-        # print('c1= '+str(c1))
+        #print('c1= '+str(c1))
         # print('c2= '+str(c2))
         # print('d1= '+str(d1))
         # print('d2= '+str(d2))
@@ -179,12 +319,12 @@ class Command(BaseCommand):
         # print('f= '+str(f))
 
 
-            #R1.append(str(r1))
-            #I1.append(str(random_int1))
-            #U1.append(str(u1))
-            #R2.append(str(r2))
-            #I2.append(str(random_int2))
-            #U2.append(str(u2))
+        # R1.append(str(r1))
+        # I1.append(str(random_int1))
+        # U1.append(str(u1))
+        # R2.append(str(r2))
+        # I2.append(str(random_int2))
+        # U2.append(str(u2))
 
         # print(R1)
         # print(R2)

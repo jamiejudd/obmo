@@ -19,8 +19,7 @@
               <th>Photo</th>
               <th>Public&nbsp;Key</th>
               <th>Balance</th>
-              <th>Registered</th>
-              <th>Verified</th>
+              <th>Status</th>
               <th>Name</th>
             </tr>
           </thead>
@@ -36,8 +35,7 @@
               {% endif %}
               <td style="vertical-align: middle;font-size:13px;"><a class="textlink" href="/accounts/{{ account.public_key}}/">{{ account.public_key }}</a></td>
               <td style="vertical-align: middle;font-size:14px;">{{ account.balance }}</td>
-              <td style="vertical-align: middle;font-size:14px;">{% if account.registered %}<span class="">Registered</span>{% else %}<span class="text-secondary">Not&nbsp;Registered</span>{% endif %}</td>
-              <td style="vertical-align: middle;font-size:14px;">{% if account.verified %}<span class="text-success">Verified</span>{% else %}<span class="text-secondary">Not&nbsp;Verified</span>{% endif %}</td>
+              <td style="vertical-align: middle;font-size:14px;">{% if account.verified %}<span class="text-success">Verified</span>{% elif account.suspended %}<span class="text-danger">Suspended</span>{% else %}<span class="text-secondary">Not&nbsp;Verified</span>{% endif %}</td>
               <td style="vertical-align: middle;font-size:14px;">{% if account.name %}{{account.name}}{% endif %}</td>
             </tr>
             {% endif %}
@@ -93,11 +91,10 @@
     {% endif %}
   </ul>
 </nav>
-
 {% endblock %}
 
-{% block script %}
 
+{% block script %}
 {% endblock script %} 
 
    

@@ -126,7 +126,6 @@ div::-webkit-scrollbar-thumb
             </tr>
           </thead> 
             <tbody>
-              {% for a in account.name %}
               {% for arrow in arrows %}
               {% if arrow %}
               <tr>
@@ -168,7 +167,6 @@ div::-webkit-scrollbar-thumb
                 <!--                   <td style="vertical-align: middle;font-size:14px;">{% if account.verified %}<span class="text-success">Verified</span>{% else %}<span class="text-secondary">Not&nbsp;Verified</span>{% endif %}</td> -->
               </tr>
               {% endif %}
-              {% endfor %}
               {% endfor %}
             </tbody>
           </table>
