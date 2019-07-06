@@ -1,6 +1,8 @@
 from django.shortcuts import render,redirect
 from django.http import HttpResponseRedirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.http import Http404
+
 
 from core.models import Account,Arrow,Challenge,ChallengeLink,EventCounter,Event,Txn,Registration,Transfer,Commitment,Revelation,ArrowUpdate,ChallengeCreation,BalanceUpdate,ArrowCreation,MarketSettlement,MarketSettlementTransfer
 from core.forms import  RegisterForm,TransferForm,UserRegistrationForm,ResetPasswordForm,CommitForm,RevealForm,ArrowUpdateForm,ChallengeForm
@@ -44,7 +46,7 @@ def accounts(request):
     #     per_page = int(request.REQUEST['count'])
     # except:
     #     per_page = 1     # default value
-    paginator = Paginator(accounts_all, 100) # Show 25 contacts per page, too many -> loads slowly
+    paginator = Paginator(accounts_all,20) # Show 25 contacts per page, too many -> loads slowly
     page = request.GET.get('page')
     try:
         accounts = paginator.page(page)
@@ -55,25 +57,28 @@ def accounts(request):
     return render(request, 'core/accounts.html', {'accounts':accounts})
 
 def account(request,username):
-    account = Account.objects.get(public_key=username)
+    try:
+        account = Account.objects.get(public_key=username)
+    except Account.DoesNotExist:
+        raise Http404("Account does not exist")
     arrows = Arrow.objects.filter(target=account)
-    total_trust = None # sum(arrow.status == 1 for arrow in arrows)
-    total_distrust = None # sum(arrow.status == -1 for arrow in arrows)
-    total_neutral = None #  sum(arrow.status == 0 for arrow in arrows)
-    score = 0
-    if account.linked == True:
-        score = int(100*account.net_votes/account.degree)
+    score = account.verification_score()
+    # if account.linked == True:
+    #     score = int(100*account.net_votes/account.degree)
     countdown = None
     total_seconds = None
     if account.settlement_countdown is not None:
         td = account.settlement_countdown + timezone.timedelta(seconds=constants.MARKET_SETTLEMENT_TIME) - timezone.now()
         countdown = format_timedelta(td)
         total_seconds = td.total_seconds()
-    return render(request, 'core/account.html',{'username':username,'account':account,'arrows':arrows,'score':score,'countdown':countdown,'total_seconds':total_seconds,'total_trust':total_trust,'total_distrust':total_distrust,'total_neutral':total_neutral})
+    return render(request, 'core/account.html',{'username':username,'account':account,'arrows':arrows,'score':score,'countdown':countdown,'total_seconds':total_seconds})
     
 def account_history(request,username):
-    account = Account.objects.get(public_key=username)
-    events_all = Event.objects.prefetch_related('txn','txn__transfer','txn__registration','txn__commitment','txn__revelation','txn__arrowupdate','arrowcreation').filter(Q(txn__sender=account) | Q(txn__transfer__recipient=account) | Q(arrowcreation__arrow__source=account) ).order_by('-id')
+    try:
+        account = Account.objects.get(public_key=username)
+    except Account.DoesNotExist:
+        raise Http404("Account does not exist")
+    events_all = Event.objects.prefetch_related('txn','txn__transfer','txn__registration','txn__commitment','txn__revelation','txn__arrowupdate','arrowcreation').filter(Q(txn__sender=account) | Q(txn__transfer__recipient=account) | Q(txn__arrowupdate__arrow__target=account) | Q(arrowcreation__arrow__source=account) | Q(marketsettlement__account=account) | Q(marketsettlementtransfer__payee=account) ).order_by('-id')
     paginator = Paginator(events_all, 54) 
     page = request.GET.get('page')
     try:
@@ -82,7 +87,7 @@ def account_history(request,username):
         events = paginator.page(1)# If page is not an integer, deliver first page.
     except EmptyPage:
         events = paginator.page(paginator.num_pages)# If page is out of range (e.g. 9999), deliver last page of results.
-    return render(request, 'core/account_history.html',{'username':username,'txns':txns,'events':events})    
+    return render(request, 'core/account_history.html',{'username':username,'events':events})    
     
 def txns(request):
     txns_all = Txn.objects.all().select_related('event').order_by('-id')
@@ -180,16 +185,16 @@ def myaccount(request):
 @login_required 
 def myaccount_history(request):
     account = Account.objects.get(public_key=request.user.username)
-    txns_all = Txn.objects.filter(Q(sender=account) | Q(recipient=account)| Q(recipient=account) ).order_by('-id')
-    paginator = Paginator(txns_all, 4) 
+    events_all = Event.objects.prefetch_related('txn','txn__transfer','txn__registration','txn__commitment','txn__revelation','txn__arrowupdate','arrowcreation').filter(Q(txn__sender=account) | Q(txn__transfer__recipient=account) | Q(txn__arrowupdate__arrow__target=account) | Q(arrowcreation__arrow__source=account) ).order_by('-id')
+    paginator = Paginator(events_all, 18) 
     page = request.GET.get('page')
     try:
-        txns = paginator.page(page)
+        events = paginator.page(page)
     except PageNotAnInteger:
-        txns = paginator.page(1)# If page is not an integer, deliver first page.
+        events = paginator.page(1)# If page is not an integer, deliver first page.
     except EmptyPage:
-        txns = paginator.page(paginator.num_pages)# If page is out of range (e.g. 9999), deliver last page of results.
-    return render(request, 'core/account_history.html',{'username':request.user.username,'txns':txns})    
+        events = paginator.page(paginator.num_pages)# If page is out of range (e.g. 9999), deliver last page of results.
+    return render(request, 'core/account_history.html',{'username':request.user.username,'events':events})    
 
 def newkeypair(request):
     return render(request, 'core/newkeypair.html')
@@ -357,6 +362,7 @@ def reveal(request):
                 if sender.suspended == True:
                     messages.error(request, 'Transaction was unsuccessful. This account is suspended.')
                     print('TXN FAILED. REEVEAL. suspd')
+                    return redirect('/reveal/')
 
                 revealed_value_bytes = bytes.fromhex(revealed_value)
                 hash_value = nacl.hash.sha512(revealed_value_bytes, encoder=nacl.encoding.RawEncoder)
@@ -777,7 +783,6 @@ def challenge(request):
                 if sender.balance < constants.CHALLENGER_BET:
                     messages.error(request, 'Transaction was unsuccessful. Insufficient balance')
                     return redirect('/challenge/')
-              
                 try:
                     account1 = Account.objects.get(public_key = account_1)
                 except Account.DoesNotExist:

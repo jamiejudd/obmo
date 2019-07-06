@@ -46,7 +46,7 @@ class Account(models.Model): # an account never gets deleted, it costs a txn fee
     matched_count = models.IntegerField(default=0)
 
     suspended = models.BooleanField(default=False)
-    chalenges_degree = models.IntegerField(default=0)
+    challenge_degree = models.IntegerField(default=0)
     #chalenges_key = models.DecimalField(max_digits = 200, decimal_places = 199, null=True) 
 
     def zone(self):
@@ -60,6 +60,12 @@ class Account(models.Model): # an account never gets deleted, it costs a txn fee
             return True
         else:
             return False
+
+    def verification_score(self):
+        if self.degree > 0:
+            return int(100*self.net_votes/self.degree)
+        else:
+            return 0
 
     def update_balance_due(self,timestamp): #run this any time verified changes , just before
         if self.verified() == True:
@@ -110,6 +116,11 @@ class Challenge(models.Model):  #here we need to ensure exclusivity on 12 and 21
     net_votes_who = models.IntegerField(default=0)
     matched_count_who = models.IntegerField(default=0)
 
+    def verification_score(self):
+        if self.linked == True:
+            return int(100*self.net_votes/self.degree)
+        else:
+            return 0
 
 class ChallengeLink(models.Model):   
     challenge = models.ForeignKey(Challenge, related_name = 'challengelinks',on_delete=models.CASCADE)

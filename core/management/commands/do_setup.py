@@ -26,7 +26,8 @@ import threading
 from django.contrib.messages import get_messages
 from django.test.utils import setup_test_environment
 
-from core.my_custom_functions2 import do_next_create_links_if_ready, do_next_settle_mkts_if_ready, update_arrow, commit, reveal, register, transfer
+#from core.my_custom_functions import do_next_create_links_if_ready, do_next_settle_mkts_if_ready, update_arrow, commit, reveal, register, transfer, create_challenge
+from core.my_custom_functions2 import do_next_create_links_if_ready, do_next_settle_mkts_if_ready, update_arrow, commit, reveal, register, transfer, create_challenge
 
 # create EventCounter.objects.create(id=1,last_event_no=0)
 # register first account u1, using the special register view
@@ -41,13 +42,32 @@ def always_do_next_create_links_if_ready(end_time):
         time.sleep(0.1)
         do_next_create_links_if_ready()
 
+def always_do_next_create_challenge_links_if_ready(end_time):
+    while timezone.now() < end_time:
+        time.sleep(1)
+        do_next_create_challenge_links_if_ready()
+
 def always_do_next_settle_mkts_if_ready(end_time):
     while timezone.now() < end_time:
-        time.sleep(0.1)
+        time.sleep(1)
         do_next_settle_mkts_if_ready()
-        
+
+
+def create_new_challenges(end_time,sks):
+    while timezone.now() < end_time:
+        sk = random.choice(sks)
+        sk1 = random.choice(sks)
+        sk2 = random.choice(sks)
+        response = create_challenge(sk,sk1.verify_key.encode(encoder=nacl.encoding.RawEncoder).hex(),sk2.verify_key.encode(encoder=nacl.encoding.RawEncoder).hex())
+        # messages = [msg for msg in get_messages(response.wsgi_request)]
+        # for message in messages:
+        #     print('CHALLENGE '+str(message))
+        time.sleep(0.5)
+       
 
 def create_new_accounts(master,sks):
+    sk = nacl.signing.SigningKey.generate()
+    transfer(master,sk,1)
     for i in range(1,18):
         sk = nacl.signing.SigningKey.generate()
         #print(sk.verify_key.encode(encoder=nacl.encoding.RawEncoder).hex())
@@ -65,7 +85,7 @@ def register_new_accounts(sks):
     for sk in sks:
         print('register: {}'.format(timezone.now()))
         response = register(sk)
-        time.sleep(1)
+        time.sleep(0.5)
         #print(response.cookies['messages'].value)
         # r_messages = [msg for msg in get_messages(r.wsgi_request)]
         # for message in r_messages:
@@ -96,21 +116,21 @@ def commit_and_reveal(master,end_time):
 def update_arrows(end_time,sks):
     while timezone.now() < end_time:
         sk = random.choice(sks)
-        try:
-            account = Account.objects.get(public_key=sk.verify_key.encode(encoder=nacl.encoding.RawEncoder).hex())
-            # if account.key > 1:
-            #     print('{:f}'.format(account.key))
-            target_pk = Arrow.objects.filter(source=account).order_by('?').first().target.public_key
-            r = randint(1, 11)
-            if r == 1:
-                update_arrow(sk,target_pk,'Distrust')
-            elif r == 2:
-                update_arrow(sk,target_pk,'Neutral')
-            else:
-                update_arrow(sk,target_pk,'Trust')
-        except:
-            pass
-            #print('couldnt find account')
+        # print(sk.verify_key.encode(encoder=nacl.encoding.RawEncoder).hex())
+        account = Account.objects.get(public_key=sk.verify_key.encode(encoder=nacl.encoding.RawEncoder).hex())
+        #print(account.public_key)
+        # if account.key > 1:
+        #     print('{:f}'.format(account.key))
+        target_pk = Arrow.objects.filter(source=account).order_by('?').first().target.public_key
+        r = randint(1, 5)
+        if r == 1:
+            update_arrow(sk,target_pk,'Distrust')
+        elif r == 2:
+            update_arrow(sk,target_pk,'Neutral')
+        else:
+            update_arrow(sk,target_pk,'Trust')
+        time.sleep(0.5)
+
 
 
 class Command(BaseCommand):    
@@ -122,7 +142,6 @@ class Command(BaseCommand):
 
         event_counter = EventCounter.objects.create(id=1,last_event_no=0)
         end_time = timezone.now() + timezone.timedelta(seconds=30)
-        end_time2 = timezone.now() + timezone.timedelta(seconds=50)
         sks = []
         master = nacl.signing.SigningKey.generate()
         #print(master.verify_key.encode(encoder=nacl.encoding.RawEncoder).hex())
@@ -162,22 +181,38 @@ class Command(BaseCommand):
         thread2 = threading.Thread(target=register_new_accounts, args=(sks,))
         thread3 = threading.Thread(target=always_do_next_create_links_if_ready, args=(end_time,))
 
+        thread4 = threading.Thread(target=create_new_challenges, args=(end_time,sks,))
+        thread5 = threading.Thread(target=always_do_next_create_challenge_links_if_ready, args=(end_time,))
+
         thread1.start()
         thread2.start()
         thread3.start()
+
+        #thread4.start()
+        #thread5.start()
 
 
         thread1.join()
         thread2.join()
         thread3.join()
+  
 
-        time.sleep(2)
+        time.sleep(14)
 
-        thread4 = threading.Thread(target=always_do_next_settle_mkts_if_ready, args=(end_time2,))
-        thread5 = threading.Thread(target=update_arrows, args=(end_time2, sks))
+        end_time = timezone.now() + timezone.timedelta(seconds=40)
 
-        thread4.start()
-        thread5.start()
+        create_links2 = threading.Thread(target=always_do_next_create_links_if_ready, args=(end_time,))
+        create_links2.start()
+        create_links2.join()
+
+
+        end_time = timezone.now() + timezone.timedelta(seconds=60)
+
+        thread6 = threading.Thread(target=always_do_next_settle_mkts_if_ready, args=(end_time,))
+        thread7 = threading.Thread(target=update_arrows, args=(end_time, sks))
+
+        thread6.start()
+        thread7.start()
   
 
 

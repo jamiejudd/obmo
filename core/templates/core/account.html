@@ -74,16 +74,12 @@ td {  overflow:hidden;
             <div class="col-md-10">{{ account.balance }}</div>
           </div>
           <div class="row row2">
-            <div class="col-md-2">Sequence:</div>
-            <div class="col-md-10">{{ account.sequence_next }}</div>
-          </div>
-          <div class="row row2">
             <div class="col-md-2">Registered:</div>
             <div class="col-md-10">{{ account.registered }}</div>
           </div>
           <div class="row row2">
-            <div class="col-md-2">Verification&nbsp;score:</div>
-            <div class="col-md-10">{{ account.verified }}</div>
+            <div class="col-md-2">Sequence:</div>
+            <div class="col-md-10">{{ account.sequence_next }}</div>
           </div>
           <div class="row row2">
             <div class="col-md-2">Photo&nbsp;hash:</div>
@@ -93,6 +89,19 @@ td {  overflow:hidden;
             <div class="col-md-2">Txn&nbsp;history:</div>
             <div class="col-md-10"><a style="color:#28bda4" href="/accounts/{{account.public_key}}/history">View all transactions</a></div>
           </div>
+          {% if account.committed %}
+          <div class="row row2">
+            <div class="col-md-2">Commitment:</div>
+            <div class="col-md-7">{{ account.committed_hash }}</div>
+            {% if time_status == 'early' %}
+            <div class="col-md-3 text-muted">Reveal&nbsp;value in {{timer}}</div>
+            {% elif time_status == 'ready'  %}
+            <div class="col-md-3 text-muted"><a style="color:#28bda4" href="/reveal">Reveal&nbsp;value</a>. Time left {{timer}}</div>
+            {% else %}
+            <div class="col-md-3 text-muted">Too late to reveal&nbsp;value</div>
+            {% endif %}
+          </div>
+          {% endif %}
         </div>
         {% else %}
         <div class="col-xl-2" >
@@ -104,21 +113,33 @@ td {  overflow:hidden;
           <div class="row row2"><div class="col-md-3">Balance:</div><div class="col-md-9">{{ account.balance }}</div></div>
           <div class="row row2"><div class="col-md-3">Sequence:</div><div class="col-md-9">{{ account.sequence_next }}</div></div>
           <div class="row row2"><div class="col-md-3">Registered:</div><div class="col-md-9">{{ account.registered }}</div></div>
-          <div class="row row2"><div class="col-md-3">Verification&nbsp;score:</div><div class="col-md-9">{{ account.verified }}</div></div>
           <div class="row row2"><div class="col-md-3">Txn&nbsp;history:</div><div class="col-md-9"><a style="color:#28bda4" href="/accounts/{{account.public_key}}/history">View all transactions</a></div></div>
+          {% if account.committed %}
+          <div class="row row2">
+            <div class="col-md-2">Commitment:</div>
+            <div class="col-md-7">{{ account.committed_hash }}</div>
+            {% if time_status == 'early' %}
+            <div class="col-md-3 text-muted">Reveal&nbsp;value in {{timer}}</div>
+            {% elif time_status == 'ready'  %}
+            <div class="col-md-3 text-muted"><a style="color:#28bda4" href="/reveal">Reveal&nbsp;value</a>. Time left {{timer}}</div>
+            {% else %}
+            <div class="col-md-3 text-muted">Too late to reveal&nbsp;value</div>
+            {% endif %}
+          </div>
+          {% endif %}
         </div>
         {% endif %}
       </div>
     </div>
   </div>
 
-
+ {% if account.linked %}
   <div class="card" style="margin-top:50px;">
     <div class="card-body">
-      <h6 style="text-align: center;font-size:14px;"><b>Vote totals:</b> Trust={{total_trust}}, Distrust={{total_distrust}}, Neutral={{total_neutral}}</h6>
-      <h6 style="text-align: center;font-size:14px;"><b>Verification&nbsp;score:</b>&nbsp;{{score}}&#37;</h6>
-      <h6 style="text-align: center;font-size:14px;"><b>No. matched votes:</b>&nbsp;{{account.matched_count}}</h6>
-      <h6 style="text-align: center;font-size:14px;"><b>Countdown timer:</b>&nbsp; <span id="time" style="width:110px;display: inline-block;">{{countdown}}</span></h6>
+<!--       <h6 style="text-align: center;font-size:14px;"><b>Vote totals:</b> Trust={{total_trust}}, Distrust={{total_distrust}}, Neutral={{total_neutral}}</h6>
+ -->      <h6 style="text-align: center;font-size:14px;"><b>Verification&nbsp;score:</b>&nbsp;{{score}}&#37;</h6>
+<!--       <h6 style="text-align: center;font-size:14px;"><b>No. matched votes:</b>&nbsp;{{account.matched_count}}</h6>
+ -->      <h6 style="text-align: center;font-size:14px;"><b>Countdown timer:</b>&nbsp; <span id="time" style="width:110px;display: inline-block;">{{countdown}}</span></h6>
       <div class="table-responsive table-borderless">
         <table class="table table-sm">
           <colgroup>
@@ -144,8 +165,8 @@ td {  overflow:hidden;
               <td style="vertical-align: middle;"><img src="{% get_media_prefix %}{{ arrow.source.photo }}" height="70" width="70"></td>
                <td style="vertical-align: middle;font-size:14px;">{{arrow.source.name}}</td>
               <td style="vertical-align: middle;font-size:13px;"><a style="color:#28bda4" href="/accounts/{{ arrow.source.public_key }}/">{{ arrow.source.public_key }}</a></td>
-              <td style="vertical-align: middle;font-size:14px;">{% if arrow.status == 1 %}<span class="text-success">Trust</span>{% elif arrow.status == -1 %}<span class="text-danger">Distrust</span>{% else %}<span class="text-secondary">Neutral</span>{% endif %}</td>
-              <td style="vertical-align: middle;font-size:14px;">{% if arrow.opposite.status == 1 %}<span class="text-success">Trust</span>{% elif arrow.opposite.status == -1 %}<span class="text-danger">Distrust</span>{% else %}<span class="text-secondary">Neutral</span>{% endif %}</td>
+              <td style="vertical-align: middle;font-size:14px;">{{arrow.get_status_display}}</td>
+              <td style="vertical-align: middle;font-size:14px;">{{arrow.opposite.get_status_display}}</td>
               <!--                   <td style="vertical-align: middle;font-size:14px;">{% if account.verified %}<span class="text-success">Verified</span>{% else %}<span class="text-secondary">Not&nbsp;Verified</span>{% endif %}</td> -->
             </tr>
             {% endif %}
@@ -155,7 +176,9 @@ td {  overflow:hidden;
       </div>
     </div>
   </div>
-  
+
+    {% endif %}
+
 <br>
 <br>
 <br>
@@ -279,9 +302,11 @@ if (total_seconds != 'None') {
 
     if (distance < 0) {
       clearInterval(x);
-      document.getElementById("time").innerHTML = "mkt not active";
+      document.getElementById("time").innerHTML = "Not active";
     }
   }, 1000);
+} else {
+  document.getElementById("time").innerHTML = "Not active";
 }
 
 

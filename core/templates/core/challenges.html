@@ -26,20 +26,20 @@ td { overflow:hidden;
           <thead>
             <tr class="custom_centered">
               <th>Challenge ID</th>
-              <th>Challenger</th>
               <th>Account 1</th>
               <th>Account 2</th>
-              <th>Settlement Countdown</th>
+              <th>Verification Score</th>
+              <th>Outcome</th>
             </tr>
           </thead>
           <tbody>
             {% for challenge in challenges %}
             {% if challenge %}
             <tr>
-              <td style="vertical-align: middle;font-size:13px;"><a class="textlink" href="/challenges/{{ challenge.id}}/">{{ challenge.id }}</a></td>
-              <td style="vertical-align: middle;font-size:13px;"><a class="textlink" href="/accounts/{{ challenge.challenger.public_key}}/">{{ challenge.challenger.public_key }}</a></td>
-              <td style="vertical-align: middle;font-size:13px;"><a class="textlink" href="/accounts/{{ challenge.defendant_1.public_key}}/">{{ challenge.defendant_1.public_key }}</a></td>
-              <td style="vertical-align: middle;font-size:13px;"><a class="textlink" href="/accounts/{{ challenge.defendant_2.public_key}}/">{{ challenge.defendant_2.public_key }}</a></td>
+              <td style="vertical-align: middle;font-size:13px;"><a class="textlink" href="/challenges/{{ challenge.id}}/">Challenge {{ challenge.id }}</a></td>
+              <td style="vertical-align: middle;font-size:13px;"><a class="textlink" href="/accounts/{{ challenge.defendant_1.public_key}}/"><img src="{% get_media_prefix %}{{ challenge.defendant_1.photo }}" height="70" width="70"></a></td>
+              <td style="vertical-align: middle;font-size:13px;"><a class="textlink" href="/accounts/{{ challenge.defendant_2.public_key}}/"><img src="{% get_media_prefix %}{{ challenge.defendant_2.photo }}" height="70" width="70"></a></td>
+              <td style="vertical-align: middle;font-size:14px;">{{ challenge.verification_score }}&#37;</td>
               <td style="vertical-align: middle;font-size:14px;">{{ challenge.settlement_countdown }}</td>
             </tr>
             {% endif %}

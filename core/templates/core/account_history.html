@@ -40,61 +40,62 @@ td { overflow:hidden;
 <div class="container" style="margin-top:40px;">
   <div class="card ">
     <div class="card-body">
-     <h6 style="font-family: 'Garamond';text-align: center;margin-bottom: 15px;">Transaction history</h6>
+     <h6 style="font-family: 'Garamond';text-align: center;margin-bottom: 15px;">Account history</h6>
       <div class="table-responsive table-borderless">
         <table class="table table-sm">
-<!--            <colgroup>
-            <col style="width:5%">
-            <col style="width:20%">
-            <col style="width:10%">
-            <col style="width:15%">
-            <col style="width:50%">
-          </colgroup>  -->
+           <colgroup>
+            <col style="width:70%">
+            <col style="width:30%">
+          </colgroup> 
 
           <tbody>
             {% for event in events %}
             {% if event %}
-            <tr>
-              <td>{{ event.timestamp }}</td>
+            <tr >
               {% if event.event_type == 'Txn' %}
                   {% if event.txn.txn_type == 'Transfer' %}
                       {% if event.txn.sender.public_key == username %}
 
-                      <td>Sent&nbsp;&nbsp;<span style="font-weight:500;">{{event.txn.transfer.amount}}</span>&nbsp;&nbsp;to&nbsp;&nbsp;<a class="textlink" href="/accounts/{{event.txn.transfer.recipient.public_key}}/">{{event.txn.transfer.recipient.public_key}}</a></td>
+                      <td>Sent&nbsp;&nbsp;<span style="font-weight:500;">{{event.txn.transfer.amount}}</span>&nbsp;&nbsp;to&nbsp;&nbsp;<a class="textlink" href="/accounts/{{event.txn.transfer.recipient.public_key}}/">{{event.txn.transfer.recipient.name}}</a></td>
 
                       {% elif event.txn.transfer.recipient.public_key == username %}
 
-                      <td>Recieved&nbsp;&nbsp;<span style="font-weight:500;">{{event.txn.transfer.amount}}</span>&nbsp;&nbsp;from&nbsp;&nbsp;<a class="textlink" href="/accounts/{{event.txn.sender.public_key}}/">{{event.txn.sender.public_key}}</a></td>
+                      <td>Recieved&nbsp;&nbsp;<span style="font-weight:500;">{{event.txn.transfer.amount}}</span>&nbsp;&nbsp;from&nbsp;&nbsp;<a class="textlink" href="/accounts/{{event.txn.sender.public_key}}/">{{event.txn.sender.name}}</a></td>
 
                       {% else %}
                       <td> hh</td>
                       {% endif %}
                   {% elif event.txn.txn_type == 'Register' %}
                       <td>Registered&nbsp;account</td>
-                  {% elif txn.txn_type == 'ChangeVote' %}
-                      {% if txn.sender.public_key == username %}
-                      <td>Changed&nbsp;vote&nbsp;for&nbsp;&nbsp;<a class="textlink" href="/accounts/{{txn.recipient.public_key}}/">{{txn.recipient.public_key}}</a>&nbsp;&nbsp;to&nbsp;&nbsp;<span style="font-weight:500;">{{txn.vote}}</span></td>
-                      {% elif txn.recipient.public_key == username %}
-                      <td>Had&nbsp;vote&nbsp;from&nbsp;&nbsp;<a class="textlink" href="/accounts/{{txn.sender.public_key}}/">{{txn.sender.public_key}}</a>&nbsp;&nbsp;changed&nbsp;&nbsp;to&nbsp;&nbsp;<span style="font-weight:500;">{{txn.vote}}</span></td>
+                  {% elif event.txn.txn_type == 'ChangeVote' %}
+                      {% if event.txn.sender.public_key == username %}
+                      <td>Changed&nbsp;vote&nbsp;for&nbsp;&nbsp;<span style="font-weight:500;">{{event.txn.arrowupdate.arrow.target.name}}</span>&nbsp;&nbsp;to&nbsp;&nbsp;<span style="font-weight:500;">{{event.txn.arrowupdate.get_arrowupdate_display}}</span></td>
+                      {% elif event.txn.arrowupdate.arrow.target.public_key == username %}
+                      <td>Had&nbsp;vote&nbsp;from&nbsp;&nbsp;<span style="font-weight:500;">{{event.txn.sender.name}}</span>&nbsp;&nbsp;changed&nbsp;&nbsp;to&nbsp;&nbsp;<span style="font-weight:500;">{{event.txn.arrowupdate.get_arrowupdate_display}}</span></td>
                       {% else %}
                       <td>ll</td>
                       {% endif %}
                   {% elif event.txn.txn_type == 'Commitment' %}
-                      <td data-container="body" data-toggle="popover"  data-placement="bottom" data-content = '{{ event.txn.commitment.committed_hash }}' >Commited hash {{ event.txn.commitment.committed_hash }}</td>
+                      <td>Commited&nbsp;<a class="textlink" href="/transactions/{{event.txn.id}}/">Hash</a></td>
                   {% elif event.txn.txn_type == 'Revelation' %}
-                      <td data-container="body" data-toggle="popover"  data-placement="bottom" data-content = '{{ event.txn.revelation.revealed_value }}' >Revealed value {{ event.txn.revelation.revealed_value }}</td>
+                      <td>Revealed&nbsp;<a class="textlink" href="/transactions/{{event.txn.id}}/">Value</a></td>
                   {% else %}
                       <td>ji{{ event.txn.txn_type }}</td>
                   {% endif %}
               {% elif event.event_type == 'AC' %}
                   {% if event.arrowcreation.arrow.source.public_key == username %}
-                  <td>New link <a class="textlink" href="/accounts/{{event.arrowcreation.arrow.target.public_key}}/">{{event.arrowcreation.arrow.target.public_key}}</a></td>
+                  <td>New link <span style="font-weight:500;">{{event.arrowcreation.arrow.target.name}}</span></td>
                   {% else %}
                   <td>vv</td>
                   {% endif %}
+              {% elif event.event_type == 'MS' %}
+                  <td>Market settled for this account</td>
+              {% elif event.event_type == 'MST' %}
+                  <td>Market for <span style="font-weight:500;">{{event.marketsettlementtransfer.market_settlement.account.name}}</span> settled. Transfer of <span style="font-weight:500;">{{event.marketsettlementtransfer.amount}}</span></td>
               {% else %}
               <td><a class="textlink" href="/transactions/{{txn.id}}/">see&nbsp;details</a></td>
               {% endif %}
+              <td>{{ event.timestamp }}</td>
             </tr>
             {% endif %}
             {% endfor %}

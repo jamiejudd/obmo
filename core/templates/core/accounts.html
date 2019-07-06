@@ -19,8 +19,8 @@
               <th>Photo</th>
               <th>Public&nbsp;Key</th>
               <th>Balance</th>
-              <th>Status</th>
               <th>Name</th>
+              <th>Verification</th>
             </tr>
           </thead>
           <tbody>
@@ -35,8 +35,16 @@
               {% endif %}
               <td style="vertical-align: middle;font-size:13px;"><a class="textlink" href="/accounts/{{ account.public_key}}/">{{ account.public_key }}</a></td>
               <td style="vertical-align: middle;font-size:14px;">{{ account.balance }}</td>
-              <td style="vertical-align: middle;font-size:14px;">{% if account.verified %}<span class="text-success">Verified</span>{% elif account.suspended %}<span class="text-danger">Suspended</span>{% else %}<span class="text-secondary">Not&nbsp;Verified</span>{% endif %}</td>
               <td style="vertical-align: middle;font-size:14px;">{% if account.name %}{{account.name}}{% endif %}</td>
+              <td style="vertical-align: middle;font-size:14px;">
+                {% if account.suspended %}<span>Suspended</span>
+                {% elif account.registered %}
+                  {% if account.verified %}<span class="text-success">{{ account.verification_score }}&#37;</span>
+                  {% else %}<span class="text-danger">{{ account.verification_score }}&#37;</span>
+                  {% endif %}
+                {% else %}<span class="text-secondary">Not&nbsp;Registered</span>
+                {% endif%}
+              </td>
             </tr>
             {% endif %}
             {% endfor %}

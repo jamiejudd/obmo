@@ -80,6 +80,57 @@ def do_next_create_links_if_ready(): #run every few seconds
         return 'no_acc_ready'
 
 
+def do_next_create_challenge_links_if_ready(): #run every few seconds
+    next_challenge = Challenge.objects.filter(linked=False).order_by('created').first() 
+    if next_challenge is not None and next_challenge.created + timezone.timedelta(seconds=constants.TIMEDELTA_2_HOURS) < timezone.now():
+        getcontext().prec = 999
+        t2 = next_challenge.created
+        t1 = t2 - timezone.timedelta(seconds=constants.TIMEDELTA_1_HOURS)
+        assert timezone.now() > t2 + timezone.timedelta(seconds=constants.TIMEDELTA_2_HOURS)
+        commits = Commitment.objects.select_related('revelation').filter(txn__event__timestamp__gte = t1, txn__event__timestamp__lte = t2).order_by('txn__event__timestamp')
+        #print('using {} commitments'.format(len(commits)))
+        random_input_string = ''
+        for c in commits:
+            if hasattr(c, 'revelation'):
+                random_input_string += c.revelation.revealed_value
+            else:
+                random_input_string += ''
+                print('missing revelation')
+        random_input_string += next_account.public_key
+        prev_accounts = Account.objects.filter(linked=True,suspended=False)
+        computed_keys = [(acc.id,(Decimal(int.from_bytes(nacl.hash.sha512(bytes.fromhex(random_input_string+acc.public_key),encoder=nacl.encoding.RawEncoder),byteorder='big'))/Decimal(2**512))**(Decimal(constants.CHALLENGE_LINK_WEIGHTING_PARAMETER)**Decimal(acc.challenge_degree))) for acc in prev_accounts]
+        #computed_keys = [(acc,(hash_hex_string_to_u(random_input_string+acc.public_key))**(Decimal(constants.LINK_WEIGHTING_PARAMETER)**Decimal(acc.challenge_degree))) for acc in prev_accounts]
+
+        #links = computed_keys.sort(key = itemgetter(1), reverse = True)[:constants.NUM_CHALLENGE_LINKS]
+        links = sorted(computed_keys, key=lambda pair: pair[1], reverse = True)[:constants.NUM_CHALLENGE_LINKS]
+
+        with transaction.atomic():     #inputs: next_acc, links       
+            event_counter = EventCounter.objects.select_for_update().first()
+            challenge = challenge.objects.select_for_update().get(id = next_challenge.id) #probly dont need sel4update
+            current_time = timezone.now()
+            if challenge.linked == False: 
+                for linkpair in links:
+                    link = Account.objects.get(id = linkpair[0]) #NB WE NEED TO REGET THE LINK INSIDE THE TXN AS IT COULD HAVE CHANGED AND WE WOULD OVERWRITE THAT CHANGE AT LINK.SAVE() #select_for_update()?
+                    new_challenge_link = ChallengeLink.objects.create(challenge=challenge,voter=link)
+                    new_event = Event.objects.create(id=event_counter.last_event_no+1,timestamp=current_time, event_type='CLC') #handle integrity error for create
+                    ChallengeLinkCreation.objects.create(event=new_event,challengelink=new_challenge_link)
+                    event_counter.last_event_no += 1
+                    link.challenge_degree += 1
+                    link.save()
+                challenge.degree = len(links)
+                challenge.linked = True
+                challenge.save()
+                event_counter.save()
+                assert challenge.degree == len(ChallengeLink.objects.filter(challenge=challenge)), 'created wrong degreeee'
+                #print('finished creating links {}'.format(timezone.now()))
+                return 'created_challenge_links'
+            else:
+                #print('finished creating links not done {}'.format(timezone.now()))
+                return 'challenge_already_linked' #shouldnt happen if using a single thread for this fn
+    else:
+        return 'no_challenge_ready'
+
+
 def do_next_settle_mkts_if_ready(): #run every few seconds
     with transaction.atomic():      
         event_counter = EventCounter.objects.select_for_update().first()
@@ -207,6 +258,7 @@ def commit(self,r):
     client.get('http://127.0.0.1:8000/commit/')
     csrftoken = client.cookies['csrftoken'] 
     data["csrfmiddlewaretoken"] = csrftoken
+    print(account.sequence_next)
     res = client.post('http://127.0.0.1:8000/commit/', data = data)
     return res
 
@@ -225,6 +277,7 @@ def reveal(self,r):
     client.get('http://127.0.0.1:8000/reveal/')
     csrftoken = client.cookies['csrftoken'] 
     data["csrfmiddlewaretoken"] = csrftoken
+    print(account.sequence_next)
     res = client.post('http://127.0.0.1:8000/reveal/', data = data)
     return res
 
@@ -243,6 +296,24 @@ def update_arrow(self,target_pk,arrow_status):
     csrftoken = client.cookies['csrftoken'] 
     data["csrfmiddlewaretoken"] = csrftoken
     res = client.post('http://127.0.0.1:8000/changevote/', data = data)
+    return res
+
+def create_challenge(self,acc1_pk,acc2_pk):
+    username = self.verify_key.encode(encoder=nacl.encoding.RawEncoder).hex()
+    account = Account.objects.get(public_key=username)
+    message_string_bytes = bytes('Type:Challenge,Sender:'+username+',SeqNo:'+str(account.sequence_next)+',Account1:'+acc1_pk+',Account2:'+acc2_pk,'utf8') 
+    data = {}
+    data['username'] = username
+    data['sender_seq_no'] = account.sequence_next
+    data['account_1'] = acc1_pk
+    data['account_2'] = acc2_pk
+    data['signature'] = self.sign(message_string_bytes).signature.hex()
+    client = Session()
+    client.get('http://127.0.0.1:8000/challenge/')
+    csrftoken = client.cookies['csrftoken'] 
+    data["csrfmiddlewaretoken"] = csrftoken
+    #print(data)
+    res = client.post('http://127.0.0.1:8000/challenge/', data = data)
     return res
 
 

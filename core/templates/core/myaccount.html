@@ -59,10 +59,6 @@ div::-webkit-scrollbar-thumb
             <div class="col-md-10">{{ account.registered }}</div>
           </div>
           <div class="row row2">
-            <div class="col-md-2">Verified:</div>
-            <div class="col-md-10">{{ account.verified }}</div>
-          </div>
-          <div class="row row2">
             <div class="col-md-2">Sequence:</div>
             <div class="col-md-10">{{ account.sequence_next }}</div>
           </div>
@@ -135,8 +131,8 @@ div::-webkit-scrollbar-thumb
                 <td style="vertical-align: middle;font-size:14px;">
                   <a class="textlink" href="/accounts/{{ arrow.source.public_key }}/">{{arrow.source.name}}</a>
                 </td>
-                <td style="vertical-align: middle;font-size:14px;">{{ arrow.status }}</td>
-                <td style="vertical-align: middle;font-size:14px;">{{ arrow.opposite.status }}</td>
+                <td style="vertical-align: middle;font-size:14px;">{{ arrow.get_status_display }}</td>
+                <td style="vertical-align: middle;font-size:14px;">{{ arrow.opposite.get_status_display }}</td>
 <!--                 <td style="vertical-align: middle;font-size:14px;">
                   {% if arrow.status == 'Trust' %}
                   <span class="text-success">Trust</span>
