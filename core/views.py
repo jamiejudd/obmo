@@ -4,11 +4,18 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import Http404
 
 
-from core.models import Account,Arrow,Challenge,ChallengeLink,EventCounter,Event,Txn,Registration,Transfer,Commitment,Revelation,ArrowUpdate,ChallengeCreation,BalanceUpdate,ArrowCreation,MarketSettlement,MarketSettlementTransfer
-from core.forms import  RegisterForm,TransferForm,UserRegistrationForm,ResetPasswordForm,CommitForm,RevealForm,ArrowUpdateForm,ChallengeForm
+from core.models import Account, Arrow, Challenge, ChallengeLink, EventCounter
+from core.models import Event, Txn, Registration, Transfer, Commitment, Revelation, ArrowUpdate, ChallengeCreation, ChallengeLinkUpdate
+from core.models import BalanceUpdate, ArrowCreation, ChallengeLinkCreation, MarketSettlement, MarketSettlementTransfer
+from core.models import Message
+
+from core.forms import  RegisterForm,TransferForm,UserRegistrationForm,ResetPasswordForm,CommitForm,RevealForm
+from core.forms import  ArrowUpdateForm,ChallengeForm,ChallengeLinkUpdateForm
 import core.constants as constants
 
 from django.db.models import Q
+from django.db.models import Sum
+
 
 from django.db import transaction
 from django.db import IntegrityError
@@ -32,6 +39,9 @@ import nacl.exceptions
 import binascii
 
 from decimal import Decimal
+
+from django.http import JsonResponse
+
 #GETS
 def index(request):
     return render(request, 'core/index.html')
@@ -41,7 +51,7 @@ def logout_view(request):
     return redirect('/')
 
 def accounts(request):
-    accounts_all = Account.objects.order_by('-registered','-id')
+    accounts_all = Account.objects.order_by('suspended','-registered','-id')
     # try:
     #     per_page = int(request.REQUEST['count'])
     # except:
@@ -62,92 +72,17 @@ def account(request,username):
     except Account.DoesNotExist:
         raise Http404("Account does not exist")
     arrows = Arrow.objects.filter(target=account)
-    score = account.verification_score()
-    # if account.linked == True:
-    #     score = int(100*account.net_votes/account.degree)
+    challengelinks = ChallengeLink.objects.filter(voter=account,finished=False,cancelled=False)
+    challenges_by = Challenge.objects.filter(challenger=account,finished=False,cancelled=False)
+    challenges_against = Challenge.objects.filter(Q(defendant_1=account) | Q(defendant_2=account),finished=False,cancelled=False)
+
     countdown = None
     total_seconds = None
     if account.settlement_countdown is not None:
         td = account.settlement_countdown + timezone.timedelta(seconds=constants.MARKET_SETTLEMENT_TIME) - timezone.now()
         countdown = format_timedelta(td)
         total_seconds = td.total_seconds()
-    return render(request, 'core/account.html',{'username':username,'account':account,'arrows':arrows,'score':score,'countdown':countdown,'total_seconds':total_seconds})
-    
-def account_history(request,username):
-    try:
-        account = Account.objects.get(public_key=username)
-    except Account.DoesNotExist:
-        raise Http404("Account does not exist")
-    events_all = Event.objects.prefetch_related('txn','txn__transfer','txn__registration','txn__commitment','txn__revelation','txn__arrowupdate','arrowcreation').filter(Q(txn__sender=account) | Q(txn__transfer__recipient=account) | Q(txn__arrowupdate__arrow__target=account) | Q(arrowcreation__arrow__source=account) | Q(marketsettlement__account=account) | Q(marketsettlementtransfer__payee=account) ).order_by('-id')
-    paginator = Paginator(events_all, 54) 
-    page = request.GET.get('page')
-    try:
-        events = paginator.page(page)
-    except PageNotAnInteger:
-        events = paginator.page(1)# If page is not an integer, deliver first page.
-    except EmptyPage:
-        events = paginator.page(paginator.num_pages)# If page is out of range (e.g. 9999), deliver last page of results.
-    return render(request, 'core/account_history.html',{'username':username,'events':events})    
-    
-def txns(request):
-    txns_all = Txn.objects.all().select_related('event').order_by('-id')
-    paginator = Paginator(txns_all, 100) # Show 25 contacts per page, too many -> loads slowly
-    page = request.GET.get('page')
-    try:
-        txns = paginator.page(page)
-    except PageNotAnInteger:
-        txns = paginator.page(1)# If page is not an integer, deliver first page.
-    except EmptyPage:
-        txns = paginator.page(paginator.num_pages)# If page is out of range (e.g. 9999), deliver last page of results.
-    return render(request, 'core/txns.html',{'txns':txns})
-
-def txn(request,txno):
-    txn = Txn.objects.get(id=txno)
-    return render(request, 'core/txn.html',{'txno':txno,'txn':txn})
-
-def challenges(request):
-    challenges_all = Challenge.objects.all().order_by('id')
-    paginator = Paginator(challenges_all, 5) # Show 25 contacts per page, too many -> loads slowly
-    page = request.GET.get('page')
-    try:
-        challenges = paginator.page(page)
-    except PageNotAnInteger:
-        challenges = paginator.page(1)# If page is not an integer, deliver first page.
-    except EmptyPage:
-        challenges = paginator.page(paginator.num_pages)# If page is out of range (e.g. 9999), deliver last page of results.
-    return render(request, 'core/challenges.html', {'challenges':challenges})
-
-def single_challenge(request,challengeid):
-    challenge = Challenge.objects.get(id=challengeid)
-    return render(request, 'core/single_challenge.html',{'challengeid':challengeid,'challenge':challenge})
-
-def exchange(request):
-    #return render(request, 'core/transactions.html')
-    accounts = Account.objects.all().order_by('id')
-    arrows = Arrow.objects.all()
-    challenges = Challenge.objects.all()
-    challengelinks = ChallengeLink.objects.all()
-    event_counters = EventCounter.objects.all()
-    events = Event.objects.all()
-    txns = Txn.objects.all()
-    registrations = Registration.objects.all()
-    transfers = Transfer.objects.all()
-    arrow_updates = ArrowUpdate.objects.all()
-    balance_updates = BalanceUpdate.objects.all()
-    MarketSettlementTransfers = MarketSettlementTransfer.objects.all()
-    MarketSettlements = MarketSettlement.objects.all()
-    commitments = Commitment.objects.all()
-    revelations = Revelation.objects.all()
-    #tasks = Task.objects.all()
-
-    return render(request, 'core/exchange.html',{'accounts':accounts,'arrows':arrows,'challenges':challenges,'challengelinks':challengelinks,'commitments':commitments,'revelations':revelations,'event_counters':event_counters,'events':events,'txns':txns,'registrations':registrations,'transfers':transfers,'arrow_updates':arrow_updates,'balance_updates':balance_updates,'MarketSettlementTransfers':MarketSettlementTransfers,'MarketSettlements':MarketSettlements})
-    #return render(request, 'core/index2.html')
-    
-def statistics(request):
-    arrows = Arrow.objects.all()
-    #return render(request, 'core/transactions.html',{'arrows':arrows})
-    return render(request, 'core/daterange.html',{'arrows':arrows})
-    
+    return render(request, 'core/account.html',{'username':username,'account':account,'arrows':arrows,'challengelinks':challengelinks,'challenges_by':challenges_by,'challenges_against':challenges_against,'countdown':countdown,'total_seconds':total_seconds})
 
 def format_timedelta(td):
     minutes, seconds = divmod(td.seconds + td.days * 86400, 60)
@@ -159,8 +94,17 @@ def format_timedelta(td):
 def myaccount(request):
     account = Account.objects.get(public_key=request.user.username)
     arrows = Arrow.objects.filter(target=account)
-    challengelinks = ChallengeLink.objects.filter(voter=account)
+    challengelinks = ChallengeLink.objects.filter(voter=account,finished=False,cancelled=False)
+    challenges_by = Challenge.objects.filter(challenger=account,finished=False,cancelled=False)
+    challenges_against = Challenge.objects.filter(Q(defendant_1=account) | Q(defendant_2=account),finished=False,cancelled=False)
 
+
+    countdown = None
+    total_seconds = None
+    if account.settlement_countdown is not None:
+        td = account.settlement_countdown + timezone.timedelta(seconds=constants.MARKET_SETTLEMENT_TIME) - timezone.now()
+        countdown = format_timedelta(td)
+        total_seconds = td.total_seconds()
 
     time_status = None
     timer = None
@@ -178,15 +122,38 @@ def myaccount(request):
         else:
             time_status = 'late'
             timer = str(td - td2).split(".")[0]
-    return render(request, 'core/myaccount.html',{'username':request.user.username,'account':account,'arrows':arrows,'challengelinks':challengelinks,'time_status':time_status,'timer':timer})
-    #return HttpResponseRedirect('/accounts/%s/' % request.user.username )
+    return render(request, 'core/myaccount.html',{'username':request.user.username,'account':account,'arrows':arrows,'challengelinks':challengelinks,'challenges_by':challenges_by,'challenges_against':challenges_against,'countdown':countdown,'total_seconds':total_seconds,'time_status':time_status,'timer':timer})
 
-   
+@login_required 
+def chatmessages(request):
+    #target_pk = request.GET.get('targetpk')
+    #print(target_pk)
+    #messages = Message.objects.filter(Q(sender=account) | Q(recipient=account) ).order_by('-timestamp')[:50]
+    json_object = {'key': "value"}
+    return JsonResponse(json_object)
+
+def account_history(request,username):
+    try:
+        account = Account.objects.get(public_key=username)
+    except Account.DoesNotExist:
+        raise Http404("Account does not exist")
+    events_all = Event.objects.prefetch_related('txn','txn__transfer','txn__registration','txn__commitment','txn__revelation','txn__arrowupdate','txn__challengecreation','txn__challengelinkupdate','arrowcreation','challengelinkcreation','marketsettlement','marketsettlementtransfer','challengesettlementtransfer').filter(Q(txn__sender=account) | Q(txn__transfer__recipient=account) | Q(txn__arrowupdate__arrow__target=account) | Q(txn__challengecreation__challenge__defendant_1=account)  | Q(txn__challengecreation__challenge__defendant_2=account)| Q(balanceupdate__account=account)| Q(arrowcreation__arrow__source=account) | Q(challengelinkcreation__challengelink__voter=account)| Q(marketsettlement__account=account)| Q(marketsettlementtransfer__payee=account)| Q(challengelinkcreation__challengelink__voter=account)| Q(challengesettlementtransfer__payee=account)).order_by('-id')
+    paginator = Paginator(events_all, 50) 
+    page = request.GET.get('page')
+    try:
+        events = paginator.page(page)
+    except PageNotAnInteger:
+        events = paginator.page(1)# If page is not an integer, deliver first page.
+    except EmptyPage:
+        events = paginator.page(paginator.num_pages)# If page is out of range (e.g. 9999), deliver last page of results.
+    return render(request, 'core/account_history.html',{'username':username,'events':events})    
+
+
 @login_required 
 def myaccount_history(request):
     account = Account.objects.get(public_key=request.user.username)
-    events_all = Event.objects.prefetch_related('txn','txn__transfer','txn__registration','txn__commitment','txn__revelation','txn__arrowupdate','arrowcreation').filter(Q(txn__sender=account) | Q(txn__transfer__recipient=account) | Q(txn__arrowupdate__arrow__target=account) | Q(arrowcreation__arrow__source=account) ).order_by('-id')
-    paginator = Paginator(events_all, 18) 
+    events_all = Event.objects.prefetch_related('txn','txn__transfer','txn__registration','txn__commitment','txn__revelation','txn__arrowupdate','txn__challengecreation','txn__challengelinkupdate','arrowcreation','challengelinkcreation','marketsettlement','marketsettlementtransfer','challengesettlementtransfer').filter(Q(txn__sender=account) | Q(txn__transfer__recipient=account) | Q(txn__arrowupdate__arrow__target=account) | Q(txn__challengecreation__challenge__defendant_1=account)  | Q(txn__challengecreation__challenge__defendant_2=account)| Q(balanceupdate__account=account)| Q(arrowcreation__arrow__source=account) | Q(challengelinkcreation__challengelink__voter=account)| Q(marketsettlement__account=account)| Q(marketsettlementtransfer__payee=account)| Q(challengelinkcreation__challengelink__voter=account)| Q(challengesettlementtransfer__payee=account)).order_by('-id')
+    paginator = Paginator(events_all, 50) 
     page = request.GET.get('page')
     try:
         events = paginator.page(page)
@@ -196,6 +163,113 @@ def myaccount_history(request):
         events = paginator.page(paginator.num_pages)# If page is out of range (e.g. 9999), deliver last page of results.
     return render(request, 'core/account_history.html',{'username':request.user.username,'events':events})    
 
+
+def txns(request):
+    txns_all = Txn.objects.all().select_related('event').order_by('-id')
+    paginator = Paginator(txns_all, 100) # Show 25 contacts per page, too many -> loads slowly
+    page = request.GET.get('page')
+    try:
+        txns = paginator.page(page)
+    except PageNotAnInteger:
+        txns = paginator.page(1)# If page is not an integer, deliver first page.
+    except EmptyPage:
+        txns = paginator.page(paginator.num_pages)# If page is out of range (e.g. 9999), deliver last page of results.
+    return render(request, 'core/txns.html',{'txns':txns})
+
+def txn(request,txno):
+    txn = Txn.objects.get(id=txno)
+    return render(request, 'core/txn.html',{'txno':txno,'txn':txn})
+
+def challenges(request):
+    challenges_all = Challenge.objects.all().order_by('-id')
+    paginator = Paginator(challenges_all, 15) # Show 25 contacts per page, too many -> loads slowly
+    page = request.GET.get('page')
+    try:
+        challenges = paginator.page(page)
+    except PageNotAnInteger:
+        challenges = paginator.page(1)# If page is not an integer, deliver first page.
+    except EmptyPage:
+        challenges = paginator.page(paginator.num_pages)# If page is out of range (e.g. 9999), deliver last page of results.
+    return render(request, 'core/challenges.html', {'challenges':challenges})
+
+def single_challenge(request,challengeid):
+    try:
+        challenge = Challenge.objects.get(id=challengeid)
+    except Challenge.DoesNotExist:
+        raise Http404("Challenge does not exist")
+    challengelinks = ChallengeLink.objects.filter(challenge=challenge,finished=False,cancelled=False)
+    countdown = None
+    total_seconds = None
+    if challenge.settlement_countdown is not None:
+        td = challenge.settlement_countdown + timezone.timedelta(seconds=constants.CHALLENGE_SETTLEMENT_TIME) - timezone.now()
+        countdown = format_timedelta(td)
+        total_seconds = td.total_seconds()
+    return render(request, 'core/single_challenge.html',{'challengeid':challengeid,'challenge':challenge,'challengelinks':challengelinks,'countdown':countdown,'total_seconds':total_seconds})
+
+def single_challenge_history(request,challengeid):
+    try:
+        challenge = Challenge.objects.get(id=challengeid)
+    except Challenge.DoesNotExist:
+        raise Http404("Challenge does not exist")
+    events_all = Event.objects.prefetch_related('txn','txn__challengecreation','txn__challengelinkupdate','challengelinkcreation','challengesettlement','challengesettlementtransfer').filter( Q(txn__challengecreation__challenge=challenge)| Q(txn__challengelinkupdate__challengelink__challenge=challenge)| Q(challengelinkcreation__challengelink__challenge=challenge)| Q(challengesettlement__challenge=challenge)| Q(challengesettlementtransfer__challenge_settlement__challenge=challenge)).order_by('-id')
+    paginator = Paginator(events_all, 50) 
+    page = request.GET.get('page')
+    try:
+        events = paginator.page(page)
+    except PageNotAnInteger:
+        events = paginator.page(1)# If page is not an integer, deliver first page.
+    except EmptyPage:
+        events = paginator.page(paginator.num_pages)# If page is out of range (e.g. 9999), deliver last page of results.
+    return render(request, 'core/single_challenge_history.html',{'challengeid':challengeid,'events':events})    
+
+def exchange2(request):
+    #return render(request, 'core/transactions.html')
+    accounts = Account.objects.all().order_by('id')
+    arrows = Arrow.objects.all()
+    challenges = Challenge.objects.all()
+    challengelinks = ChallengeLink.objects.all()
+    event_counters = EventCounter.objects.all()
+    events = Event.objects.all()
+    txns = Txn.objects.all()
+    registrations = Registration.objects.all()
+    transfers = Transfer.objects.all()
+    arrow_updates = ArrowUpdate.objects.all()
+    balance_updates = BalanceUpdate.objects.all()
+    MarketSettlementTransfers = MarketSettlementTransfer.objects.all()
+    MarketSettlements = MarketSettlement.objects.all()
+    commitments = Commitment.objects.all()
+    revelations = Revelation.objects.all()
+    return render(request, 'core/exchange2.html',{'accounts':accounts,'arrows':arrows,'challenges':challenges,'challengelinks':challengelinks,'commitments':commitments,'revelations':revelations,'event_counters':event_counters,'events':events,'txns':txns,'registrations':registrations,'transfers':transfers,'arrow_updates':arrow_updates,'balance_updates':balance_updates,'MarketSettlementTransfers':MarketSettlementTransfers,'MarketSettlements':MarketSettlements})
+    #return render(request, 'core/index2.html')
+    
+def exchange(request):
+    return render(request, 'core/exchange.html')
+    
+def statistics(request):
+    supply = Account.objects.aggregate(Sum('balance'))['balance__sum']
+    num_registered = Account.objects.filter(registered=True).count()
+    num_verified = Account.objects.filter(suspended=False,linked=True,good=True).count()
+    min_balance = constants.MIN_BALANCE
+    bet_bad = constants.BET_BAD
+    bet_good = constants.BET_GOOD
+    market_settlement_time = constants.MARKET_SETTLEMENT_TIME
+    challenger_bet = constants.CHALLENGER_BET
+    challenger_reward = constants.CHALLENGER_REWARD
+    challenge_bet_good = constants.CHALLENGE_BET_GOOD
+    challenge_bet_bad = constants.CHALLENGE_BET_BAD
+    challenge_bet_who = constants.CHALLENGE_BET_WHO
+    challenge_settlement_time = constants.CHALLENGE_SETTLEMENT_TIME
+    num_links = constants.NUM_LINKS
+    link_weighting_parameter = constants.LINK_WEIGHTING_PARAMETER
+    num_challenge_links = constants.NUM_CHALLENGE_LINKS
+    challenge_link_weighting_parameter = constants.CHALLENGE_LINK_WEIGHTING_PARAMETER
+    timedelta_1_hours = constants.TIMEDELTA_1_HOURS
+    timedelta_2_hours = constants.TIMEDELTA_2_HOURS
+
+    return render(request, 'core/statistics.html',{'supply':supply,'num_registered':num_registered,'num_verified':num_verified,'min_balance':min_balance,'bet_good':bet_good,'bet_bad':bet_bad,'market_settlement_time':market_settlement_time,'challenger_bet':challenger_bet,'challenger_reward':challenger_reward,'challenge_bet_good':challenge_bet_good,'challenge_bet_bad':challenge_bet_bad,'challenge_bet_who':challenge_bet_who,'challenge_settlement_time':challenge_settlement_time,'num_links':num_links,'link_weighting_parameter':link_weighting_parameter,'num_challenge_links':num_challenge_links,'challenge_link_weighting_parameter':challenge_link_weighting_parameter,'timedelta_1_hours':timedelta_1_hours,'timedelta_2_hours':timedelta_2_hours})
+    
+
+   
 def newkeypair(request):
     return render(request, 'core/newkeypair.html')
 
@@ -215,7 +289,6 @@ def resetpassword(request):
             new_password = form.cleaned_data.get('new_password') 
             signature = form.cleaned_data.get('signature')
 
-            #move this to form checks?
             try:
                 account = Account.objects.get(public_key = public_key)
             except Account.DoesNotExist:
@@ -233,15 +306,6 @@ def resetpassword(request):
     else:
         return render(request, 'core/resetpassword.html')
 
-# def donexttask(request):
-#     if request.method == 'POST':
-#         next_task = Task.objects.filter(completed = False).order_by("time_due").first()
-#         if next_task is not None and next_task.time_due <  timezone.now():
-#            next_task.doit()
-#         return redirect('/donexttask/')
-#     else:
-#         return render(request, 'core/donexttask.html')
-
 
 def commit(request):
     if request.method == 'POST':
@@ -254,72 +318,52 @@ def commit(request):
    
             with transaction.atomic():
                 event_counter = EventCounter.objects.select_for_update().get(pk=1)
-                #event_counter = EventCounter.objects.select_for_update().first()  #nowait=true??
                 current_time = timezone.now()
-                print('commmit started: '+str(current_time)+' evtno: '+str(event_counter.last_event_no))
                 try:
                     sender = Account.objects.select_for_update().get(public_key = sender_pk)
                 except Account.DoesNotExist:
                     messages.error(request, 'Transaction was unsuccessful. Sender does not exist.')
-                    print('TXN FAILED. COMMIT. NO ACC')
                     return redirect('/commit/')
-                print(' seqno: '+str(sender_seq_no)+' seqnet: '+str(sender.sequence_next))
                 if sender.sequence_next != sender_seq_no:
                     messages.error(request, 'Transaction was unsuccessful. Incorrect sequence number.')
-                    print('TXN FAILED. COMMIT. INC SEQ')
                     return redirect('/commit/')
                 if sender.registered == False:
                     messages.error(request, 'Transaction was unsuccessful. You need to be registered to submit random numbers.')
-                    print('TXN FAILED. COMMIT. NOT REGD')
                     return redirect('/commit/')
                 if sender.suspended == True:
                     messages.error(request, 'Transaction was unsuccessful. This account is suspended.')
-                    print('TXN FAILED. COMMIT. suspd')
                     return redirect('/commit/')
                 if sender.committed == True:
-                    messages.error(request, 'Transaction was unsuccessful. Already have a commited value. Reveal first..')
-                    print('TXN FAILED. COMMIT. REV FIRST')
+                    messages.error(request, 'Transaction was unsuccessful. Already have a commited value. Reveal first.')
                     return redirect('/commit/')
 
-                try:
-                    last_txn = Txn.objects.last()
-                    txn_number = last_txn.id+1
+                last_txn = Txn.objects.last()
+                txn_number = last_txn.id+1
 
-                    message_string = 'Type:Commit,Sender:'+sender_pk+',SeqNo:'+str(sender_seq_no)+',Hash:'+committed_hash                       
-                    txn_data = '"TxnNo":"'+str(txn_number)+'","Created":"'+str(current_time.strftime("%Y-%m-%d-%H:%M:%S"))+'","Message":"'+message_string+'","Signature":"'+signature+'","PreviousHash":"'+last_txn.txn_hash+'"'
-                    txn_hash  = nacl.hash.sha512(txn_data.encode('utf-8'), encoder=nacl.encoding.RawEncoder)
+                message_string = 'Type:Commit,Sender:'+sender_pk+',SeqNo:'+str(sender_seq_no)+',Hash:'+committed_hash                       
+                txn_data = '"TxnNo":"'+str(txn_number)+'","Created":"'+str(current_time.strftime("%Y-%m-%d-%H:%M:%S"))+'","Message":"'+message_string+'","Signature":"'+signature+'","PreviousHash":"'+last_txn.txn_hash+'"'
+                txn_hash  = nacl.hash.sha512(txn_data.encode('utf-8'), encoder=nacl.encoding.RawEncoder)
 
-                    new_event = Event.objects.create(id=event_counter.last_event_no+1,timestamp=current_time, event_type='Txn') #handle integrity error for create
-                    new_txn = Txn.objects.create(id=txn_number,event=new_event,txn_previous_hash=last_txn.txn_hash,txn_type='Commitment',sender=sender,sender_seq_no=sender_seq_no,txn_message=message_string,signature=signature,txn_data=txn_data,txn_hash=txn_hash.hex())
-                    new_commitment = Commitment.objects.create(txn=new_txn,committed_hash=committed_hash)
+                new_event = Event.objects.create(id=event_counter.last_event_no+1,timestamp=current_time, event_type='Txn') #handle integrity error for create
+                new_txn = Txn.objects.create(id=txn_number,event=new_event,txn_previous_hash=last_txn.txn_hash,txn_type='Commitment',sender=sender,sender_seq_no=sender_seq_no,txn_message=message_string,signature=signature,txn_data=txn_data,txn_hash=txn_hash.hex())
+                new_commitment = Commitment.objects.create(txn=new_txn,committed_hash=committed_hash)
 
-                    sender.committed = True
-                    print('committed set to true')
-                    sender.committed_time = current_time
-                    sender.committed_hash = committed_hash
-                    sender.sequence_next += 1
-                    sender.save()
-                    print('sender saved com '+str(timezone.now()))
-                    ss = Account.objects.get(public_key = sender_pk)
-                    print('ss '+str(ss.committed))
-
-                    event_counter.last_event_no += 1
-                    event_counter.save()
-                    print('txn completed')
-                except:
-                    print('TXN FAILED. COMMIT. EXECEPTION')
-                print('commit finished {}'.format(timezone.now()))
-
+                sender.committed = True
+                sender.committed_time = current_time
+                sender.committed_hash = committed_hash
+                sender.sequence_next += 1
+                sender.save()
+                event_counter.last_event_no += 1
+                event_counter.save()
 
             messages.success(request, 'Transaction was successful.')
             return redirect('/commit/')
         else:
             messages.error(request, 'Transaction was unsuccessful. Form not valid.') #repeats same msg multiple times, need to clear msgs at right time
             #return redirect('/commit/') 
-            print('TXN FAILED. COMMIT. FORM NOT VALID')
             return render(request, 'core/commit.html',{'form_errors':form.errors})
     else:
-        form = CommitForm()
+        #form = CommitForm()
         if request.user.is_authenticated:
             account = Account.objects.get(public_key = request.user.username)
             return render(request, 'core/commit.html',{'account':account})
@@ -338,30 +382,24 @@ def reveal(request):
             signature = form.cleaned_data.get('signature')
 
             with transaction.atomic():
-                #print('start txn reveal')
                 event_counter = EventCounter.objects.select_for_update().get(pk=1)
-                #event_counter = EventCounter.objects.select_for_update().first()  #nowait=true??
                 current_time = timezone.now()
-                print('reveal started '+str(current_time)+' '+str(event_counter.last_event_no))
                 try:
                     sender = Account.objects.select_for_update().get(public_key = sender_pk)
                 except Account.DoesNotExist:
                     messages.error(request, 'Transaction was unsuccessful. Sender does not exist.')
-                    print('TXN FAILED. REEVEAL. NO SENDER')
                     return redirect('/reveal/')
                 except:
-                    print('BADD ERROR EXECPTION')
+                    raise Exception('UNKNOWN ERROR22!')
+
                 if sender.sequence_next != sender_seq_no:
                     messages.error(request, 'Transaction was unsuccessful. Incorrect sequence number.')
-                    print('TXN FAILED. REEVEAL. INC SEQ')
                     return redirect('/reveal/')
                 if sender.committed == False:
                     messages.error(request, 'Transaction was unsuccessful. First you need to commited a value.')
-                    print('TXN FAILED. REEVEAL. COMMIT FIRST '+str(sender.committed) )
                     return redirect('/reveal/')
                 if sender.suspended == True:
                     messages.error(request, 'Transaction was unsuccessful. This account is suspended.')
-                    print('TXN FAILED. REEVEAL. suspd')
                     return redirect('/reveal/')
 
                 revealed_value_bytes = bytes.fromhex(revealed_value)
@@ -369,25 +407,20 @@ def reveal(request):
      
                 if sender.committed_hash != hash_value.hex():
                     messages.error(request, 'Transaction was unsuccessful. Incorrect value for hash.')
-                    print('TXN FAILED. REEVEAL. INC HASH')
                     return redirect('/reveal/')
 
                 if current_time < sender.committed_time + timezone.timedelta(seconds=constants.TIMEDELTA_1_HOURS) :
                     messages.error(request, 'Transaction was unsuccessful. Reveal too soon.')
-                    print('TXN FAILED. REEVEAL. 2SSON')
                     return redirect('/reveal/')
                 
-                print('timedif rreveael '+str((current_time-sender.committed_time - timezone.timedelta(seconds=constants.TIMEDELTA_2_HOURS)).total_seconds() ))
                 if current_time > sender.committed_time + timezone.timedelta(seconds=constants.TIMEDELTA_2_HOURS) :
                     messages.error(request, 'Transaction was unsuccessful. Reveal too late.')
-                    print('TXN FAILED. REEVEAL. 2LATE ')
                     return redirect('/reveal/')
 
                 try:
                     commitment = Commitment.objects.filter(txn__sender = sender).last()
                 except Commitment.DoesNotExist:
                     messages.error(request, 'Transaction was unsuccessful. Serious problem, couldnt find commitment.')
-                    print('TXN FAILED. REEVEAL. NOFIND')
                     return redirect('/reveal/')
 
                 assert commitment.committed_hash == sender.committed_hash
@@ -404,24 +437,20 @@ def reveal(request):
                 new_revelation = Revelation.objects.create(txn=new_txn,commitment=commitment,revealed_value=revealed_value)
 
                 sender.committed = False
-                print('committed set to false')
                 sender.sequence_next += 1
                 sender.save()
-                print('sender saved rev'+str(timezone.now()))
 
                 event_counter.last_event_no += 1
                 event_counter.save()
-                print('reveal finished {}'.format(timezone.now()))
 
             messages.success(request, 'Transaction was successful.')
             return redirect('/reveal/')
         else:
             messages.error(request, 'Transaction was unsuccessful. Form not valid.') #repeats same msg multiple times, need to clear msgs at right time
             #return redirect('/reveal/') 
-            print('TXN FAILED. REVEAL. FORM NOT VALID')
             return render(request, 'core/reveal.html',{'form_errors':form.errors})
     else:
-        form = RevealForm()
+        #form = RevealForm()
         if request.user.is_authenticated:
             account = Account.objects.get(public_key = request.user.username)
             time_status = None
@@ -463,17 +492,16 @@ def transfer(request):
                     sender = Account.objects.get(public_key = sender_pk)
                 except Account.DoesNotExist:
                     messages.error(request, 'Transaction was unsuccessful. Sender does not exist.')
-                    print('TXN FAILED. T NO ACC')
                     return redirect('/transfer/')
                 if sender.sequence_next != sender_seq_no:
                     messages.error(request, 'Transaction was unsuccessful. Incorrect sequence number.')
-                    print('TXN FAILED. T INC SEQ')
                     return redirect('/transfer/')
                 if sender.balance < amount:
                     messages.error(request, 'Transaction was unsuccessful. Insufficient balance')
-                    print('TXN FAILED. T LOW BAL')
                     return redirect('/transfer/')
-                
+                if sender.registered and sender.balance < constants.MIN_BALANCE + amount:
+                    messages.error(request, 'Transaction was unsuccessful. Registered accounts must have a minimum balance of {}'.format(constants.MIN_BALANCE))
+                    return redirect('/transfer/')                
                 last_txn = Txn.objects.last()
                 txn_number = last_txn.id+1
 
@@ -503,10 +531,9 @@ def transfer(request):
         else:
             messages.error(request, 'Transaction was unsuccessful. Form not valid.') #repeats same msg multiple times, need to clear msgs at right time
             #return redirect('/transfer/') 
-            print('TXN FAILED. FORM NOT VALID')
             return render(request, 'core/transfer.html',{'form_errors':form.errors})
     else:
-        form = TransferForm()
+        #form = TransferForm()
         if request.user.is_authenticated:
             account = Account.objects.get(public_key = request.user.username)
             return render(request, 'core/transfer.html',{'account':account})
@@ -517,16 +544,9 @@ def transfer(request):
 
 def register(request):
     if request.method == 'POST':
-        #print(request.POST)
-        #print(request.FILES)
-        #print('POST register:   '+request.POST['username'])
         form = RegisterForm(request.POST,request.FILES)
         userform = UserRegistrationForm(request.POST)
         if userform.is_valid() and form.is_valid():
-            # print('userform.cleaned_data')
-            # print(userform.cleaned_data)
-            # print('form.cleaned_data')
-            # print(form.cleaned_data)
             username = form.cleaned_data.get('username') 
             sender_seq_no = form.cleaned_data.get('sender_seq_no') 
             name = form.cleaned_data.get('name') 
@@ -534,10 +554,6 @@ def register(request):
             photo = form.cleaned_data.get('photo') 
             photo_hash = form.cleaned_data.get('photo_hash') 
             signature = form.cleaned_data.get('signature')
-            
-            #current_time = timezone.now()
-            #do_tasks(current_time)
-
 
             if Account.objects.count() == 0:
                 with transaction.atomic():
@@ -571,19 +587,15 @@ def register(request):
                         sender = Account.objects.get(public_key = username)
                     except Account.DoesNotExist:
                         messages.error(request, 'Transaction was unsuccessful. That account does not exist.') # but this is ok if minbal=0!!
-                        print('TXN FAILED. NO ACC')
                         return redirect('/register/')
                     if sender.sequence_next != sender_seq_no:
                         messages.error(request, 'Transaction was unsuccessful. Incorrect sequence number.')
-                        print('TXN FAILED. INC SEQ NO')
                         return redirect('/register/') 
                     if sender.registered == True:
                         messages.error(request, 'Transaction was unsuccessful. That account is already registered.')
-                        print('TXN FAILED. ALREADY REG')
                         return redirect('/register/')
                     if sender.balance < constants.MIN_BALANCE: #txnfees?
                         messages.error(request, 'Transaction was unsuccessful. Account balance is less that the required minimum.')
-                        print('TXN FAILED. LOW BAL')
                         return redirect('/register/')
                               
                     last_txn = Txn.objects.last()
@@ -598,8 +610,6 @@ def register(request):
                     new_event = Event.objects.create(id=event_counter.last_event_no+1,timestamp=current_time, event_type='Txn') #handle integrity error for create
                     new_txn = Txn.objects.create(id=txn_number,event=new_event,txn_previous_hash=last_txn.txn_hash,txn_type='Register',sender=sender,sender_seq_no=sender_seq_no,txn_message=message_string,signature=signature,txn_data=txn_data,txn_hash=txn_hash.hex())
                     new_registration = Registration.objects.create(txn=new_txn,name=name,photo_hash=photo_hash)
-
-                    #Task.objects.create(time_due=current_time+timezone.timedelta(seconds=constants.TIMEDELTA_2_HOURS), action='CreateLinks', account=sender)
 
                     sender.name = name
                     sender.photo = photo
@@ -620,11 +630,9 @@ def register(request):
             #print('userform.errors')
             #print(userform.errors)
             #print(request.POST['username'])
-            print('TXN FAILED. FORM NOT VALID')
             return render(request, 'core/register.html',{'form_errors':form.errors})
             #return redirect('/register/') 
     else:
-        form = RegisterForm()
         return render(request, 'core/register.html')
 
 
@@ -650,45 +658,40 @@ def arrowupdate(request):
                     sender = Account.objects.get(public_key = sender_pk)
                 except Account.DoesNotExist:
                     messages.error(request, 'Transaction was unsuccessful. Sender does not exist.')
-                    print('TXN FAILED. AU. NOSNDER')
                     return redirect('/changevote/')
                 
                 if sender.sequence_next != sender_seq_no:
                     messages.error(request, 'Transaction was unsuccessful. Incorrect sequence number.')
-                    print('TXN FAILED. AU. INC SEQ')
                     return redirect('/changevote/')
 
-                if sender.balance >= 0: #txnfees?
-                    pass
-                else:
-                    messages.error(request, 'Transaction was unsuccessful. Insufficient balance')
-                    print('TXN FAILED. AU. LOW BAL')
+                if sender.suspended == True:
+                    messages.error(request, 'Transaction was unsuccessful. The sender account is suspended.')
                     return redirect('/changevote/')
-               
+
+                if sender.balance < constants.MIN_BALANCE: 
+                    messages.error(request, 'Transaction was unsuccessful. Account balance is less that the required minimum.')
+                    return redirect('/changevote/')
+
                 try:
                     target = Account.objects.get(public_key = target_pk)
                 except Account.DoesNotExist:
                     messages.error(request, 'Transaction was unsuccessful. No such target account exists.')
-                    print('TXN FAILED. AU. NO TARGET')
                     return redirect('/changevote/')        
 
                 try:
-                    arrow = Arrow.objects.get(source = sender, target = target, expired = False)
+                    arrow = Arrow.objects.get(source = sender, target = target, cancelled = False)
                 except Arrow.DoesNotExist:
                     messages.error(request, 'Transaction was unsuccessful. No such active Arrow exists.')
-                    print('TXN FAILED. AU. NO AROW')
                     return redirect('/changevote/')        
 
                 if arrow.matched == True:
                     messages.error(request, 'Transaction was unsuccessful. You cannot change your vote/bet as it has already been matched.')
-                    print('TXN FAILED. AU. MATCHED ROI')
                     return redirect('/changevote/')
 
                 new_status = 1 if arrow_status == 'Trust' else -1 if arrow_status == 'Distrust' else 0 if arrow_status == 'Neutral' else 9
 
                 if arrow.status == new_status:
                     messages.error(request, 'Nothing changed as your vote was already set to '+arrow_status)
-                    print('TXN FAILED. AU. SAMEY')
                     return redirect('/changevote/?target='+str(target_pk))   
 
                 message_string = 'Type:ChangeVote,Sender:'+sender_pk+',SeqNo:'+str(sender_seq_no)+',Target:'+target_pk+',Vote:'+arrow_status
@@ -698,13 +701,13 @@ def arrowupdate(request):
                 new_txn = Txn.objects.create(id=txn_number,event=new_event,txn_previous_hash=last_txn.txn_hash,txn_type='ChangeVote',sender=sender,sender_seq_no=sender_seq_no,txn_message=message_string,signature=signature,txn_data=txn_data,txn_hash=txn_hash.hex())
                 new_arrowupdate = ArrowUpdate.objects.create(txn=new_txn,arrow=arrow,arrowupdate=new_status)
 
-
                 target.update_balance_due(current_time)
-                old_zone = target.zone()
+                old_is_good = target.is_good()
                 old_net = target.net_votes
                 old_matched = target.matched_count
 
                 target.net_votes += new_status - arrow.status
+                target.good = target.is_good()
 
                 if new_status == 0:
                     arrow.position = None
@@ -713,7 +716,7 @@ def arrowupdate(request):
                     target.last_position += 1
 
                 if new_status*(arrow.status - old_net) > 0:  #i.e unmatched not empty
-                    unmatched = Arrow.objects.filter(target = target, expired = False, matched = False, status = -new_status).exclude(source = sender).order_by('position')  #-pos?no
+                    unmatched = Arrow.objects.filter(target = target, cancelled = False, matched = False, status = -new_status).exclude(source = sender).order_by('position')  #-pos?no
                     first_match = unmatched[0]
                     first_match.matched = True
                     arrow.matched = True
@@ -722,15 +725,11 @@ def arrowupdate(request):
 
                 if old_matched == 0 and target.matched_count > 0:
                     target.settlement_countdown = current_time
-                    #Task.objects.create(time_due=current_time+timezone.timedelta(seconds=constants.MARKET_SETTLEMENT_TIME), account=target, action='SettleMkt',)
 
-                if old_matched > 0 and target.zone() != old_zone:
+                if old_matched > 0 and target.is_good() != old_is_good:
                     target.settlement_countdown = current_time
-                    #old_task = Task.objects.get(account=target,completed=False,action='SettleMkt')
-                    #old_task.delete()
-                    #Task.objects.create(time_due=current_time+timezone.timedelta(seconds=constants.MARKET_SETTLEMENT_TIME), account=target, action='SettleMkt',)
-                
-                assert target.zone() == 'Good' or target.zone() == 'Bad'
+                   
+                #assert target.zone() == 'Good' or target.zone() == 'Bad'
 
                 arrow.status = new_status
                 sender.sequence_next += 1
@@ -741,21 +740,19 @@ def arrowupdate(request):
                 event_counter.save()
 
             messages.success(request, 'Transaction was successful.')
-            return redirect('/changevote/')
+            return redirect('/changevote/?target='+str(target_pk))
 
         else:
             messages.error(request, 'Transaction was unsuccessful. Form not valid.') #repeats same msg multiple times, need to clear msgs at right time
             #return redirect('/changevote/') 
-            print('TXN FAILED. AU. FORM NOT VALID')
             return render(request, 'core/changevote.html',{'form_errors':form.errors})
     else:
         target_pk = request.GET.get('target')
-        form = ArrowUpdateForm()
         if request.user.is_authenticated:
             account = Account.objects.get(public_key = request.user.username)
             return render(request, 'core/changevote.html',{'account':account,'target_pk':target_pk})
         else:
-            return render(request, 'core/changevote.html')
+            return render(request, 'core/changevote.html',{'target_pk':target_pk})
 
 
 
@@ -769,9 +766,7 @@ def challenge(request):
             account_2 = form.cleaned_data.get('account_2') 
             signature = form.cleaned_data.get('signature')
             with transaction.atomic():
-                #event_counter = EventCounter.objects.select_for_update().get(pk=1)  #nowait=true??
-                event_counter = EventCounter.objects.select_for_update().first()  #nowait=true??
-
+                event_counter = EventCounter.objects.select_for_update().get(pk=1) 
                 try:
                     sender = Account.objects.get(public_key = sender_pk)
                 except Account.DoesNotExist:
@@ -781,32 +776,45 @@ def challenge(request):
                     messages.error(request, 'Transaction was unsuccessful. Incorrect sequence number.')
                     return redirect('/challenge/')
                 if sender.balance < constants.CHALLENGER_BET:
-                    messages.error(request, 'Transaction was unsuccessful. Insufficient balance')
+                    messages.error(request, 'Transaction was unsuccessful. Need a balance of at least {} to make a challenge.'.format(constants.CHALLENGER_BET))
                     return redirect('/challenge/')
+
+                if sender.registered == True and sender.balance < constants.MIN_BALANCE + constants.CHALLENGER_BET: 
+                    messages.error(request, 'Transaction was unsuccessful. Registered accounts must have a minimum balance of {}.'.format(constants.MIN_BALANCE))
+                    return redirect('/changevote-challenge/')
+
                 try:
                     account1 = Account.objects.get(public_key = account_1)
                 except Account.DoesNotExist:
-                    messages.error(request, 'Transaction was unsuccessful. account_1 does not exist.')
+                    messages.error(request, 'Transaction was unsuccessful. Account 1 does not exist.')
                     return redirect('/challenge/')
                 try:
                     account2 = Account.objects.get(public_key = account_2)
                 except Account.DoesNotExist:
-                    messages.error(request, 'Transaction was unsuccessful. account_2 does not exist.')
+                    messages.error(request, 'Transaction was unsuccessful. Account 2 does not exist.')
                     return redirect('/challenge/')
 
                 if account1 == account2:
-                    messages.error(request, 'Transaction was unsuccessful. Cant bbe same')
+                    messages.error(request, 'Transaction was unsuccessful. Account 1 and Account 2 cannot be the same')
                     return redirect('/challenge/')
 
                 if account1.registered == False:
-                    messages.error(request, 'Transaction was unsuccessful. account1 is not registered')
+                    messages.error(request, 'Transaction was unsuccessful. Account 1 is not registered')
                     return redirect('/challenge/')    
 
                 if account2.registered == False:
-                    messages.error(request, 'Transaction was unsuccessful. account2  is not registered')
+                    messages.error(request, 'Transaction was unsuccessful. Account 2  is not registered')
                     return redirect('/challenge/')
 
-                if Challenge.objects.filter((Q(defendant_1=account1) & Q(defendant_2=account2)) | (Q(defendant_1=account2) & Q(defendant_2=account1))).exists():
+                if account1.suspended == True:
+                    messages.error(request, 'Transaction was unsuccessful. Account 1 is already suspended')
+                    return redirect('/challenge/')    
+
+                if account2.suspended == True:
+                    messages.error(request, 'Transaction was unsuccessful. Account 2  is already suspended')
+                    return redirect('/challenge/')
+
+                if Challenge.objects.filter((Q(defendant_1=account1) & Q(defendant_2=account2)) | (Q(defendant_1=account2) & Q(defendant_2=account1)) & Q(finished=False)& Q(cancelled=False)).exists():
                     messages.error(request, 'Transaction was unsuccessful. A challenge against those two accounts already exists.')
                     return redirect('/challenge/')
 
@@ -822,9 +830,10 @@ def challenge(request):
 
                 new_event = Event.objects.create(id=event_counter.last_event_no+1,timestamp=current_time, event_type='Txn') #handle integrity error for create
                 new_txn = Txn.objects.create(id=txn_number,event=new_event,txn_previous_hash=last_txn.txn_hash,txn_type='Challenge',sender=sender,sender_seq_no=sender_seq_no,txn_message=message_string,signature=signature,txn_data=txn_data,txn_hash=txn_hash.hex())
-                new_challenge_creation = ChallengeCreation.objects.create(txn=new_txn,defendant_1=account1,defendant_2=account2)
-
                 new_challenge = Challenge.objects.create(challenger=sender,defendant_1=account1,defendant_2=account2,created=current_time)
+                new_challenge_creation = ChallengeCreation.objects.create(txn=new_txn,challenge=new_challenge,amount=constants.CHALLENGER_BET)
+
+                sender.balance -= constants.CHALLENGER_BET
 
                 sender.sequence_next += 1
                 sender.save()
@@ -839,25 +848,22 @@ def challenge(request):
             #return redirect('/challenge/') 
             return render(request, 'core/challenge.html',{'form_errors':form.errors})
     else:
-        form = ChallengeForm()
         if request.user.is_authenticated:
             account = Account.objects.get(public_key = request.user.username)
             return render(request, 'core/challenge.html',{'account':account})
         else:
             return render(request, 'core/challenge.html')
-            #return render(request, 'core/challenge.html',{'form':form})
             
 
 def updatechallengevote(request):
     if request.method == 'POST':
-        print(request.POST)
-        print(request.POST['arrow_status'])
-        form = ArrowUpdateForm(request.POST)
+        form = ChallengeLinkUpdateForm(request.POST)
         if form.is_valid():
             sender_pk = form.cleaned_data.get('username') 
             sender_seq_no = form.cleaned_data.get('sender_seq_no') 
-            target_pk = form.cleaned_data.get('target_pk') 
-            arrow_status = form.cleaned_data.get('arrow_status') 
+            challenge_id = form.cleaned_data.get('challenge_id') 
+            vote = form.cleaned_data.get('vote') 
+            choice = form.cleaned_data.get('choice') 
             signature = form.cleaned_data.get('signature')
             with transaction.atomic():
                 event_counter = EventCounter.objects.select_for_update().first()  #nowait=true??
@@ -867,117 +873,129 @@ def updatechallengevote(request):
 
                 if current_time < last_txn.event.timestamp:
                     messages.error(request, 'Transaction was unsuccessful. Wrong datetime.')  #should really never happen
-                    return redirect('/changevote/')
+                    return redirect('/changevote-challenge/')
                 try:
                     sender = Account.objects.get(public_key = sender_pk)
                 except Account.DoesNotExist:
                     messages.error(request, 'Transaction was unsuccessful. Sender does not exist.')
-                    return redirect('/changevote/')
+                    return redirect('/changevote-challenge/')
                 
                 if sender.sequence_next != sender_seq_no:
                     messages.error(request, 'Transaction was unsuccessful. Incorrect sequence number.')
+                    return redirect('/changevote-challenge/')
+
+                if sender.suspended == True:
+                    messages.error(request, 'Transaction was unsuccessful. The sender account is suspended.')
                     return redirect('/changevote/')
 
-                if sender.balance >= 0: #txnfees?
-                    pass
-                else:
-                    messages.error(request, 'Transaction was unsuccessful. Insufficient balance')
-                    return redirect('/changevote/')
+                if sender.balance < constants.MIN_BALANCE: 
+                    messages.error(request, 'Transaction was unsuccessful. Account balance is less that the required minimum.')
+                    return redirect('/changevote-challenge/')
                
                 try:
-                    target = Account.objects.get(public_key = target_pk)
-                except Account.DoesNotExist:
-                    messages.error(request, 'Transaction was unsuccessful. No such target account exists.')
-                    return redirect('/changevote/')        
+                    challenge = Challenge.objects.get(id = challenge_id, finished= False, cancelled=False)
+                except Challenge.DoesNotExist:
+                    messages.error(request, 'Transaction was unsuccessful. No such challenge exists.')
+                    return redirect('/changevote-challenge/')        
 
                 try:
-                    arrow = Arrow.objects.get(source = sender, target = target, expired = False)
-                except Arrow.DoesNotExist:
-                    messages.error(request, 'Transaction was unsuccessful. No such active Arrow exists.')
-                    return redirect('/changevote/')        
+                    challengelink = ChallengeLink.objects.get(voter = sender, challenge = challenge, finished = False, cancelled = False)
+                except ChallengeLink.DoesNotExist:
+                    messages.error(request, 'Transaction was unsuccessful. No such active challengelink exists.')
+                    return redirect('/changevote-challenge/')        
 
-                if arrow.matched == True:
-                    messages.error(request, 'Transaction was unsuccessful. You cannot change your vote/bet as it has already been matched.')
-                    return redirect('/changevote/')
+                new_status = 1 if vote == 'Trust' else -1 if vote == 'Distrust' else 0 if vote == 'Neutral' else 9
+                new_choice = 1 if choice == 'Account1' else -1 if choice == 'Account2' else 0 if choice == 'Neutral' else 9
 
-                if target.settlement_countdown and (target.settlement_countdown < current_time - timezone.timedelta(seconds=constants.MARKET_SETTLEMENT_TIME)):
-                    print('we need to settle at least one market')
-                    messages.error(request, 'Transaction was unsuccessful. This market has just completed.')
-                    return redirect('/changevote/')
+                if challengelink.matched == True and new_status != challengelink.status:
+                    messages.error(request, 'Transaction was unsuccessful. You cannot change your vote as it has already been matched.')
+                    return redirect('/changevote-challenge/?id='+str(challenge_id))
 
-                new_status = 1 if arrow_status == 'Trust' else -1 if arrow_status == 'Distrust' else 0 if arrow_status == 'Neutral' else 9
-                print('new_status: '+str(new_status))
+                if challengelink.matched_who == True and challengelink.status_who != new_choice:
+                    messages.error(request, 'Transaction was unsuccessful. You cannot change your choice as it has already been matched.')
+                    return redirect('/changevote-challenge/?id='+str(challenge_id))
 
-                if arrow.status == new_status:
-                    print('samesame')
-                    messages.error(request, 'Nothing changed as your vote was already set to '+arrow_status)
-                    return redirect('/changevote/?target='+str(target_pk))   
+                if challengelink.status == new_status and challengelink.status_who == new_choice:
+                    messages.error(request, 'Nothing changed as your transaction did not change anthing.')
+                    return redirect('/changevote-challenge/?id='+str(challenge_id))   
 
-                message_string = 'Type:ChangeVote,Sender:'+sender_pk+',SeqNo:'+str(sender_seq_no)+',Target:'+target_pk+',Vote:'+arrow_status
+                message_string = 'Type:ChangeChallengeVote,Sender:'+sender_pk+',SeqNo:'+str(sender_seq_no)+',ChallengeID:'+str(challenge_id)+',Vote:'+vote+',Choice:'+choice
                 txn_data = '"TxnNo":"'+str(txn_number)+'","Created":"'+str(current_time.strftime("%Y-%m-%d-%H:%M:%S"))+'","Message":"'+message_string+'","Signature":"'+signature+'","PreviousHash":"'+last_txn.txn_hash+'"'
                 txn_hash  = nacl.hash.sha512(txn_data.encode('utf-8'), encoder=nacl.encoding.RawEncoder)
                 new_event = Event.objects.create(id=event_counter.last_event_no+1,timestamp=current_time, event_type='Txn')
-                new_txn = Txn.objects.create(id=txn_number,event=new_event,txn_previous_hash=last_txn.txn_hash,txn_type='ChangeVote',sender=sender,sender_seq_no=sender_seq_no,txn_message=message_string,signature=signature,txn_data=txn_data,txn_hash=txn_hash.hex())
-                new_arrowupdate = ArrowUpdate.objects.create(txn=new_txn,arrow=arrow,arrowupdate=new_status)
+                new_txn = Txn.objects.create(id=txn_number,event=new_event,txn_previous_hash=last_txn.txn_hash,txn_type='ChangeChallengeVote',sender=sender,sender_seq_no=sender_seq_no,txn_message=message_string,signature=signature,txn_data=txn_data,txn_hash=txn_hash.hex())
+                new_challengelinkupdate = ChallengeLinkUpdate.objects.create(txn=new_txn,challengelink=challengelink,challengelinkupdate=new_status,challengelink_who_update=new_choice)
 
-                old_zone = target.zone()
-                old_net = target.net_votes
-                target.net_votes += new_status - arrow.status
-                print('old_zone: '+str(old_zone))
-                print('old_net: '+str(old_net))
-                print('target.net_votes: '+str(target.net_votes))
-                print('target.zone: '+str(target.zone))
-                if new_status*(arrow.status - old_net) > 0:  #i.e unmatched not empty
-                    print('unmatched: '+str(new_status*(arrow.status - old_net)))
-                    unmatched = Arrow.objects.filter(target=target,expired=False,matched=False,status= -new_status).exclude(source=sender).order_by('position')
-                    first_match = unmatched[0]
-                    first_match.matched = True
-                    arrow.matched = True
-                    target.matched_count += 1
-                    print('target.zone: '+str(target.zone))
-                    if (target.matched_count == 1) or (target.zone != old_zone):
-                        target.settlement_countdown = current_time
-                    first_match.save()
-                else:
-                    arrow.position = target.last_position + 1
-                    target.last_position += 1
-                    if target.zone != old_zone:
-                        target.settlement_countdown = current_time
 
-                if target.zone != old_zone:
-                    if (old_zone == 'Good'):
-                        elapsed_time = current_time - target.balance_due_last_updated 
-                        dividend = Decimal(elapsed_time.total_seconds())*Decimal(constants.UBI_RATE/24/3600)
-                        target.balance_due += dividend
-                        #target.total_ubi_generated += dividend
-                        target.balance_due_last_updated = current_time
-                        target.save()
+                if challengelink.status != new_status:
+                    old_is_good = challenge.is_good()
+                    old_net = challenge.net_votes
+                    old_matched = challenge.matched_count
+                    challenge.net_votes += new_status - challengelink.status
+                    challenge.good = challenge.is_good()
+
+                    if new_status == 0:
+                        challengelink.position = None
                     else:
-                        target.balance_due_last_updated = current_time
-                        target.save()
+                        challengelink.position = challenge.last_position + 1
+                        challenge.last_position += 1
+
+                    if new_status*(challengelink.status - old_net) > 0:  #i.e unmatched not empty
+                        unmatched = ChallengeLink.objects.filter(challenge = challenge, matched = False, status = -new_status).exclude(voter = sender).order_by('position')  #-pos?no
+                        first_match = unmatched[0]
+                        first_match.matched = True
+                        challengelink.matched = True
+                        challenge.matched_count += 1
+                        first_match.save()
+
+                    if old_matched == 0 and challenge.matched_count > 0:
+                        challenge.settlement_countdown = current_time
+
+                    if old_matched > 0 and challenge.is_good() != old_is_good:
+                        challenge.settlement_countdown = current_time
+                
+                if challengelink.status_who != new_choice:
+                    old_net_who = challenge.net_votes_who
+                    old_matched_who = challenge.matched_count_who
+                    challenge.net_votes_who += new_choice - challengelink.status_who                    
+
+                    if new_choice == 0:
+                        challengelink.position_who = None
+                    else:
+                        challengelink.position_who = challenge.last_position_who + 1
+                        challenge.last_position_who += 1
+
+                    if new_choice*(challengelink.status_who - old_net_who) > 0:  #i.e unmatched not empty
+                        unmatched = ChallengeLink.objects.filter(challenge = challenge, matched_who = False, status_who = -new_choice).exclude(voter = sender).order_by('position_who')  #-pos?no
+                        first_match_who = unmatched[0]
+                        first_match_who.matched_who = True
+                        challengelink.matched_who = True
+                        challenge.matched_count_who += 1
+                        first_match_who.save()
 
 
-                arrow.status = new_status
+                challengelink.status = new_status
+                challengelink.status_who = new_choice
                 sender.sequence_next += 1
-                arrow.save()
-                target.save()
+                challengelink.save()
+                challenge.save()
                 sender.save()
                 event_counter.last_event_no += 1
                 event_counter.save()
 
             messages.success(request, 'Transaction was successful.')
-            return redirect('/changevote/')
+            return redirect('/changevote-challenge/?id='+str(challenge_id))
 
         else:
             messages.error(request, 'Transaction was unsuccessful. Form not valid.') #repeats same msg multiple times, need to clear msgs at right time
             #return redirect('/changevote/') 
-            return render(request, 'core/changevote.html',{'form_errors':form.errors})
+            return render(request, 'core/changevote-challenge.html',{'form_errors':form.errors})
     else:
-        target_pk = request.GET.get('target')
-        form = ArrowUpdateForm()
+        challenge_id = request.GET.get('id')
+        form = ChallengeLinkUpdateForm()
         if request.user.is_authenticated:
             account = Account.objects.get(public_key = request.user.username)
-            return render(request, 'core/changevote.html',{'account':account,'target_pk':target_pk})
+            return render(request, 'core/changevote-challenge.html',{'account':account,'challenge_id':challenge_id})
         else:
-            return render(request, 'core/changevote.html')
+            return render(request, 'core/changevote-challenge.html')
 

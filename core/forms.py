@@ -265,6 +265,12 @@ class TransferForm(forms.Form):
         #except all other errors?
         return username
 
+    def clean_amount(self):
+        amount = self.cleaned_data['amount']
+        if amount < 0.01:
+            raise forms.ValidationError("Amount cannot be less than 0.01")
+        return amount
+
     def clean_recipient_pk(self):
         recipient_pk = self.cleaned_data['recipient_pk']
         try:
@@ -518,4 +524,57 @@ class ChallengeForm(forms.Form):
                 verify_key.verify(message_string_encoded, signature_bytes)  
             except nacl.exceptions.BadSignatureError:
                 #messages.error(request, 'Incorrect signature.')
+                raise forms.ValidationError("Incorrect signature.")
+
+
+class ChallengeLinkUpdateForm(forms.Form):
+    username = forms.CharField(min_length=64, max_length=64)
+    sender_seq_no = forms.IntegerField()
+    challenge_id = forms.IntegerField()
+    vote_choices = (('Neutral', 'Neutral'),('Trust', 'Trust'),('Distrust', 'Distrust'))   #does this give error if arrow_status = "Trustish"
+    vote = forms.ChoiceField(choices = vote_choices)
+    choice_choices = (('Neutral', 'Neutral'),('Account1', 'Account1'),('Account2', 'Account2'))   #does this give error if arrow_status = "Trustish"
+    choice = forms.ChoiceField(choices = choice_choices)
+    signature = forms.CharField(min_length=128, max_length=128)
+
+    class Meta:
+        fields = ('username','sender_seq_no','challenge_id','vote','choice','signature')
+
+
+    def clean_username(self):
+        username = self.cleaned_data['username']
+        try:
+            username_decoded = binascii.unhexlify(username) #no need new variable
+        except binascii.Error as err: 
+            #messages.error(request, err)
+            raise forms.ValidationError("username is not a proper hex string")
+        #except all other errors?
+        print(username)
+        return username
+
+    def clean(self):
+        cleaned_data = super().clean()
+        username = cleaned_data.get("username")
+        sender_seq_no = cleaned_data.get("sender_seq_no")
+        challenge_id = cleaned_data.get("challenge_id")
+        vote = cleaned_data.get("vote")
+        choice = cleaned_data.get("choice")
+        signature = cleaned_data.get("signature")
+        if username and challenge_id:
+            try:
+                verify_key = nacl.signing.VerifyKey(username,encoder=nacl.encoding.HexEncoder) # Create a VerifyKey object from a hex serialized public key
+            except nacl.exceptions.CryptoError as err:
+                raise forms.ValidationError("problem creating verify key serious!")
+            message_string = 'Type:ChangeChallengeVote,Sender:'+username+',SeqNo:'+str(sender_seq_no)+',ChallengeID:'+str(challenge_id)+',Vote:'+vote+',Choice:'+choice   #bad name?
+            try:
+                signature_bytes = bytes.fromhex(signature)
+            except ValueError as err:
+                raise forms.ValidationError("problem with sig ")
+            try:
+                message_string_encoded = message_string.encode(encoding='utf-8',errors='strict')
+            except Exception as err:
+                raise forms.ValidationError("message_string_encoded not working ")
+            try:
+                verify_key.verify(message_string_encoded, signature_bytes)  
+            except nacl.exceptions.BadSignatureError:
                 raise forms.ValidationError("Incorrect signature.")

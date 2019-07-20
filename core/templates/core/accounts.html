@@ -38,10 +38,7 @@
               <td style="vertical-align: middle;font-size:14px;">{% if account.name %}{{account.name}}{% endif %}</td>
               <td style="vertical-align: middle;font-size:14px;">
                 {% if account.suspended %}<span>Suspended</span>
-                {% elif account.registered %}
-                  {% if account.verified %}<span class="text-success">{{ account.verification_score }}&#37;</span>
-                  {% else %}<span class="text-danger">{{ account.verification_score }}&#37;</span>
-                  {% endif %}
+                {% elif account.registered %}<span>{{ account.verification_score }}&#37;</span>
                 {% else %}<span class="text-secondary">Not&nbsp;Registered</span>
                 {% endif%}
               </td>

@@ -18,11 +18,13 @@ urlpatterns = [
 
     url(r'^challenges/$', core_views.challenges, name='challenges'),
     url(r'^challenges/(?P<challengeid>[1-9][0-9]*)/$', core_views.single_challenge, name='single_challenge'), 
+    url(r'^challenges/(?P<challengeid>[1-9][0-9]*)/history/$', core_views.single_challenge_history, name='single_challenge_history'), 
 
     url(r'^transactions/$', core_views.txns, name='txns'),  #explore txnchain
     url(r'^transactions/(?P<txno>[1-9][0-9]*)/$', core_views.txn, name='txn'), 
 
     url(r'^statistics/$', core_views.statistics, name='statistics'),
+    url(r'^exchange2/$', core_views.exchange2, name='exchange2'),
     url(r'^exchange/$', core_views.exchange, name='exchange'),
     url(r'^faq/$', core_views.faq, name='faq'),
     url(r'^newkeypair/$', core_views.newkeypair, name='newkeypair'),
@@ -40,6 +42,9 @@ urlpatterns = [
     url(r'^challenge/$', core_views.challenge, name='challenge'),
     url(r'^changevote-challenge/$', core_views.updatechallengevote, name='updatechallengevote'),
     url(r'^resetpassword/$', core_views.resetpassword, name='resetpassword'),
+
+    url(r'^chatmessages/$', core_views.chatmessages, name='chatmessages'),  
+
 
     #url(r'^donexttask/$', core_views.donexttask, name='donexttask'),
 

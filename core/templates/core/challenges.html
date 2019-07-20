@@ -28,8 +28,7 @@ td { overflow:hidden;
               <th>Challenge ID</th>
               <th>Account 1</th>
               <th>Account 2</th>
-              <th>Verification Score</th>
-              <th>Outcome</th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody>
@@ -39,8 +38,13 @@ td { overflow:hidden;
               <td style="vertical-align: middle;font-size:13px;"><a class="textlink" href="/challenges/{{ challenge.id}}/">Challenge {{ challenge.id }}</a></td>
               <td style="vertical-align: middle;font-size:13px;"><a class="textlink" href="/accounts/{{ challenge.defendant_1.public_key}}/"><img src="{% get_media_prefix %}{{ challenge.defendant_1.photo }}" height="70" width="70"></a></td>
               <td style="vertical-align: middle;font-size:13px;"><a class="textlink" href="/accounts/{{ challenge.defendant_2.public_key}}/"><img src="{% get_media_prefix %}{{ challenge.defendant_2.photo }}" height="70" width="70"></a></td>
+              {% if challenge.cancelled %}
+              <td style="vertical-align: middle;font-size:14px;">Cancelled</td>
+              {% elif challenge.finished %}
+              <td style="vertical-align: middle;font-size:14px;">{% if challenge.verified %}Both&nbsp;accounts good {% elif challenge.net_votes_who >= 0 %}Account&nbsp;1&nbsp;Suspended{% else %}Account&nbsp;2&nbsp;Suspended{% endif %}</td>
+              {% else %}
               <td style="vertical-align: middle;font-size:14px;">{{ challenge.verification_score }}&#37;</td>
-              <td style="vertical-align: middle;font-size:14px;">{{ challenge.settlement_countdown }}</td>
+              {% endif %}
             </tr>
             {% endif %}
             {% endfor %}

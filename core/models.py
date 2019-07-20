@@ -1,21 +1,13 @@
 from django.db import models
 from django.utils import timezone
+from decimal import Decimal
 import core.constants as constants
-from decimal import *
+from django.db.models import Q
 
-import nacl.signing
-from nacl.hash import sha512
-import nacl.encoding
-import nacl.exceptions
-import binascii
-
-from django.db import transaction
-from django.db import IntegrityError
-from django.core.exceptions import ObjectDoesNotExist
 
 #  --------------  STATE  --------------- 
 class Account(models.Model): # an account never gets deleted, it costs a txn fee to create an account. i.e. when a new pk get money we create an account.
-    public_key = models.CharField(max_length=64, unique=True)#PRIMARYKEY no as longer??  # fixed forever, this will be accid in the recovery setting. 
+    public_key = models.CharField(max_length=64, unique=True) #PRIMARYKEY no as longer??  # fixed forever, this will be accid in the recovery setting. 
     balance = models.DecimalField(max_digits = 20, decimal_places = 2, default=0) #IntegerField?
     sequence_next = models.IntegerField(default=1)  #PositiveIntegerField
     registered = models.BooleanField(default=False) #if true then minbalance=beta is in effect
@@ -24,10 +16,9 @@ class Account(models.Model): # an account never gets deleted, it costs a txn fee
     photo = models.ImageField(upload_to = 'account_photos/', null=True) #can exist before reg=true?
     photo_hash = models.CharField(max_length=128,null=True)
 
-    registered_date = models.DateTimeField(null=True) #change to time
+    registered_date = models.DateTimeField(null=True) 
     linked = models.BooleanField(default=False) #iff deg>0
     degree = models.IntegerField(default=0)
-    #key = models.DecimalField(max_digits = 999, decimal_places = 998, null=True)  #this is the max pprecision allowed
 
     committed = models.BooleanField()
     committed_time = models.DateTimeField(null=True)
@@ -35,25 +26,29 @@ class Account(models.Model): # an account never gets deleted, it costs a txn fee
 
     balance_due = models.DecimalField(max_digits = 20, decimal_places = 2, default=0) #IntegerField?
     balance_due_last_updated = models.DateTimeField(default=timezone.now)
-    #total_ubi_generated = models.DecimalField(max_digits = 20, decimal_places = 2)  #include if its a stat we will want to display
 
-    #market_active = models.BooleanField(default=False) #iff matched_count >0
-    #zone_last_changed = models.DateTimeField(null=True)  #not null if market active 
     settlement_countdown = models.DateTimeField(null=True)  #not null if market active  
-    #matched_count_last_increased = models.DateTimeField(null=True)  #not null if market active
     last_position = models.IntegerField(default=0)
     net_votes = models.IntegerField(default=0)
     matched_count = models.IntegerField(default=0)
 
     suspended = models.BooleanField(default=False)
     challenge_degree = models.IntegerField(default=0)
-    #chalenges_key = models.DecimalField(max_digits = 200, decimal_places = 199, null=True) 
 
-    def zone(self):
+    good = models.BooleanField(default=True)
+    #is_verified = models.BooleanField(default=False)
+
+    def is_good(self):
         if 2*self.net_votes >= self.degree:
-            return 'Good'
+            return True
         else:
-            return 'Bad'
+            return False
+
+    # def zone(self):
+    #     if 2*self.net_votes >= self.degree:
+    #         return 'Good'
+    #     else:
+    #         return 'Bad'
 
     def verified(self):
         if 2*self.net_votes >= self.degree and self.linked == True:
@@ -68,7 +63,8 @@ class Account(models.Model): # an account never gets deleted, it costs a txn fee
             return 0
 
     def update_balance_due(self,timestamp): #run this any time verified changes , just before
-        if self.verified() == True:
+        #if self.verified() == True:
+        if self.linked == True and self.good == True:
             elapsed_time = timestamp - self.balance_due_last_updated 
             self.balance_due += Decimal(elapsed_time.total_seconds())*Decimal(constants.UBI_RATE/24/3600)
             self.balance_due_last_updated = timestamp
@@ -76,11 +72,86 @@ class Account(models.Model): # an account never gets deleted, it costs a txn fee
             self.balance_due_last_updated = timestamp
         # return smthin?
 
-    # def suspend(self):
-    #     self.suspended = True
-    #     self.save()
-        #del links
-        #
+    def suspend(self,current_time):
+        self.suspended = True
+        # self.matched_count = 0
+        # self.net_votes = 0
+        # self.last_position = 0
+        # self.settlement_countdown = None
+        self.save()
+
+        overlapping_challenges = Challenge.objects.filter(Q(cancelled = False) & Q( finished = False) & (Q(defendant_1 = self) | Q(defendant_2 = self)))
+        for och in overlapping_challenges:
+            och.cancel()
+
+        arrows_from = Arrow.objects.filter(source = self, cancelled = False)
+        for arrow in arrows_from:
+            target = arrow.target
+            target.update_balance_due(current_time)
+            #old_zone = target.zone()
+            old_is_good = target.is_good()
+            target.degree -= 1
+            target.net_votes -= arrow.status
+            target.good = target.is_good()
+            if arrow.matched == True:
+                target.matched_count -= 1
+                matched_arrow = Arrow.objects.filter(target = target, cancelled = False, matched = True, status = -arrow.status).order_by('-position')[0]
+                matched_arrow.matched = False
+                matched_arrow.save()
+
+            if target.matched_count > 0:
+                #if target.zone() != old_zone:
+                if target.is_good() != old_is_good:
+                    target.settlement_countdown = current_time
+            else:
+                 target.settlement_countdown = None
+            target.save()
+
+            arrow.cancelled = True 
+            # arrow.status = 0 
+            # arrow.matched = False 
+            # arrow.position = None 
+            arrow.save()
+
+        arrows_to = Arrow.objects.filter(target = self, cancelled = False)
+        for arrow in arrows_from:
+            arrow.cancelled = True
+            # arrow.status = 0
+            # arrow.matched = False
+            # arrow.position = None
+            arrow.save()
+
+
+        challengelinks = ChallengeLink.objects.filter(voter = self, cancelled = False)
+        for challengelink in challengelinks:
+            challenge = challengelink.challenge
+            old_is_good = challenge.is_good()
+            challenge.degree -= 1
+            challenge.net_votes -= challengelink.status
+            challenge.good = challenge.is_good()
+            if challengelink.matched == True:
+                challenge.matched_count -= 1
+                matched_challengelink = ChallengeLink.objects.filter(challenge = challenge, cancelled = False, matched = True, status = -challengelink.status).order_by('-position')[0]
+                matched_challengelink.matched = False
+                matched_challengelink.save()
+            challenge.net_votes_who -= challengelink.status_who
+            if challengelink.matched_who == True:
+                challenge.matched_count_who -= 1
+                matched_who_challengelink = ChallengeLink.objects.filter(challenge = challenge, cancelled = False, matched_who = True, status_who = -challengelink.status_who).order_by('-position_who')[0]
+                matched_who_challengelink.matched_who = False
+                matched_who_challengelink.save()
+
+            if challenge.matched_count > 0:
+                if challenge.is_good() != old_is_good:
+                    challenge.settlement_countdown = current_time
+            else:
+                 challenge.settlement_countdown = None
+            challenge.save()
+
+            challengelink.cancelled = True
+            #challengelink.cancelled = True
+            challengelink.save()
+
 
 class Arrow(models.Model):  #here we use double entry, need to ensure integrity (i.e one arrow exists iff its opposite does)  #never deleted,so we can foreign key to them. created by us, epired by us.   
     source = models.ForeignKey(Account, related_name='outgoing_arrows',on_delete=models.CASCADE)  #no cascade??not relevent as account 'never' gets deleted  #also this never gets deleted
@@ -89,83 +160,101 @@ class Arrow(models.Model):  #here we use double entry, need to ensure integrity 
     status = models.IntegerField(choices=status_choices, default = 0)
     matched = models.BooleanField(default=False)
     position = models.IntegerField(null=True)
-    expired = models.BooleanField(default=False)
+    cancelled = models.BooleanField(default=False)
+    #messages_last_checked = models.DateTimeField(null=True)
 
     def opposite(self):
-        return Arrow.objects.get(source=self.target, target=self.source, expired=False) #only works for aactive arrows
+        return Arrow.objects.get(source=self.target, target=self.source, cancelled=False) #only works for active arrows
 
    
 class Challenge(models.Model):  #here we need to ensure exclusivity on 12 and 21    
-    challenger = models.ForeignKey(Account, related_name = 'challenges_created',on_delete=models.CASCADE)
-    defendant_1 = models.ForeignKey(Account, related_name = 'challenges_against_1',on_delete=models.CASCADE)
-    defendant_2 = models.ForeignKey(Account, related_name = 'challenges_against_2',on_delete=models.CASCADE)
+    challenger = models.ForeignKey(Account, related_name = 'challenges_created', on_delete=models.CASCADE)
+    defendant_1 = models.ForeignKey(Account, related_name = 'challenges_against_1', on_delete=models.CASCADE)
+    defendant_2 = models.ForeignKey(Account, related_name = 'challenges_against_2', on_delete=models.CASCADE)
     created = models.DateTimeField(null=True)
     linked = models.BooleanField(default=False) 
-
     degree = models.IntegerField(default=0)
-
-    finished = models.BooleanField(default=False)
-
-    settlement_countdown = models.DateTimeField(null=True) 
+    settlement_countdown = models.DateTimeField(null=True) # = None iff matched_count=0
 
     last_position = models.IntegerField(default=0)
     net_votes = models.IntegerField(default=0)
-    matched_count = models.IntegerField(default=0)
+    matched_count = models.IntegerField(default=0) 
 
     last_position_who = models.IntegerField(default=0)
     net_votes_who = models.IntegerField(default=0)
     matched_count_who = models.IntegerField(default=0)
+    finished = models.BooleanField(default=False)
+    cancelled = models.BooleanField(default=False)
+    good = models.BooleanField(default=True)
+
+    def is_good(self):
+        if 2*self.net_votes >= self.degree:
+            return True
+        else:
+            return False
 
     def verification_score(self):
         if self.linked == True:
-            return int(100*self.net_votes/self.degree)
+            return int(100*self.net_votes/self.degree) 
         else:
             return 0
+
+    def zone(self):
+        if 2*self.net_votes >= self.degree:
+            return 'Good'
+        else:
+            return 'Bad'
+
+    def verified(self):
+        if 2*self.net_votes >= self.degree and self.linked == True:
+            return True
+        else:
+            return False
+
+    def cancel(self):
+        self.cancelled = True
+        self.save()
+        creation_event = ChallengeCreation.objects.get(challenge=self)
+        challenger = self.challenger
+        challenger.balance += creation_event.amount
+        challenger.save()
+        challengelinks = ChallengeLink.objects.filter(challenge = self, cancelled = False, finished = False)
+        for challengelink in challengelinks:
+            challengelink.cancelled = True
+            challengelink.save()
+
+    def finish(self):
+        self.finished = True
+        self.save()
+        challengelinks = ChallengeLink.objects.filter(challenge = self, cancelled = False, finished = False)
+        for challengelink in challengelinks:
+            challengelink.finished = True
+            challengelink.save()
+
+ 
 
 class ChallengeLink(models.Model):   
     challenge = models.ForeignKey(Challenge, related_name = 'challengelinks',on_delete=models.CASCADE)
     voter = models.ForeignKey(Account, related_name = 'challengelinks',on_delete=models.CASCADE) #same name should be fine here
 
-    status_choices = ((0, 'neutral'),(1, 'support'),(-1, 'oppose')) 
+    status_choices = ((0, 'Neutral'),(1, 'Trust'),(-1, 'Distrust')) 
     status = models.IntegerField(choices=status_choices, default = 0)
     matched = models.BooleanField(default=False)
     position = models.IntegerField(null=True)
 
-    status_who_choices = ((0, 'neutral'),(1, 'd1good'),(-1, 'd2good')) 
+    status_who_choices = ((0, 'Neutral'),(1, 'Account1'),(-1, 'Account2')) 
     status_who = models.IntegerField(choices=status_who_choices, default = 0)
     matched_who = models.BooleanField(default=False)
     position_who = models.IntegerField(null=True)
-
-    expired = models.BooleanField(default=False)
-
-# class Task(models.Model):
-#     time_due = models.DateTimeField()
-#     action_choices = (('SettleMkt','SettleMkt'),('CreateLinks','CreateLinks'))
-#     action = models.CharField(max_length=20, choices = action_choices)
-#     account = models.ForeignKey(Account, related_name = 'tasks',on_delete=models.CASCADE) 
-#     completed = models.BooleanField(default=False)
-
-#     def doit(self):
-
-#         # if self.completed == True:
-#         #     raise ValueError('A very specific bad thing happened.')
-
-#         if self.action == 'CreateLinks':
-#             account = self.account
-#             outcome = account.create_links()
-#         elif self.action == 'SettleMkt':
-#             account = self.account
-#             account.settle_mkts()
-#         else:
-#             pass
-#         if outcome == 'task_done':
-#             self.completed = True
-#             self.save()
+    #messages_last_checked = models.DateTimeField(null=True)
+    finished = models.BooleanField(default=False)
+    cancelled = models.BooleanField(default=False)
 
 
-class EventCounter(models.Model):  #used for selectforupdate #rename Tracker? or GlobalState?
+
+
+class EventCounter(models.Model):  #used for selectforupdate 
     last_event_no = models.IntegerField()
-
 
 
 # class Statistic(models.Model): #global output vars
@@ -183,10 +272,7 @@ class EventCounter(models.Model):  #used for selectforupdate #rename Tracker? or
 
 
 
-
 # --------- TRANSACTIONS ----------- (i.e. ops that change the state) they are only added, never deleted or changed, and certain ones need to be easy to query
-#transactions should have enough info so that to compute the new state only requires knowing the current state and the new transaction, i.e S'=f(S,T)
-
 class Event(models.Model):
     timestamp = models.DateTimeField()
     event_type_choices = (('Txn','Transaction'),('AC','ArrowCreation'),('AE','ArrowExpiration'),('MS','MarketSettlement'),('MST','MarketSettlementTransfer'),('BU','BalanceUpdate'),('CLC','ChallengeLinkCreation'),('CLE','ChallengeLinkExpiration'),('CS', 'ChallengeSettlement'),('CST', 'ChallengeSettlementTransfer')) 
@@ -218,6 +304,7 @@ class Transfer(models.Model):
 class Commitment(models.Model): 
     txn = models.OneToOneField(Txn,on_delete=models.CASCADE)
     committed_hash = models.CharField(max_length=128)  
+
 class Revelation(models.Model): 
     txn = models.OneToOneField(Txn,on_delete=models.CASCADE)
     commitment = models.OneToOneField(Commitment,on_delete=models.CASCADE,related_name='revelation')
@@ -226,27 +313,24 @@ class Revelation(models.Model):
 class ArrowUpdate(models.Model): 
     txn = models.OneToOneField(Txn,on_delete=models.CASCADE)
     arrow = models.ForeignKey(Arrow,on_delete=models.CASCADE)
-    #target = models.ForeignKey(Account)
     arrowupdate_choices = ((0, 'Neutral'),(1, 'Trust'),(-1, 'Distrust'))   #change to yes/no?
     arrowupdate = models.IntegerField(choices=arrowupdate_choices)
-    #arrowupdate_choices = (('N', 'neutral'),('T', 'trust'),('D', 'distrust')) #setting to t or d is like making a bet so need bal>minbal
-    #arrowupdate = models.CharField(max_length=1, choices = arrowupdate_choices)
 
 class ChallengeCreation(models.Model):
     txn = models.OneToOneField(Txn,on_delete=models.CASCADE)
-    defendant_1 = models.ForeignKey(Account, related_name = 'challengecreations_against_1',on_delete=models.CASCADE)
-    defendant_2 = models.ForeignKey(Account, related_name = 'challengecreations_against_2',on_delete=models.CASCADE)
+    challenge = models.OneToOneField(Challenge,on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits = 20, decimal_places = 2)
 
-# class ChallengeLinkUpdate(models.Model): 
-#     txn = models.OneToOneField(Txn)
-#     challengelink = models.ForeignKey(ChallengeLink, related_name = 'challengelinkupdate_set')
-#     challengelinkupdate_choices = (('N', 'neutral'),('S', 'support'),('O', 'oppose'))
-#     challengelinkupdate = models.CharField(max_length=1, choices = challengelinkupdate_choices)
-
+class ChallengeLinkUpdate(models.Model): 
+    txn = models.OneToOneField(Txn,on_delete=models.CASCADE)
+    challengelink = models.ForeignKey(ChallengeLink, related_name = 'challengelinkupdate_set',on_delete=models.CASCADE)
+    challengelinkupdate_choices = ((0, 'Neutral'),(1, 'Trust'),(-1, 'Distrust'))
+    challengelinkupdate = models.IntegerField( choices = challengelinkupdate_choices)
+    challengelink_who_update_choices = ((0, 'Neutral'),(1, 'Account1'),(-1, 'Account1'))
+    challengelink_who_update = models.IntegerField(choices = challengelink_who_update_choices)
 
 
 # by us
-
 class BalanceUpdate(models.Model):  
     event = models.OneToOneField(Event,on_delete=models.CASCADE)
     account = models.ForeignKey(Account,on_delete=models.CASCADE) 
@@ -275,30 +359,35 @@ class ChallengeLinkCreation(models.Model):
 #     event = models.OneToOneField(Event)
 #     challengelink = models.ForeignKey(ChallengeLink, related_name = '+')
 
-# class ChallengeSettlement(models.Model):
-#     event = models.OneToOneField(Event)
-#     challenge = models.ForeignKey(Challenge) 
-# class ChallengeSettlementTransfer(models.Model):
-#     event = models.OneToOneField(Event)
-#     challenge_settlement = models.ForeignKey(ChallengeSettlement) 
-#     payee = models.ForeignKey(Account) 
-#     amount = models.DecimalField(max_digits = 20, decimal_places = 2)
+class ChallengeSettlement(models.Model):
+    event = models.OneToOneField(Event,on_delete=models.CASCADE)
+    challenge = models.ForeignKey(Challenge,on_delete=models.CASCADE) 
+class ChallengeSettlementTransfer(models.Model):
+    event = models.OneToOneField(Event,on_delete=models.CASCADE)
+    challenge_settlement = models.ForeignKey(ChallengeSettlement,on_delete=models.CASCADE) 
+    payee = models.ForeignKey(Account,on_delete=models.CASCADE) 
+    amount = models.DecimalField(max_digits = 20, decimal_places = 2)
 
 
+class Message(models.Model):  
+    sender = models.ForeignKey(Account,related_name = 'sent_msgs',on_delete=models.CASCADE)
+    receiver = models.ForeignKey(Account,related_name = 'received_msgs',on_delete=models.CASCADE)
+    content = models.TextField(max_length=500)
+    timestamp = models.DateTimeField() 
 
-#EXTRA
-#by user
 
-# class Message(models.Model):   #a message is a transaction since it doesnt get updated
-#     sender = models.ForeignKey(Account,related_name = 'sent_msgs')
-#     receiver = models.ForeignKey(Account,related_name = 'received_msgs')
-#     content = models.TextField(max_length=100)
-#     timestamp = models.DateTimeField(null=True) 
 # class MessageCh(models.Model):   #a message belonging to a challenge's chatroom THIS EXTRA MODEL NOT NEEDED?
 #     sender = models.ForeignKey(Account,related_name = 'sent_msgs')
 #     receiver = models.ForeignKey(Account,related_name = 'received_msgs')
 #     content = models.TextField(max_length=100)
 #     timestamp = models.DateTimeField(null=True) 
+
+
+
+
+
+#EXTRA
+#by user
 
 # class PasswordUpdate(models.Model):  
 #     account = models.ForeignKey(Account, on_delete=models.CASCADE) 
