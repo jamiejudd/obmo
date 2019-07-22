@@ -18,42 +18,52 @@
 {% block content %}
 <div class="container" style="margin-top:70px;">
 
-<div class="card">
+<div class="card" style="font-family: 'Garamond'">
   <div class="card-body">
-    <h5 class="card-title" style="font-family: 'Garamond'">How it works?</h5>
-    Each living human can register to recieve a daily income of 100 Utope. This is the only way the currency can come into existence. Utope derives its scarcity from the fact that each living human can register for at most one account. 
+    <h5 class="card-title">How to register?</h5>
+    Step 1. Create an Ed25519 keypair (this can be done <a class="textlink" href="/newkeypair/" target="_blank">here</a>). Keep a safe record of your Public Key and Secret Key.<br>
+    Step 2. Get the required minimum balance of {{min_balance}} OBM into your account. Go to the <a class="textlink" href="/exchange/" target="_blank">exchange</a> to find out how to get OBM.<br>
+    Step 3. Register your account by submitting a transaction <a class="textlink" href="/register/" target="_blank">here</a> including your public key, name, a password and a clear selfie. Then sign the transaction using your secret key and hit submit. (The sequence no. can be found on your account page, if this is your first transaction just enter 1 for this field).<br>
   </div>
 </div>
 
-<div class="card">
+<div class="card" style="font-family: 'Garamond'">
+  <div class="card-body">
+    <h5 class="card-title">How to start receiving the daily income?</h5>
+    First register as above. Then after {{timedelta_2_hours}} hours your account will be linked with a random list of other accounts. For each account you are linked with, you can vote on whether you believe there exists a real person that matches the profile picture of that account. Similarly your links can vote on whether they believe your account is genuine. The possible votes are 'Trust', 'Neutral' and 'Distrust'. Initially all votes are set to Neutral. Each account receives a verification score based on the votes it has received. A verification score over 50% is considered verified and that account will receive the daily income of 100 OBM.<br>
+    Go to <a class="textlink" href="/myaccount/" target="_blank">myaccount</a> to see the accounts you are linked with and get in contact with them to verify each other. The voting works like a bet so if you vote correctly you will win extra OBM and if you vote incorrectly you will lose some OBM. This provides the incentive to only verify real accounts.<br>
+  </div>
+</div>
+
+<div class="card" style="font-family: 'Garamond'">
   <div class="card-body">
     <h5 class="card-title" style="font-family: 'Garamond'">How to prevent people registering multiple times?</h5>
-    Each living human can register to recieve a daily income of 100 Utope. This is the only way the currency can come into existence. Utope derives its scarcity from the fact that each living human can register for at most one account. 
+    Each living human can register to recieve a daily income of 100 Utope. This is the only way the currency can come into existence. Utope derives its scarcity from the fact that each living human can register for at most one account.  In this process a set of peers will be chosen using a distributed RNG, and this set of peers will come to a consensus on whether your account is genuine, i.e. whether it belongs to a unique human. After passing this verification process you..
   </div>
 </div>
 
-<div class="card">
+<div class="card" style="font-family: 'Garamond'">
   <div class="card-body">
-    <h5 class="card-title" style="font-family: 'Garamond'">How can I register?</h5>
+    <h5 class="card-title" style="font-family: 'Garamond'">How does challenging work?</h5>
     First generate a EDska private key (for example her bitkey.com). Then get the minimum required balance into the account associated with this private key. Lastly upload a profile picture and submit your registration. The registration will then go through the verification process, after which your account will recieve 100 Utope daily. 
   </div>
 </div>
 
-<div class="card">
+<div class="card" style="font-family: 'Garamond'">
   <div class="card-body">
    <h5 class="card-title" style="font-family: 'Garamond'">Why would Utope have value?</h5>
             Given an economy and a selection of currencies, the relative values of the different currencies will be affected by the current and future distributions of tthe currencies. Specifiing the distribution via a universal dividend we believe to be the most objective policy. 
   </div>
 </div>
 
-<div class="card">
+<div class="card" style="font-family: 'Garamond'">
   <div class="card-body">
     <h5 class="card-title" style="font-family: 'Garamond'">How can I trust Utope?</h5>
             Utope runs as a publicly verifiable hash chain. The history cannot be altered, Every action which changes the state of the system is publicly verifiable. The main point trust requirement in Utope is that legitiamte transactions will not be rejected from adding to the hash chain,If there is a significant proportional of user who  
   </div>
 </div>
 
-<div class="card">
+<div class="card" style="font-family: 'Garamond'">
   <div class="card-body">
     <h5 class="card-title" style="font-family: 'Garamond'">How do the random links get chosen?</h5>
             Using a distributed commit and reveal RNG. Registered user can generate a random value and <a href="/commit/" >commit</a> to the hash of this value. After a fixed time interval they then <a href="/reveal/" >reveal</a> the value. The RNG combines these values to create a random value to choose the links.

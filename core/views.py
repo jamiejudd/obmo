@@ -277,7 +277,7 @@ def retrievepubkey(request):
     return render(request, 'core/retrievepubkey.html')
 
 def faq(request):
-    return render(request, 'core/faq.html')
+    return render(request, 'core/faq.html', {'min_balance':constants.MIN_BALANCE,'timedelta_2_hours':constants.TIMEDELTA_2_HOURS})
 
 #POSTS
 def resetpassword(request):
