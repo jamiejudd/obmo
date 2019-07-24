@@ -300,12 +300,81 @@ div::-webkit-scrollbar-thumb
   </div>
   </div>
 
+<!-- Modal -->
+<div class="modal fade" id="offerModal" tabindex="-1" role="dialog" aria-labelledby="offerModal" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+     <form id="mainform" onsubmit="return validateForm()" method="post" role="form" autocomplete="off" novalidate action="{% url 'offer' %}">
+     {% csrf_token %}
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="id_offer" class="font-weight-bold">Offer:</label>
+          <input type="text" class="form-control" id="id_offer" name="offer" placeholder="">
+          <div class="invalid-feedback" id="id_offer_feedback"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary"  id="CloseModal">Close</button>
+        <button type="submit" class="btn btn-primary"  id="Submit">Create</button>  <!-- data-dismiss="modal" -->
+      </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+
+
+<div class="card" style="margin-top:50px;margin-bottom: 80px">
+<div class="card-body">
+  <h6 style="text-align: left;font-size:14px;">Your offer:</h6>
+  <div class="table-responsive table-borderless">
+      <table class="table table-sm">
+        <tbody>
+          {% if offer %}
+          <tr><td style="vertical-align: middle;font-size:13px;">
+          <form method="post" action="{% url 'offer_delete' %}">
+          {% csrf_token %}
+          {{offer}}<button type="submit" class="btn btn-outline-danger btn-sm"  style="float: right;">Delete</button> 
+          </form>
+          </td></tr>
+          {% else %}
+          <tr><td style="vertical-align: middle;font-size:13px;"><a data-target="#offerModal" data-toggle="modal" class="MainNavText" id="MainNavHelp" href="#myModal" style="color:#28bda4">Create offer</a></td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+</div>
+</div>
+
 </div>
 
 {% endblock %}
 
 {% block script %}
 <script type="text/javascript">
+
+
+$('#CloseModal').on('click', function() {
+  $('#offerModal').modal('hide');
+});
+
+function validateForm() {
+  if( $("#id_offer").val() == "" ){
+      $('#id_offer_feedback').text('This field is required.');
+      $("#id_offer").addClass("is-invalid");
+      return false;
+    } else if($("#id_offer").val().length > 120){   
+      $('#id_offer_feedback').text('Maximum 120 characters.');
+      $("#id_offer").addClass("is-invalid");
+      return false;
+    } else {
+      $("#id_offer").removeClass("is-invalid");
+      return true;
+    };
+}
+
+
 
 // function whichButton(buttonElement){
 //   alert(buttonElement.id);

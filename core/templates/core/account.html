@@ -102,6 +102,12 @@ td {  overflow:hidden;
             {% endif %}
           </div>
           {% endif %}
+          {% if account.suspended %}
+          <div class="row row2">
+            <div class="col-md-2">Suspended:</div>
+            <div class="col-md-10">True</div>
+          </div>
+          {% endif %}
         </div>
         {% else %}
         <div class="col-xl-2" >

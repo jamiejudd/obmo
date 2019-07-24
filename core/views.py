@@ -10,7 +10,7 @@ from core.models import BalanceUpdate, ArrowCreation, ChallengeLinkCreation, Mar
 from core.models import Message
 
 from core.forms import  RegisterForm,TransferForm,UserRegistrationForm,ResetPasswordForm,CommitForm,RevealForm
-from core.forms import  ArrowUpdateForm,ChallengeForm,ChallengeLinkUpdateForm
+from core.forms import  ArrowUpdateForm,ChallengeForm,ChallengeLinkUpdateForm, OfferForm
 import core.constants as constants
 
 from django.db.models import Q
@@ -98,6 +98,9 @@ def myaccount(request):
     challenges_by = Challenge.objects.filter(challenger=account,finished=False,cancelled=False)
     challenges_against = Challenge.objects.filter(Q(defendant_1=account) | Q(defendant_2=account),finished=False,cancelled=False)
 
+    offer = None
+    if account.has_offer == True:
+        offer = account.offer
 
     countdown = None
     total_seconds = None
@@ -122,7 +125,7 @@ def myaccount(request):
         else:
             time_status = 'late'
             timer = str(td - td2).split(".")[0]
-    return render(request, 'core/myaccount.html',{'username':request.user.username,'account':account,'arrows':arrows,'challengelinks':challengelinks,'challenges_by':challenges_by,'challenges_against':challenges_against,'countdown':countdown,'total_seconds':total_seconds,'time_status':time_status,'timer':timer})
+    return render(request, 'core/myaccount.html',{'username':request.user.username,'account':account,'arrows':arrows,'challengelinks':challengelinks,'challenges_by':challenges_by,'challenges_against':challenges_against,'countdown':countdown,'total_seconds':total_seconds,'time_status':time_status,'timer':timer,'offer':offer})
 
 @login_required 
 def chatmessages(request):
@@ -243,7 +246,8 @@ def exchange2(request):
     #return render(request, 'core/index2.html')
     
 def exchange(request):
-    return render(request, 'core/exchange.html')
+    accounts_with_offers = Account.objects.filter(suspended=False,registered=True,has_offer=True)
+    return render(request, 'core/exchange.html',{'accounts_with_offers':accounts_with_offers})
     
 def statistics(request):
     supply = Account.objects.aggregate(Sum('balance'))['balance__sum']
@@ -306,6 +310,39 @@ def resetpassword(request):
     else:
         return render(request, 'core/resetpassword.html')
 
+@login_required 
+def offer(request):
+    if request.method == 'POST':
+        print(request.POST)
+        form = OfferForm(request.POST)
+        if form.is_valid():
+            offer = form.cleaned_data.get('offer') 
+            account = Account.objects.get(public_key = request.user.username)
+            if account.has_offer == True:
+                #messages.error(request, 'You already has an active offer. Delete that offer first.')
+                return redirect('/myaccount/')
+            account.has_offer = True
+            account.offer = offer
+            account.save()
+            messages.success(request, 'Created offer successfully.')
+            return redirect('/myaccount/')
+        else:
+            messages.error(request, 'Form not valid.') #repeats same msg multiple times, need to clear msgs at right time
+            return redirect('/myaccount/') 
+    else:
+        return redirect('/myaccount/')
+
+
+@login_required 
+def offer_delete(request):
+    if request.method == 'POST':
+        account = Account.objects.get(public_key = request.user.username)
+        account.has_offer = False
+        account.offer = None
+        account.save()
+        return redirect('/myaccount/')
+    else:
+        return redirect('/myaccount/')
 
 def commit(request):
     if request.method == 'POST':
@@ -366,9 +403,9 @@ def commit(request):
         #form = CommitForm()
         if request.user.is_authenticated:
             account = Account.objects.get(public_key = request.user.username)
-            return render(request, 'core/commit.html',{'account':account})
+            return render(request, 'core/commit.html',{'account':account,'timedelta_1_hours':constants.TIMEDELTA_1_HOURS})
         else:
-            return render(request, 'core/commit.html')
+            return render(request, 'core/commit.html',{'timedelta_1_hours':constants.TIMEDELTA_1_HOURS})
             #return render(request, 'core/commit.html',{'form':form})
 
 

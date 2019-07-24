@@ -384,6 +384,11 @@ class ArrowUpdateForm(forms.Form):
                 raise forms.ValidationError("Incorrect signature.")
 
 
+class OfferForm(forms.Form):
+    offer = forms.CharField(label='Offer', max_length=120)
+
+    class Meta:
+        fields = ('offer')
 
 
 

@@ -38,6 +38,9 @@ class Account(models.Model): # an account never gets deleted, it costs a txn fee
     good = models.BooleanField(default=True)
     #is_verified = models.BooleanField(default=False)
 
+    has_offer = models.BooleanField(default=False)
+    offer = models.CharField(max_length=120,null=True)
+
     def is_good(self):
         if 2*self.net_votes >= self.degree:
             return True
