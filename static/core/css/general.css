@@ -1,0 +1,31 @@
+html {
+  overflow-y: scroll;
+}
+body {
+  padding-top: 57px;
+}
+/* Small Desktop */
+/*@media (min-width: 769px) {
+  .container {
+    max-width: 769px;
+  }
+} */
+
+/* Large Desktop */
+/*@media (min-width: 1150px) { 
+  .container {
+    max-width: 1150px;
+  }
+}*/
+.nav-custom {
+  background-color: white;
+  border-bottom: 1px solid #eeeeee;
+}
+.noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+  -khtml-user-select: none; /* Konqueror HTML */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Non-prefixed version, currently supported by Chrome and Opera */
+}

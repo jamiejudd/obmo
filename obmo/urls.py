@@ -5,6 +5,7 @@ from django.contrib.auth import views as auth_views
 from django.conf.urls.static import static
 from django.conf import settings
 
+# from django_private_chat import urls as django_private_chat_urls
 
 urlpatterns = [
     url(r'^$', core_views.index, name='index'),
@@ -43,10 +44,13 @@ urlpatterns = [
     url(r'^changevote-challenge/$', core_views.updatechallengevote, name='updatechallengevote'),
     url(r'^resetpassword/$', core_views.resetpassword, name='resetpassword'),
 
-    url(r'^chatmessages/$', core_views.chatmessages, name='chatmessages'),  
+    #url(r'^chatmessages/$', core_views.chatmessages, name='chatmessages'),  
     url(r'^offer/$', core_views.offer, name='offer'),  
     url(r'^offer/delete/$', core_views.offer_delete, name='offer_delete'),  
+    url(r'^mark_read/$', core_views.mark_read, name='mark_read'),  
+
+    #url(r'^', include('django_private_chat.urls')),
+    # path('', include('django_private_chat.urls')),
 
 
-
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

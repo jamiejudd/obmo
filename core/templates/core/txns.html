@@ -31,10 +31,10 @@ td { overflow:hidden;
         <table class="table table-sm">
           <colgroup>
             <col style="width:5%">
-            <col style="width:20%">
-            <col style="width:10%">
-            <col style="width:15%">
-            <col style="width:50%">
+            <col style="width:16%">
+            <col style="width:16%">
+            <col style="width:16%">
+            <col style="width:47%">
           </colgroup> 
           <thead>
             <tr class="custom_centered">
@@ -54,7 +54,7 @@ td { overflow:hidden;
               <td data-container="body" data-toggle="popover"  data-placement="bottom" data-content = '{{ txn.txn_hash }}' >{{ txn.txn_hash }}</td>
               <td data-container="body" data-toggle="popover"  data-placement="bottom" data-content = '{{ txn.txn_data }}' >{{ txn.txn_data }}</td>
             </tr>
-            {% endfor %}
+            {% endfor %}  
           </tbody>
         </table> 
       </div>
@@ -392,5 +392,5 @@ $(document).bind('copy', function () {
       </tbody>
     </table>
     </div>
-</div> -->
+</div> --> 
 {% endblock %} 

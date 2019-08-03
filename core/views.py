@@ -4,7 +4,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import Http404
 
 
-from core.models import Account, Arrow, Challenge, ChallengeLink, EventCounter
+from core.models import Account, Arrow, Challenge, ChallengeLink, EventCounter, Message, MessageCh
 from core.models import Event, Txn, Registration, Transfer, Commitment, Revelation, ArrowUpdate, ChallengeCreation, ChallengeLinkUpdate
 from core.models import BalanceUpdate, ArrowCreation, ChallengeLinkCreation, MarketSettlement, MarketSettlementTransfer
 from core.models import Message
@@ -93,10 +93,18 @@ def format_timedelta(td):
 @login_required 
 def myaccount(request):
     account = Account.objects.get(public_key=request.user.username)
-    arrows = Arrow.objects.filter(target=account)
+    arrows = Arrow.objects.filter(target=account).order_by('id')
     challengelinks = ChallengeLink.objects.filter(voter=account,finished=False,cancelled=False)
     challenges_by = Challenge.objects.filter(challenger=account,finished=False,cancelled=False)
     challenges_against = Challenge.objects.filter(Q(defendant_1=account) | Q(defendant_2=account),finished=False,cancelled=False)
+
+    msgs = Message.objects.filter(Q(sender=account) | Q(recipient=account))
+    linked_challenges = [challengelink.challenge for challengelink in challengelinks]
+    msgs_ch = MessageCh.objects.filter(challenge__in = linked_challenges)
+
+    first_arrow = arrows[0]
+    first_arrow.has_new_message = False
+    first_arrow.save()
 
     offer = None
     if account.has_offer == True:
@@ -125,15 +133,7 @@ def myaccount(request):
         else:
             time_status = 'late'
             timer = str(td - td2).split(".")[0]
-    return render(request, 'core/myaccount.html',{'username':request.user.username,'account':account,'arrows':arrows,'challengelinks':challengelinks,'challenges_by':challenges_by,'challenges_against':challenges_against,'countdown':countdown,'total_seconds':total_seconds,'time_status':time_status,'timer':timer,'offer':offer})
-
-@login_required 
-def chatmessages(request):
-    #target_pk = request.GET.get('targetpk')
-    #print(target_pk)
-    #messages = Message.objects.filter(Q(sender=account) | Q(recipient=account) ).order_by('-timestamp')[:50]
-    json_object = {'key': "value"}
-    return JsonResponse(json_object)
+    return render(request, 'core/myaccount.html',{'username':request.user.username,'account':account,'arrows':arrows,'challengelinks':challengelinks,'challenges_by':challenges_by,'challenges_against':challenges_against,'countdown':countdown,'total_seconds':total_seconds,'time_status':time_status,'timer':timer,'offer':offer,'msgs':msgs,'msgs_ch':msgs_ch})
 
 def account_history(request,username):
     try:
@@ -324,7 +324,7 @@ def offer(request):
             account.has_offer = True
             account.offer = offer
             account.save()
-            messages.success(request, 'Created offer successfully.')
+            #messages.success(request, 'Created offer successfully.')
             return redirect('/myaccount/')
         else:
             messages.error(request, 'Form not valid.') #repeats same msg multiple times, need to clear msgs at right time
@@ -340,6 +340,30 @@ def offer_delete(request):
         account.has_offer = False
         account.offer = None
         account.save()
+        return redirect('/myaccount/')
+    else:
+        return redirect('/myaccount/')
+
+@login_required 
+def mark_read(request):
+    if request.method == 'POST':
+        target = request.POST.get('target', None) 
+        is_ch = request.POST.get('is_ch', None) 
+        account = Account.objects.get(public_key = request.user.username)
+        if is_ch == 'true':
+            target_challenge = Challenge.objects.filter(id = target).first()
+            if account is not None and target_challenge is not None:
+                challengelink = ChallengeLink.objects.filter(voter=account,challenge=target_challenge).first()
+                if challengelink is not None:
+                    challengelink.has_new_message = False
+                    challengelink.save()
+        else:
+            target_account = Account.objects.filter(public_key = target).first()
+            if account is not None and target_account is not None:
+                arrow = Arrow.objects.filter(target=account,source=target_account).first()
+                if arrow is not None:
+                    arrow.has_new_message = False
+                    arrow.save()    #POTENILALLLY BAD?
         return redirect('/myaccount/')
     else:
         return redirect('/myaccount/')
@@ -978,7 +1002,7 @@ def updatechallengevote(request):
                         challenge.last_position += 1
 
                     if new_status*(challengelink.status - old_net) > 0:  #i.e unmatched not empty
-                        unmatched = ChallengeLink.objects.filter(challenge = challenge, matched = False, status = -new_status).exclude(voter = sender).order_by('position')  #-pos?no
+                        unmatched = ChallengeLink.objects.filter(challenge = challenge, cancelled=False, matched = False, status = -new_status).exclude(voter = sender).order_by('position')  #-pos?no
                         first_match = unmatched[0]
                         first_match.matched = True
                         challengelink.matched = True
@@ -1003,7 +1027,7 @@ def updatechallengevote(request):
                         challenge.last_position_who += 1
 
                     if new_choice*(challengelink.status_who - old_net_who) > 0:  #i.e unmatched not empty
-                        unmatched = ChallengeLink.objects.filter(challenge = challenge, matched_who = False, status_who = -new_choice).exclude(voter = sender).order_by('position_who')  #-pos?no
+                        unmatched = ChallengeLink.objects.filter(challenge = challenge, cancelled=False, matched_who = False, status_who = -new_choice).exclude(voter = sender).order_by('position_who')  #-pos?no
                         first_match_who = unmatched[0]
                         first_match_who.matched_who = True
                         challengelink.matched_who = True

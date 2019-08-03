@@ -164,7 +164,7 @@ class Arrow(models.Model):  #here we use double entry, need to ensure integrity 
     matched = models.BooleanField(default=False)
     position = models.IntegerField(null=True)
     cancelled = models.BooleanField(default=False)
-    #messages_last_checked = models.DateTimeField(null=True)
+    has_new_message = models.BooleanField(default=False)
 
     def opposite(self):
         return Arrow.objects.get(source=self.target, target=self.source, cancelled=False) #only works for active arrows
@@ -249,9 +249,10 @@ class ChallengeLink(models.Model):
     status_who = models.IntegerField(choices=status_who_choices, default = 0)
     matched_who = models.BooleanField(default=False)
     position_who = models.IntegerField(null=True)
-    #messages_last_checked = models.DateTimeField(null=True)
     finished = models.BooleanField(default=False)
     cancelled = models.BooleanField(default=False)
+
+    has_new_message = models.BooleanField(default=False)
 
 
 
@@ -374,16 +375,16 @@ class ChallengeSettlementTransfer(models.Model):
 
 class Message(models.Model):  
     sender = models.ForeignKey(Account,related_name = 'sent_msgs',on_delete=models.CASCADE)
-    receiver = models.ForeignKey(Account,related_name = 'received_msgs',on_delete=models.CASCADE)
-    content = models.TextField(max_length=500)
+    recipient = models.ForeignKey(Account,related_name = 'received_msgs',on_delete=models.CASCADE)
+    content = models.TextField(max_length=100)
     timestamp = models.DateTimeField() 
 
 
-# class MessageCh(models.Model):   #a message belonging to a challenge's chatroom THIS EXTRA MODEL NOT NEEDED?
-#     sender = models.ForeignKey(Account,related_name = 'sent_msgs')
-#     receiver = models.ForeignKey(Account,related_name = 'received_msgs')
-#     content = models.TextField(max_length=100)
-#     timestamp = models.DateTimeField(null=True) 
+class MessageCh(models.Model):   #a message belonging to a challenge's chatroom THIS EXTRA MODEL NOT NEEDED?
+    sender = models.ForeignKey(Account,on_delete=models.CASCADE)
+    challenge = models.ForeignKey(Challenge,on_delete=models.CASCADE)
+    content = models.TextField(max_length=100)
+    timestamp = models.DateTimeField() 
 
 
 

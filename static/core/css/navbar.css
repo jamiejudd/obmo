@@ -1,0 +1,38 @@
+      body {
+        padding-top: 57px;
+      }
+      /* Small Desktop *-/
+      @media (min-width: 769px) {
+        .container {
+          max-width: 769px;
+        }
+      } */
+
+      /* Large Desktop */
+   /*   @media (min-width: 1150px) { 
+        .container {
+          max-width: 1150px;
+        }
+      }*/
+      .nav-custom {
+        background-color: white;
+        border-bottom: 1px solid #eeeeee;
+      }
+
+      textarea {
+          resize: none;
+      }
+      .modal-body{
+        word-break: break-all;
+      }
+      #idSignTxn{
+        margin-top: 12px;
+      }
+      .form-control-readonly:focus {
+        border-color: #ced4da;
+        box-shadow: none;
+      }      
+      h5 {
+          text-align:center;
+          margin-bottom:20px;
+      }

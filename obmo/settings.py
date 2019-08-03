@@ -38,20 +38,24 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    #'channels',
+    #'django_private_chat',
+    'channels',
 ]
 
-#ASGI_APPLICATION = "obmo.routing.application"
+ASGI_APPLICATION = "obmo.routing.application"
 
-# CHANNEL_LAYERS = {
-#     'default': {
-#         'BACKEND': 'channels_redis.core.RedisChannelLayer',
-#         'CONFIG': {
-#             "hosts": [('127.0.0.1', 6379)],
-#         },
-#     },
-# }
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
 
+# CHAT_WS_SERVER_HOST = 'localhost'
+# CHAT_WS_SERVER_PORT = 5002
+# CHAT_WS_SERVER_PROTOCOL = 'ws'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -138,6 +142,12 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+#STATIC_ROOT = os.path.join(BASE_DIR,"static_files")
+
+# STATICFILES_DIRS = (
+#     os.path.join(BASE_DIR, "static"),
+# )
 
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
