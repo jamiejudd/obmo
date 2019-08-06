@@ -45,8 +45,30 @@ div::-webkit-scrollbar-thumb
 }
 
 
+.msg-l{
+  font-size:14px;
+  margin:15px;
+  margin-right: 100px;
+  border:1px solid hsl(170, 65%, 88%);
+  border-radius: 5px;
+  padding:4px;
+  background: hsl(170, 65%, 90%);
+   overflow: hidden;
+}
 
-
+.msg-r{
+  font-size:14px;
+  margin:15px;
+  margin-left: 100px;
+  border:1px solid hsl(0, 0%, 97%);
+  border-radius: 5px;
+  padding:4px;
+  background: hsl(0, 0%, 99%);
+}
+.msg-name{
+  font-size:10px;
+  float: right;
+}
 .btn-send {
     color: #28bda4;
     background-color: white;
@@ -272,13 +294,13 @@ div::-webkit-scrollbar-thumb
  -->
 
     <div id="chatarea_{{arrow.source.public_key}}" style="display:none">
-      <div id="messagebox_{{arrow.source.public_key}}" style="height:450px;overflow-y:scroll;">
+      <div class="messagebox" id="messagebox_{{arrow.source.public_key}}" style="height:450px;overflow-y:scroll;">
       {% for msg in msgs %}
 
       {% if msg.sender == account and msg.recipient == arrow.source %}
-      <p>{{msg.content}}</p><br>
+      <p class="msg-r">{{msg.content}}</p>
       {% elif msg.sender ==  arrow.source and msg.recipient == account %}
-      {{msg.content}}<br>
+      <p class="msg-l">{{msg.content}}</p>
       {% else %}
       {% endif %}
 
@@ -295,15 +317,15 @@ div::-webkit-scrollbar-thumb
     {% for challengelink in challengelinks %}
     {% if challengelink %}
     <div id="chatarea_{{challengelink.challenge.id }}" style="display:none">
-      <div id="messagebox_{{challengelink.challenge.id }}" style="height:450px;overflow-y:scroll;border-bottom:1px solid #d5f6f1">
+      <div class="messagebox-ch" id="messagebox_{{challengelink.challenge.id }}" style="height:450px;overflow-y:scroll;border-bottom:1px solid #d5f6f1">
       {% for msg_ch in msgs_ch %}
 
       {% if msg_ch.challenge == challengelink.challenge %}
 
       {% if msg_ch.sender == account %}
-      <b>{{msg_ch.content}}</b><br>
+      <p class="msg-r">{{msg_ch.content}}</p>
       {% else %}
-      {{msg_ch.content}}<br>
+      <p class="msg-l">{{msg_ch.content}}<br><a class="msg-name textlink" href="/accounts/{{ msg_ch.sender.public_key }}/">{{msg_ch.sender.name}}</a></p>
       {% endif %}
 
       {% endif %}
@@ -533,11 +555,18 @@ chatSocket.onmessage = function(e) {
     var event_type = data['event_type'];
     var message = data['message'];
     var target = data['target'];
+    var sender_name = data['sender_name'];
+    var sender_public_key = data['sender_public_key'];
     //console.log(event_type)
     if (event_type == 'message_out') {
-      $('#messagebox_'+target).append("<b>"+message+"</b><br>");
+      $('#messagebox_'+target).append("<p class='msg-r'>"+message+"</p>");
     } else {
-      $('#messagebox_'+target).append("<i>"+message+"</i><br>");
+      if ($('#messagebox_'+target).hasClass("messagebox-ch")) {
+        var public_key = 
+        $('#messagebox_'+target).append("<p class='msg-l'>"+message+"<br><a class='msg-name textlink' href='/accounts/"+sender_public_key+"/'>"+sender_name+"</a></p>");
+      } else {
+        $('#messagebox_'+target).append("<p class='msg-l'>"+message+"</p>");
+      }
       if ($('#chatarea_'+target).is(":hidden")) {
          $('#icon_'+target).attr("src",chat_icon_new_url);
       }

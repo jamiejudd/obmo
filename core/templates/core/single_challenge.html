@@ -82,68 +82,6 @@ td {  overflow:hidden;
 <br>
 <br>
 <br>
-
-
-
-
-
-  <!--   <div class="card">
-    <div class="card-body">
-<div class="row">
-  {% if account.registered %}
-  <div class="col-xl-2"  style="padding-top:10px;">
-    <img src="{% get_media_prefix %}{{ account.photo }}" height="170" width="170">
-  </div> 
-   <div class="col-xl-10">
-    <div class="table-responsive table-borderless">
-    <table class="table table-sm">
-      <colgroup>
-        <col  class="firstcol" >
-        <col class="secondcol">
-      </colgroup> 
-    <tbody>
-    <tr><td>Public&nbsp;Key:</td><td>{{ account.public_key }}</td></tr>
-    <tr><td>Name:</td><td>{{ account.name }}</td></tr>
-    <tr><td>Balance:</td><td>{{ account.balance }}</td></tr>
-    <tr><td>Registered:</td><td>{{ account.registered }}</td></tr>
-     <tr><td>Verfiied:</td><td>{{ account.verified }}</td></tr>
-     <tr><td>Sequence&nbsp;no.:</td><td>{{ account.sequence_next }}</td></tr>
-     <tr><td>Photo&nbsp;hash:</td><td data-container="body" data-toggle="popover"  data-placement="bottom" data-content = '{{ account.photo_hash }}' >{{ account.photo_hash }}</td></tr>
-     <tr><td>Txn&nbsp;history:</td><td><a style="color:#3498db" href="/accounts/{{account.public_key}}/history">View all transactions</a></td></tr>    
-    </tbody>
-    </table>
-    </div>
-  </div>
-      {% else %}
- <div class="col-3" >
-    <img src='https://upload.wikimedia.org/wikipedia/commons/f/fd/Faenza-avatar-default-symbolic.svg' height="170" width="170" >
-  </div> 
-   <div class="col-9">
-    <div class="table-responsive table-borderless">
-    <table class="table table-sm">
-      <colgroup>
-        <col style="width:15%">
-        <col style="width:85%">
-      </colgroup> 
-    <tbody>
-    <tr><td>Public&nbsp;Key:</td><td>{{ account.public_key }}</td></tr>
-    <tr><td>Balance:</td><td>{{ account.balance }}</td></tr>
-    <tr><td>Registered:</td><td>{{ account.registered }}</td></tr>
-     <tr><td>Verfiied:</td><td>{{ account.verified }}</td></tr>
-     <tr><td>Sequence&nbsp;no.:</td><td>{{ account.sequence_next }}</td></tr>
-    <tr><td>Txn&nbsp;history:</td><td><a style="color:#3498db" href="/accounts/{{account.public_key}}/history">View all transactions</a></td></tr>    
-    </tbody>
-    </table>
-    </div>
-  </div>
-{% endif %}
-</div>
-</div>
-</div> -->
-
-
-
-
 </div>
 {% endblock %}
 

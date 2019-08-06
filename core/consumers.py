@@ -92,7 +92,9 @@ class ChatConsumer(WebsocketConsumer):
                             {
                                 'type': 'chat_message_in',
                                 'message': message,
-                                'target': target
+                                'target': target,
+                                'sender_name': sender_account.name,
+                                'sender_public_key': sender_account.public_key
                             }
                         )
 
@@ -123,12 +125,16 @@ class ChatConsumer(WebsocketConsumer):
     def chat_message_in(self, event):
         message = event['message']
         target = event['target']
+        sender_name = event['sender_name']
+        sender_public_key = event['sender_public_key']
 
         # Send message to WebSocket
         self.send(text_data=json.dumps({
             'event_type': 'message_in',
             'message': message,
-            'target': target
+            'target': target,
+            'sender_name': sender_name,
+            'sender_public_key': sender_public_key
         }))
 
     # # Receive message from room group

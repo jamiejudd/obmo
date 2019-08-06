@@ -80,58 +80,13 @@ textarea {
   {% endif %}
   {% endfor %}
   {% endif %}
-
-
-  {{form_errors}}
-
+  <!-- {{form_errors}} -->
 
   <form id="mainform" onsubmit="return validateForm()" method="post" role="form" autocomplete="off" novalidate enctype="multipart/form-data">
-    {% csrf_token %}
+  {% csrf_token %}
 
-<!--     {{ form.non_field_errors }}
-
-  {% for hidden_field in form.hidden_fields %}
-    {{ hidden_field.errors }}
-    {{ hidden_field }}
-  {% endfor %}
- -->
-<!--   {% for field in form.visible_fields %}
-    {{ field.label_tag }}
-    
-    {{ field.auto_id }}
-    {{ field.html_name }}
-    {{ field.name }}
-    <br>
-  {% endfor %}
-
-    {% for field in form.visible_fields %}
-
-    <div class="form-group row">
-      <label for="{{ field.auto_id }}" class="col-sm-2 col-form-label">{{ field.label_tag }}</label>
-      <div class="col-sm-10">
-       {% if field.name == 'username' and user.is_authenticated %}
-        <input type="text" class="form-control" id="{{ field.auto_id }}" value={{user.username}} name="{{ field.name }}" autocomplete="off">
-       {% elif field.name == 'sender_seq_no' and user.is_authenticated %}
-        <input type="text" class="form-control" id="{{ field.auto_id }}" value="{{account.sequence_next}}" name="{{ field.name }}" autocomplete="off">  
-       {% elif field.name == 'amount' %}
-        <input type="text" class="form-control" id="{{ field.auto_id }}" name="{{ field.name }}" autocomplete="off">      
-       {% else %}
-        <input type="text" class="form-control" id="{{ field.auto_id }}" name="{{ field.name }}" autocomplete="off">
-      {% endif %}
-        <div class="invalid-feedback" id="{{ field.auto_id }}_feedback"></div>
-       {% if field.name == 'sender_seq_no' %}
-          <small id="sender_seq_no_help" class="form-text text-muted">The next sequence number for the senders account. Can be found on the senders account page.</small>
-       {% endif %}
-
-      </div>
-    </div>
-
-    {% endfor %}  -->
-
-
-{% block formfields %}
-{% endblock formfields %}
-
+  {% block formfields %}
+  {% endblock formfields %}
 
   <div class="form-group row">
     <label for="txnstring" class="col-sm-2 col-form-label" >Message to sign:</label>
@@ -152,7 +107,7 @@ textarea {
       </div>
     </div>
     <div class="col-sm-2" > <!--style="display: flex; align-items: center;"-->
-      <button type="button" class="btn btn-light" id="idSignTxn"><!-- data-toggle="modal" data-target="#signatureModal"--> <!--data-toggle="tooltip" data-placement="top" title="This is risky" --> Sign transaction</button>
+      <button type="button" class="btn btn-light" id="idSignTxn">Sign transaction</button>
     </div>
   </div>
 
@@ -175,7 +130,6 @@ textarea {
 {% load static %}
 <script src="{% static 'core/javascript/tweetnacl.js' %}"></script> 
  -->
-
 <!-- 
 <script>
     if (typeof window.nacl === 'undefined') {
@@ -186,8 +140,6 @@ textarea {
 </script>
 -->
 <!--<script src="https://cdn.jsdelivr.net/npm/tweetnacl-util@0.15.0/nacl-util.min.js"></script>-->
-
-
 <!-- 
 {% load static %}
 <script src="{% static 'core/javascript/form_validation.js' %}"></script>  -->
@@ -300,7 +252,6 @@ $('#id_signature').on('blur change paste keyup input', function() {
   }
 });
 
-
 $('#idSignTxn').on('click', function() {
   if(checkFields()){
     $('#signatureModal').modal('show');
@@ -367,137 +318,5 @@ function validateForm() {
 {% block formscript %}
 {% endblock formscript %}
 
-
-<script>
-      /*
-      $('#checkSig').on('click', function() {
-        console.log('gd');
-        Signature = $("#id_signature").val();
-        console.log('gdf');
-        if (nacl.sign.detached.verify( RawTxnByteArray, fromHexString(Signature), fromHexString(Sender))) {
-          $("#id_signature").removeClass("is-invalid");
-          $("#id_signature").addClass("is-valid");
-        } else {
-          $("#id_signature").removeClass("is-valid");
-          $("#id_signature").addClass("is-invalid");
-        }
-      });
-      */
-      /*
-      $("TransferForm").submit(function (e) {
-        var validationFailed = false;
-        Type =  $("#id_txn_type").val();
-        Sender =  $("#id_sender").val();
-        //SeqNo =  $("#id_sender_seq_no").val();
-        //Recipient =  $("#id_recipient").val();
-        //Amount =  $("#id_amount").val();
-        //RawTxnString = '{"Type":"'+Type+'","Sender":"'+Sender+'","SeqNo":'+SeqNo+',"Recipient":"'+Recipient+'","Amount":'+Amount+'}';
-        //RawTxnByteArray = new TextEncoder("utf-8").encode(RawTxnString);
-
-         if (Sender=='') {
-            console.log('nope')
-            e.preventDefault();
-            return false;
-         }
-      }); 
-      */
-
-// Example starter JavaScript for disabling form submissions if there are invalid fields
-/*
-(function() {
-  'use strict';
-  window.addEventListener('load', function() {
-    // Fetch all the forms we want to apply custom Bootstrap validation styles to
-    var forms = document.getElementsByClassName('needs-validation');
-    // Loop over them and prevent submission
-    var validation = Array.prototype.filter.call(forms, function(form) {
-      form.addEventListener('submit', function(event) {
-        if (form.checkValidity() === false) {
-          event.preventDefault();
-          event.stopPropagation();
-        }
-        form.classList.add('was-validated');
-      }, false);
-    });
-  }, false);
-})();
-*/
-
-</script>
-
-<script>
-
-        /*
-        for(var b in window) { 
-          if(window.hasOwnProperty(b)) console.log(b); 
-        }
-        */
-
-
-// Example starter JavaScript for disabling form submissions if there are invalid fields
-/*
-(function() {
-  'use strict';
-  window.addEventListener('load', function() {
-    // Fetch all the forms we want to apply custom Bootstrap validation styles to
-    var forms = document.getElementsByClassName('needs-validation');
-    // Loop over them and prevent submission
-    var validation = Array.prototype.filter.call(forms, function(form) {
-      form.addEventListener('submit', function(event) {
-        if (form.checkValidity() === false) {
-          event.preventDefault();
-          event.stopPropagation();
-        }
-        form.classList.add('was-validated');
-      }, false);
-    });
-  }, false);
-})();
-*/
-</script>
-<script>
-
-        /*
- 
-      function toUTF8Array(str) {
-          var utf8 = [];
-          for (var i=0; i < str.length; i++) {
-              var charcode = str.charCodeAt(i);
-              if (charcode < 0x80) utf8.push(charcode);
-              else if (charcode < 0x800) {
-                  utf8.push(0xc0 | (charcode >> 6), 
-                            0x80 | (charcode & 0x3f));
-              }
-              else if (charcode < 0xd800 || charcode >= 0xe000) {
-                  utf8.push(0xe0 | (charcode >> 12), 
-                            0x80 | ((charcode>>6) & 0x3f), 
-                            0x80 | (charcode & 0x3f));
-              }
-              // surrogate pair
-              else {
-                  i++;
-                  // UTF-16 encodes 0x10000-0x10FFFF by
-                  // subtracting 0x10000 and splitting the
-                  // 20 bits of 0x0-0xFFFFF into two halves
-                  charcode = 0x10000 + (((charcode & 0x3ff)<<10)
-                            | (str.charCodeAt(i) & 0x3ff));
-                  utf8.push(0xf0 | (charcode >>18), 
-                            0x80 | ((charcode>>12) & 0x3f), 
-                            0x80 | ((charcode>>6) & 0x3f), 
-                            0x80 | (charcode & 0x3f));
-              }
-          }
-          return utf8;
-      }
-*/
-</script>
-
-
-<!--         <div class="form-group row">
-          <label for="id_txn_type" class="col-sm-2 col-form-label">Transaction Type:</label>
-          <div class="col-sm-10">
-            <input type="text" readonly class="form-control-plaintext" id="id_txn_type" value="Transfer" name="txn_type" autocomplete="off">
-          </div>
-        </div> -->
 
 {% endblock script %}

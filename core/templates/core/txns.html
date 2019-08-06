@@ -14,7 +14,7 @@ td { overflow:hidden;
   font-size:14px; 
 }
 .popover{
-    max-width: 500px; /* Max Width of the popover (depending on the container!) */
+    max-width: 500px; /* Max Width of the popover (depending on the container) */
 }
 
 .popover-body {
@@ -140,7 +140,7 @@ $(document).bind('copy', function () {
 });
 </script>
 
-
+<!-- 
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.7.1/js/bootstrap-datepicker.min.js"></script>
 <script type="text/javascript">
@@ -151,82 +151,10 @@ $(document).bind('copy', function () {
     $('.datepicker').datepicker("setDate", new Date());
     $('.datepicker').val('');
 </script>
+ -->
 
 
-  <!--  <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">
-    <div class="container">
-      <a class="navbar-brand" href="#">UBIcoin</a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav ml-auto">
-          <li class="nav-item active dropdown mx-2">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              View
-            </a>
-            <div class="dropdown-menu rounded-0 bg-dark" aria-labelledby="navbarDropdown">
-              <a class="dropdown-item" href="#">All Accounts</a>
-              <a class="dropdown-item" href="#">All Challenges</a>
-              <a class="dropdown-item" href="#">Statistics</a>
-              <a class="dropdown-item" href="#">Download Txn Chain</a>
-              <a class="dropdown-item" href="#">Create New Txn</a>
-              <div class="dropdown-divider" style="border-color:#c7ccd1;"></div>
-              <a class="dropdown-item" href="#">My account</a>
-            </div>
-          </li>    
-
-          <li class="nav-item active px-2">
-            <a class="nav-link" href="#">About</a>
-          </li>
-
-          <li class="nav-item active px-2">
-          {% if user.is_authenticated %}
-            <a class="nav-link" href="/logout/">Logout</a>
-          {% else %}
-            <a class="nav-link" href="/login/">Login</a>
-          {% endif %}
-          </li>
-        </ul>
-      </div>
-    </div>
-    </nav> -->
-
-   <!--   <div class="container" style="margin-top:40px;">
-          <div class="table-responsive table-borderless">
-            <table class="table table-sm">
-  <thead>
-    <tr>
-      <th scope="col">#</th>
-      <th scope="col">First</th>
-      <th scope="col">Last</th>
-      <th scope="col">Handle</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th scope="row">1</th>
-      <td>Mark</td>
-      <td>Otto</td>
-      <td>@mdo</td>
-    </tr>
-    <tr>
-      <th scope="row">2</th>
-      <td>Jacob</td>
-      <td>Thornton</td>
-      <td>@fat</td>
-    </tr>
-    <tr>
-      <th scope="row">3</th>
-      <td colspan="2">Larry the Bird</td>
-      <td>@twitter</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-</div>
-
-
+<!-- 
     <div class="container">
       <div class="container2 mx-auto" >
         <form>
@@ -299,98 +227,5 @@ $(document).bind('copy', function () {
           </div>
         </form>
       </div>
-    <br>
-  <div class="row justify-content-md-center">
-      <div class="col-12">
-      <div class="card rounded-0 ">
-        <div class="card-body">
-          <h6 style="font-family: 'Garamond'">Recent Transactions</h6>
-          <div class="table-responsive">
-            <table class="table table-sm">
-              <tbody>
-                <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;sent&nbsp;190&nbsp;to&nbsp;account&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
-                <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;initiated&nbsp;challenge&nbsp;t43349yu85y&nbsp;against&nbsp;the&nbsp;accounts&nbsp;22nt34tj9yjr5y&nbsp;and&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-      </div>
-      </div>
-    <br>
-<div class="card">
-<div class="card-body">
-
-<div class="table-responsive">
-<table class="table table-sm">
-  <thead>
-    <tr>
-      <th scope="col">Txn No.</th>
-      <th scope="col">Type</th>
-      <th scope="col">Sender</th>
-      <th scope="col">Hash</th>
-      <th scope="col">Created_at(time ago)</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Mark</td>
-      <td>Otto</td>
-      <td>@mdo</td>
-      <td>@mdo</td>
-      <td>Otto</td>
-    </tr>
-    <tr><td>Mark</td><td>Otto</td><td>@mdo</td><td>@mdo</td><td>Otto</td></tr>
-  </tbody>
-</table>
-</div>
-</div>
-</div>
-
-<div class="card mt-3">
-<div class="card-block">
-<div class="row"><div class="col-md-12">
-<div class="table-responsive">
-<table class="table" id="txs">
-<thead><tr><th>Hash</th><th>Block</th><th>Type</th><th>From</th><th>To</th><th>Value</th><th>Fee</th><th>Gas Price</th><th>Time</th></tr></thead>
-<tbody class="font-weight-bold" style="display: table-row-group; vertical-align: middle;    border-color: inherit;">
-   <tr>      <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>    </tr>    <tr>    <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>     <td>c</td><td>d</td><td>e</td>    </tr>
-</tbody>
-</table>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="card mt-3">
-<div class="card-block">
-<h1 class="display-6 text-center mt-3"><span class="fa fa-credit-card">&nbsp;</span>Browse all Ethereum Transactions</h1>
-<div class="row"><div class="col-md-12">
-<div class="table-responsive">
-<table class="table" id="txs">
-<thead><tr><th>Hash</th><th>Block</th><th>Type</th><th>From</th><th>To</th><th>Value</th><th>Fee</th><th>Gas Price</th><th>Time</th></tr></thead>
-<tbody class="font-weight-bold" style="display: table-row-group; vertical-align: middle;    border-color: inherit;">
-   <tr>      <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>    </tr>    <tr>    <td>u</td><td>b</td><td>h</td>   <td>u</td><td>b</td><td>h</td>     <td>c</td><td>d</td><td>e</td>    </tr>
-</tbody>
-</table>
-</div>
-</div>
-</div>
-</div>
-</div>
-    <div class="row justify-content-md-center">
-    <table>
-      <thead>
-        <tr>
-          <th>c1</th>
-          <th>c2</th>
-          <th>c3</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>      <td>u</td><td>b</td><td>h</td>    </tr>    <tr>      <td>c</td><td>d</td><td>e</td>    </tr>    <tr>      <td>j</td><td>g</td><td>x</td>    </tr>    <tr>      <td>n</td><td>a</td><td>c</td>    </tr>    <tr>      <td>s</td><td>o</td><td>s</td>    </tr>    <tr>      <td>v</td><td>u</td><td>n</td>    </tr>    <tr>      <td>w</td><td>m</td><td>a</td>    </tr>    <tr>      <td>d</td><td>u</td><td>y</td>    </tr>
-      </tbody>
-    </table>
-    </div>
-</div> --> 
+   -->
 {% endblock %} 

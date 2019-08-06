@@ -1,21 +1,20 @@
 {% extends "base.html" %}
 {% block style %}  
 <style>
-    canvas {
-      display: block;
-      position:  fixed;
-      z-index: -1;
-    }
-
-    .card{
-      border:1px solid #d5f6f1;
-      margin-top:15px;
-      margin-bottom:15px;
-    }
-    .list-group-item {
-      padding: 2px 1px;
-      margin: 5px 0;
-    }
+canvas {
+  display: block;
+  position:  fixed;
+  z-index: -1;
+}
+.card{
+  border:1px solid #d5f6f1;
+  margin-top:15px;
+  margin-bottom:15px;
+}
+.list-group-item {
+  padding: 2px 1px;
+  margin: 5px 0;
+}
 </style>
 {% endblock %}
 
@@ -23,13 +22,11 @@
 {% block content %}
 <canvas id="c"></canvas>
 <div class="container" id="container">
-
     <div class="row justify-content-md-center" id="maintitle"  style="font-family: 'Garamond'; padding-top:100px;padding-bottom:60px;">
-    <div class="col-8"><!-- make text non clickable (on this pg)-->
+    <div class="col-8">
     <h2 align="center" class="noselect">This is a project to create a better currency system.</h2>
     </div>
     </div>
-
       <div class="row justify-content-md-center" id="maincard"  >
         <div class="col-12" id="maincard2" >
           <div class="card" style="font-family: 'Garamond'">
@@ -46,64 +43,8 @@
           </div>
         </div>
       </div>  
-
-  <!--  
-
-                there exists a unique optimal monetary policy, and a currency implementing this monetary policy would maintain a positive value simply based on this. This currency aims to implement a monetary policy as near as possible to the optimal monetary policy.
-              <br>
-              Bitcoin got people thinking about twoSerarate from the technical problem of decentralisation. Most cryptocurrencies follow a sysem where the new currency is created at the start (ICO) or created during mining or both. Our belief is that a currency will be most succesful if This project aims to address 
-
-              For a currency to exist there must be some process by which it is created and distributed. For example an ICO or a central bank or mining. I believe the optimal way to create a currency is for each living human to receive a certain amount every day.
-
-
-
-               <div class="row justify-content-md-center">
-    <div class="col-12">
-    <div class="card rounded-0 ">
-    <div class="card-body">
-      <h6 style="font-family: 'Garamond'">How it works:</h6>
-      <div class="table-responsive">
-        rhd
-      </div>
-    </div>
-    </div>
-    </div>
-    </div>
-
-    <ul class="list-group">
-    <li class="list-group-item">Porta ac consectetur ac....on this pg have boxes with smmarydata live like etherscan, possible with moving dots behind</li>
-    <li class="list-group-item">Vestibulum at eros</li>
-    </ul>
-
-      <h2 align="center"  class="noselect"   style="font-family: 'Garamond'; margin-top:100px;margin-bottom:60px;">Objective&nbsp;Money&nbsp;is&nbsp;a&nbsp;global&nbsp;currency&nbsp;with&nbsp;monetary&nbsp;policy&nbsp;based&nbsp;on&nbsp;a<br>universal&nbsp;dividend.</h2>
-
-    <div class="row justify-content-md-center">
-    <div class="col-12">
-    <div class="card rounded-0 ">
-    <div class="card-body">
-      <h6 style="font-family: 'Garamond'">Recent Transactions</h6>
-      <div class="table-responsive">
-        <table class="table table-sm">
-          <tbody>
-            <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;sent&nbsp;190&nbsp;to&nbsp;account&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
-            <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;initiated&nbsp;challenge&nbsp;t43349yu85y&nbsp;against&nbsp;the&nbsp;accounts&nbsp;22nt34tj9yjr5y&nbsp;and&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
-            <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;sent&nbsp;190&nbsp;to&nbsp;account&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
-            <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;initiated&nbsp;challenge&nbsp;t43349yu85y&nbsp;against&nbsp;the&nbsp;accounts&nbsp;22nt34tj9yjr5y&nbsp;and&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
-            <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;sent&nbsp;190&nbsp;to&nbsp;account&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
-            <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;initiated&nbsp;challenge&nbsp;t43349yu85y&nbsp;against&nbsp;the&nbsp;accounts&nbsp;22nt34tj9yjr5y&nbsp;and&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
-            <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;sent&nbsp;190&nbsp;to&nbsp;account&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
-            <tr><td>Txn:&nbsp;14346344</td><td>Account&nbsp;26yny348jyegh&nbsp;initiated&nbsp;challenge&nbsp;t43349yu85y&nbsp;against&nbsp;the&nbsp;accounts&nbsp;22nt34tj9yjr5y&nbsp;and&nbsp;22nt34tj9yjr5y</td><td>1&nbsp;min&nbsp;ago</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-    </div>
-    </div>
-    </div> -->
-
 </div>
 {% endblock %}
-
 
 {% block script %}
 <script>
@@ -122,7 +63,7 @@ var W = window,
   w, h, f, d, //width, height, imagedata, actual data array
   M = Math;
 
-//Main loop
+//Main loop //Adapted from Gravity Gloud by Jeff Thomas
 function L(){
   //Set all old particle pixels back to black (way more efficient than clearing the whole canvas)
   for (i=0;i<K.length;i++) d[K[i]]=d[K[i]+1]=d[K[i]+2]=255;    
@@ -151,7 +92,7 @@ function L(){
     K[i]=k; //Keep array position so it doesn't need to be calculated next loop (increases render speed a lot)
     d[k] = 160; //Set the red channel
     d[k+1]=235; //Set the green channel
-    d[k+2]=222; //Set the blue channel     // 160, 235, 222 use GREY?????(204, 230, 255)
+    d[k+2]=222; //Set the blue channel    
   }
   c.putImageData(f, 0, 0); //Push the updated imagedata back to the canvas
   u && requestAnimationFrame(L) //If playing, loop again
@@ -170,23 +111,12 @@ function R() {
 //Attach event handlers
 W.onresize = R;
 W.onmousemove = function(e) {m[0]=e.pageX; m[1]=e.pageY-57; }
-
-//W.onclick = function() {u=!u; u&&L()}; //Toggle playing boolean and if playing, start loop.
 W.onclick = function(e) {
-                          //e = e || event;
-                          //var el = e.srcElement || e.target;
-                          var el = e.target;
-                          console.log(el.tagName)
-                          console.log(el.className)
-                          console.log(el.id)
-/*                          if (el.tagName !='LI') {
-                            u=!u; u&&L()
-                          }*/
-                          if (el.tagName=='BODY'|| el.tagName=='H2'|| el.id =='maintitle'|| el.id =='container'||el.tagName=='CANVAS' ||el.id =='maincard'||el.id =='maincard2') {
-                            u=!u; u&&L()
-                          }
-                          //u=!u; u&&L()
-                        }; //Toggle playing boolean and if playing, start loop.
+  var el = e.target;
+  if (el.tagName=='BODY'|| el.tagName=='H2'|| el.id =='maintitle'|| el.id =='container'||el.tagName=='CANVAS' ||el.id =='maincard'||el.id =='maincard2') {
+    u=!u; u&&L()
+  }
+};
 
 R(); //Call the resize function once to size the canvas before we begin.
 
