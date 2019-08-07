@@ -28,7 +28,7 @@ SECRET_KEY = '77!1##-%^a2yfmd^s%3uyva=85!myi9ri6is$sh-i1pd0o(5)k'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1','localhost','testserver']
+ALLOWED_HOSTS = ['127.0.0.1','localhost','testserver','134.209.112.164']
 
 
 # ALLOWED_HOSTS = ['www.objectivemoney.org','objectivemoney.org','165.227.198.240','localhost']
@@ -45,7 +45,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    #'django_private_chat',
     'channels',
 ]
 
@@ -99,10 +98,10 @@ WSGI_APPLICATION = 'obmo.wsgi.application'
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql', 
-        'NAME': 'obmo6', 
-        'USER': 'postgres', 
-        'PASSWORD': 'toithichmia', 
+        'ENGINE': 'django.db.backends.postgresql_psycopg2', 
+        'NAME': 'obmo', 
+        'USER': 'dbadmin', 
+        'PASSWORD': 'Toilavua694', 
         'HOST': 'localhost', 
         'PORT': '5432', 
   }
