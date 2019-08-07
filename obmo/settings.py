@@ -22,10 +22,17 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '77!1##-%^a2yfmd^s%3uyva=85!myi9ri6is$sh-i1pd0o(5)k'
 
+#SECRET_KEY = '@=@3q!0@w28e+s783bfsklyt*2r)-9((e23fizstjm$1b9rn29'
+
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1','localhost','testserver']
+
+
+# ALLOWED_HOSTS = ['www.objectivemoney.org','objectivemoney.org','165.227.198.240','localhost']
+
 
 
 # Application definition
@@ -101,6 +108,19 @@ DATABASES = {
   }
 }
 
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'objectivemoney',
+#         'USER': 'jamie',
+#         'PASSWORD': 'Toilavua694',
+#         'HOST': 'localhost',
+#         'PORT': '',
+#     }
+# }
+
+
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
 
@@ -152,3 +172,16 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
+
+
+
+
+
+# STATIC_URL = '/static/'
+# #STAIC_ROOT = os.path.join(BASE_DIR, 'static/')
+# STATIC_ROOT = 'staticfiles'
+
+# STATICFILES_DIRS = (
+#      os.path.join(BASE_DIR, 'static'),
+# )
+
