@@ -28,7 +28,8 @@ SECRET_KEY = '77!1##-%^a2yfmd^s%3uyva=85!myi9ri6is$sh-i1pd0o(5)k'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1','localhost','testserver','134.209.112.164']
+#ALLOWED_HOSTS = ['127.0.0.1','localhost','testserver','http://165.22.189.100/']
+ALLOWED_HOSTS = ['165.22.189.100','localhost']
 
 
 # ALLOWED_HOSTS = ['www.objectivemoney.org','objectivemoney.org','165.227.198.240','localhost']
