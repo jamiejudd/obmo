@@ -255,28 +255,12 @@ class ChallengeLink(models.Model):
     has_new_message = models.BooleanField(default=False)
 
 
-
-
 class EventCounter(models.Model):  #used for selectforupdate 
     last_event_no = models.IntegerField()
 
 
-# class Statistic(models.Model): #global output vars
-#     supply = models.DecimalField(max_digits = 20, decimal_places = 2)
-#     registered = models.IntegerField()
-#     num_verified = models.IntegerField()
-#     def stake(self):
-#         return supply/(2*verified+1)  #min this and 18000
-# class Statistics(models.Model): #global output vars
-#     name = models.CharField(max_length=10, unique=True)
-#     value = models.IntegerField()
-# class Parameter(models.Model): #global input vars  #ParameterGroup is a better name
-#     beta = models.DecimalField(max_digits = 20, decimal_places = 2)
-#     alpha = models.IntegerField()
 
-
-
-# --------- TRANSACTIONS ----------- (i.e. ops that change the state) they are only added, never deleted or changed, and certain ones need to be easy to query
+# --------- TRANSACTIONS ----------- 
 class Event(models.Model):
     timestamp = models.DateTimeField()
     event_type_choices = (('Txn','Transaction'),('AC','ArrowCreation'),('AE','ArrowExpiration'),('MS','MarketSettlement'),('MST','MarketSettlementTransfer'),('BU','BalanceUpdate'),('CLC','ChallengeLinkCreation'),('CLE','ChallengeLinkExpiration'),('CS', 'ChallengeSettlement'),('CST', 'ChallengeSettlementTransfer')) 
@@ -297,7 +281,7 @@ class Txn(models.Model):
 
 class Registration(models.Model):
     txn = models.OneToOneField(Txn,on_delete=models.CASCADE)
-    name = models.TextField(max_length=30) #text or char?
+    name = models.CharField(max_length=20) #text or char?
     photo_hash = models.CharField(max_length=128)
 
 class Transfer(models.Model): 
@@ -379,36 +363,11 @@ class Message(models.Model):
     content = models.TextField(max_length=100)
     timestamp = models.DateTimeField() 
 
-
 class MessageCh(models.Model):   #a message belonging to a challenge's chatroom THIS EXTRA MODEL NOT NEEDED?
     sender = models.ForeignKey(Account,on_delete=models.CASCADE)
     challenge = models.ForeignKey(Challenge,on_delete=models.CASCADE)
     content = models.TextField(max_length=100)
     timestamp = models.DateTimeField() 
-
-
-
-
-
-#EXTRA
-#by user
-
-# class PasswordUpdate(models.Model):  
-#     account = models.ForeignKey(Account, on_delete=models.CASCADE) 
-#     timestamp = models.DateTimeField() 
-
-#by us
-
-# class ParameterCreation(models.Model): 
-#     timestamp = models.DateTimeField() 
-#     parameter = models.ForeignKey(Parameter, related_name = 'parametercreation_set')
-#     #name = models.CharField(max_length=28)
-#     #value = models.DecimalField(max_digits = 20, decimal_places = 2)
-# class ParameterUpdate(models.Model): 
-#     timestamp = models.DateTimeField() 
-#     parameter = models.ForeignKey(Parameter, related_name = 'parameterupdate_set')
-#     value = models.DecimalField(max_digits = 20, decimal_places = 2)
-
 
 
 
