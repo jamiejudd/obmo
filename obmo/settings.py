@@ -18,7 +18,7 @@ DEBUG = False
 ALLOWED_HOSTS = ['127.0.0.1','localhost']
 # ALLOWED_HOSTS = ['www.objectivemoney.org','objectivemoney.org','165.22.189.100']
 
-
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10*1024*1024
 
 # Application definition
 
@@ -93,7 +93,7 @@ WSGI_APPLICATION = 'obmo.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql', 
-        'NAME': 'obmo6', 
+        'NAME': 'obmo7', 
         'USER': 'postgres', 
         'PASSWORD': 'toithichmia', 
         'HOST': 'localhost', 

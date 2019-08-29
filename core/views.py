@@ -101,10 +101,11 @@ def myaccount(request):
     msgs = Message.objects.filter(Q(sender=account) | Q(recipient=account))
     linked_challenges = [challengelink.challenge for challengelink in challengelinks]
     msgs_ch = MessageCh.objects.filter(challenge__in = linked_challenges)
-
-    first_arrow = arrows[0]
-    first_arrow.has_new_message = False
-    first_arrow.save()
+    
+    if len(arrows) > 0:
+        first_arrow = arrows[0]
+        first_arrow.has_new_message = False
+        first_arrow.save()
 
     offer = None
     if account.has_offer == True:
@@ -620,7 +621,7 @@ def register(request):
                 with transaction.atomic():
                     event_counter = EventCounter.objects.select_for_update().first()  #nowait=true??
                     current_time = timezone.now()
-                    sender = Account.objects.create(public_key=username,balance=10000,balance_due_last_updated = current_time, committed = False)
+                    sender = Account.objects.create(public_key=username,balance=0,balance_due_last_updated = current_time, committed = False)
                     message_string = 'Type:Register,PublicKey:'+username+',SeqNo:1,Name:'+name+',PhotoHash:'+photo_hash
                     txn_data = '"TxnNo":"1","Created":"'+str(current_time.strftime("%Y-%m-%d-%H:%M:%S"))+'","Message":"'+message_string+'","Signature":"'+signature+'","PreviousHash":"Genesis"'
                     txn_hash  = nacl.hash.sha512(txn_data.encode('utf-8'), encoder=nacl.encoding.RawEncoder)

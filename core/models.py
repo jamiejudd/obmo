@@ -67,7 +67,7 @@ class Account(models.Model): # an account never gets deleted, it costs a txn fee
 
     def update_balance_due(self,timestamp): #run this any time verified changes , just before
         #if self.verified() == True:
-        if self.linked == True and self.good == True:
+        if self.linked == True and self.good == True and self.suspended == False:
             elapsed_time = timestamp - self.balance_due_last_updated 
             self.balance_due += Decimal(elapsed_time.total_seconds())*Decimal(constants.UBI_RATE/24/3600)
             self.balance_due_last_updated = timestamp

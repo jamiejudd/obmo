@@ -91,6 +91,7 @@ td { overflow:hidden;
                       <td>jcscsc{{ event.txn.txn_type }}</td>
                   {% endif %}
               {% elif event.event_type == 'BU' %}
+                  <td>Recieved income {{event.balanceupdate.amount}}</td>
               {% elif event.event_type == 'AC' %}
                   {% if event.arrowcreation.arrow.source.public_key == username %}
                   <td>New link <span style="font-weight:500;">{{event.arrowcreation.arrow.target.name}}</span></td>
