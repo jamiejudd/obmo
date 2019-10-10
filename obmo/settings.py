@@ -16,7 +16,7 @@ SECRET_KEY = '77!1##-%^a2yfmd^s%3uyva=85!myi9ri6is$sh-i1pd0o(5)k'
 DEBUG = False
 
 #ALLOWED_HOSTS = ['127.0.0.1']
-ALLOWED_HOSTS = ['www.objectivemoney.org','objectivemoney.org','198.199.81.233']
+ALLOWED_HOSTS = ['www.objectivemoney.org','objectivemoney.org','45.55.48.199']
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10*1024*1024
 
