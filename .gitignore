@@ -1,21 +1,3 @@
-*.log
-*.pot
-*.pyc
-__pycache__/
-local_settings.py
-db.sqlite3
-media
-
-
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -41,6 +23,15 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+
+# Enviroments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -69,7 +60,12 @@ coverage.xml
 
 # Django stuff:
 *.log
+*.pot
+*.pyc
+__pycache__
 local_settings.py
+db.sqlite3
+media
 
 # Flask stuff:
 instance/
