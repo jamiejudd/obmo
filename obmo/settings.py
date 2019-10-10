@@ -82,7 +82,7 @@ WSGI_APPLICATION = 'obmo.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2', 
-        'NAME': 'obmo7', 
+        'NAME': 'obmo', 
         'USER': 'dbadmin', 
         'PASSWORD': 'Toilavua694', 
         'HOST': 'localhost', 
