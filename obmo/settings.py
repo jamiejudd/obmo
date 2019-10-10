@@ -15,7 +15,8 @@ SECRET_KEY = '77!1##-%^a2yfmd^s%3uyva=85!myi9ri6is$sh-i1pd0o(5)k'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['www.objectivemoney.org','objectivemoney.org','198.199.81.233','127.0.0.1']
+#ALLOWED_HOSTS = ['127.0.0.1']
+ALLOWED_HOSTS = ['www.objectivemoney.org','objectivemoney.org','198.199.81.233']
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10*1024*1024
 
@@ -78,27 +79,27 @@ WSGI_APPLICATION = 'obmo.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2', 
-#         'NAME': 'obmo', 
-#         'USER': 'dbadmin', 
-#         'PASSWORD': 'Toilavua694', 
-#         'HOST': 'localhost', 
-#         'PORT': '5432', 
-#   }
-# }
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql', 
+        'ENGINE': 'django.db.backends.postgresql_psycopg2', 
         'NAME': 'obmo7', 
-        'USER': 'postgres', 
-        'PASSWORD': 'toithichmia', 
+        'USER': 'dbadmin', 
+        'PASSWORD': 'Toilavua694', 
         'HOST': 'localhost', 
         'PORT': '5432', 
   }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql', 
+#         'NAME': 'obmo7', 
+#         'USER': 'postgres', 
+#         'PASSWORD': 'toithichmia', 
+#         'HOST': 'localhost', 
+#         'PORT': '5432', 
+#   }
+# }
 
 
 # Password validation
