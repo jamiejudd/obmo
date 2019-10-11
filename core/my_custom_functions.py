@@ -34,10 +34,10 @@ def update_due_balances():
             account.save()
 
 def update_balances():
-    for x in range(1, Account.objects.count()+1):
+    for x in Account.objects.values_list('id',flat=True):
         with transaction.atomic():
             event_counter = EventCounter.objects.select_for_update().first() 
-            account = Account.objects.get(pk=x)
+            account = Account.objects.get(id=x)
             if (account.balance_due >= constants.UBI_AMOUNT):
                 current_time = timezone.now()
                 new_event = Event.objects.create(id=event_counter.last_event_no+1,timestamp=current_time, event_type='BU') #handle integrity error for create
