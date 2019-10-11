@@ -60,6 +60,16 @@
     .btn-primary:not(:disabled):not(.disabled).active:focus,
     .show>.btn-primary.dropdown-toggle:focus{box-shadow:0 0 0 .01rem rgba(0,90,90,0.5)}
   </style>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-144165867-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-144165867-1');
+  </script>
+
   {% block style %}{% endblock %}
 </head>
 <body>
