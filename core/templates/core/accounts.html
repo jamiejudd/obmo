@@ -34,7 +34,7 @@
               <td style="vertical-align: middle;"><img src='https://upload.wikimedia.org/wikipedia/commons/f/fd/Faenza-avatar-default-symbolic.svg' height="70" width="70"></td>
               {% endif %}
               <td style="vertical-align: middle;font-size:13px;"><a class="textlink" href="/accounts/{{ account.public_key}}/">{{ account.public_key }}</a></td>
-              <td style="vertical-align: middle;font-size:14px;">{{ account.balance }}</td>
+              <td style="vertical-align: middle;font-size:14px;">{{ account.balance_due }}</td>
               <td style="vertical-align: middle;font-size:14px;">{% if account.name %}{{account.name}}{% endif %}</td>
               <td style="vertical-align: middle;font-size:14px;">
                 {% if account.suspended %}<span>Suspended</span>
