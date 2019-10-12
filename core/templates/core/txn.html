@@ -14,10 +14,11 @@
   <div class="card">
     <div class="card-body">
       <div class="row"><div class="col-md-2">Txn&nbsp;Number:</div><div class="col-md-10">{{ txn.id }}</div></div>
-      <div class="row"><div class="col-md-2">Created:</div><div class="col-md-10">{{ txn.txn_created }}</div></div>
+      <div class="row"><div class="col-md-2">Created:</div><div class="col-md-10">{{ txn.event.timestamp }}</div></div>
       <div class="row"><div class="col-md-2">Type:</div><div class="col-md-10">{{ txn.txn_type }}</div></div>
       <div class="row"><div class="col-md-2">Sender:</div><div class="col-md-10"><a class="textlink" href="/accounts/{{ txn.sender.public_key }}/">{{ txn.sender.public_key }}</a></div></div>
       <div class="row"><div class="col-md-2">Sender&nbsp;SeqNo:</div><div class="col-md-10">{{ txn.sender_seq_no }}</div></div>
+<!--       
       {% if txn.txn_type == 'Transfer' %}
       <div class="row"><div class="col-md-2">Recipient:</div><div class="col-md-10"><a class="textlink" href="/accounts/{{ txn.recipient.public_key }}/">{{ txn.recipient.public_key }}</a></div></div>
       <div class="row"><div class="col-md-2">Amount:</div><div class="col-md-10">{{ txn.amount }}</div></div>
@@ -27,7 +28,7 @@
       {% elif txn.txn_type == 'ChangeVote' %}
       <div class="row"><div class="col-md-2">Target:</div><div class="col-md-10"><a class="textlink" href="/accounts/{{ txn.recipient.public_key }}/">{{ txn.recipient.public_key }}</a></div></div>
       <div class="row"><div class="col-md-2">Vote:</div><div class="col-md-10">{{ txn.vote }}</div></div>
-      {% endif %}
+      {% endif %} -->
 
       <div class="row"><div class="col-md-2">Message:</div><div class="col-md-10">{{ txn.txn_message }}</div></div>
       <div class="row"><div class="col-md-2">Signature:</div><div class="col-md-10">{{ txn.signature }}</div></div>
