@@ -20,6 +20,8 @@ ALLOWED_HOSTS = ['www.objectivemoney.org','objectivemoney.org','45.55.48.199','l
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10*1024*1024
 
+FILE_UPLOAD_PERMISSIONS=0o640
+
 # Application definition
 
 INSTALLED_APPS = [
