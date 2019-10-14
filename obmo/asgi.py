@@ -1,17 +1,19 @@
-import os
-from channels.asgi import get_channel_layer
-
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "obmo.settings")
-
-channel_layer = get_channel_layer()
-
-
-
-
 # import os
+# import channels_redis
 
-# from django.core.wsgi import get_wsgi_application
+# from channels.asgi import get_channel_layer
 
 # os.environ.setdefault("DJANGO_SETTINGS_MODULE", "obmo.settings")
 
-# application = get_wsgi_application()
+# channel_layer = get_channel_layer()
+
+
+
+import os
+import django
+from channels.routing import get_default_application
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "chatbox.settings")
+django.setup()
+
+application = get_default_application()
