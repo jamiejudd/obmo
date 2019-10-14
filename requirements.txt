@@ -5,4 +5,4 @@ channels
 Pillow
 pynacl
 daphne
-asgi_redis
+channels_redis
