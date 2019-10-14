@@ -62,7 +62,9 @@ class ChatConsumer(WebsocketConsumer):
                         {
                             'type': 'chat_message_in',
                             'message': message,
-                            'target': sender
+                            'target': sender,
+                            'sender_name': '', 
+                            'sender_public_key': '' 
                         }
                     )
                     # Send message to room group

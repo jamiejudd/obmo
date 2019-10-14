@@ -562,8 +562,7 @@ chatSocket.onmessage = function(e) {
       $('#messagebox_'+target).append("<p class='msg-r'>"+message+"</p>");
     } else {
       if ($('#messagebox_'+target).hasClass("messagebox-ch")) {
-        var public_key = 
-        $('#messagebox_'+target).append("<p class='msg-l'>"+message+"<br><a class='msg-name textlink' href='/accounts/"+sender_public_key+"/'>"+sender_name+"</a></p>");
+        var public_key = $('#messagebox_'+target).append("<p class='msg-l'>"+message+"<br><a class='msg-name textlink' href='/accounts/"+sender_public_key+"/'>"+sender_name+"</a></p>");
       } else {
         $('#messagebox_'+target).append("<p class='msg-l'>"+message+"</p>");
       }
@@ -583,7 +582,7 @@ chatSocket.onclose = function(e) {
 
 
  <div class="card-body">
- bdsSSSSSSSSSSSSSSSSSS
+ notinuse
 <!--       <h6 style="text-align: center;font-size:14px;"><b>Vote totals:</b> Trust={{total_trust}}, Distrust={{total_distrust}}, Neutral={{total_neutral}}</h6>
  -->      <h6 style="text-align: center;font-size:14px;"><b>Verification&nbsp;score:</b>&nbsp;{{score}}&#37;</h6>
 <!--       <h6 style="text-align: center;font-size:14px;"><b>No. matched votes:</b>&nbsp;{{account.matched_count}}</h6>

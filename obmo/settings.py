@@ -42,6 +42,7 @@ CHANNEL_LAYERS = {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
             "hosts": [('127.0.0.1', 6379)],
+            #"hosts": [("redis://:mypassword@127.0.0.1:6379/0")],
         },
     },
 }
@@ -82,6 +83,8 @@ WSGI_APPLICATION = 'obmo.wsgi.application'
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
 
+
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2', 
@@ -92,6 +95,8 @@ DATABASES = {
         'PORT': '5432', 
   }
 }
+
+
 
 
 
@@ -106,6 +111,9 @@ DATABASES = {
 #   }
 # }
 
+
+# ce5629c6dd560556c42fcf50b0d45a8e7838279926d5962f222353531ba036e6
+# 7d4a680dd59fad92302aba616f449f98d3064862ef0e2187892c8a97574c8a0e
 
 
 # Password validation
