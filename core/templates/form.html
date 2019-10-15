@@ -293,7 +293,7 @@ $('#GenerateSig').on('click', function() {
     return false;
   }
   $('#id_signature').val(toHexString(Signature));
-  console.log(toHexString(Signature))
+  //console.log(toHexString(Signature))
   $('#modalsecretkey').val('');
   $('#signatureModal').modal('hide');
   checkSignature()
