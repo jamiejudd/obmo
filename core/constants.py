@@ -4,8 +4,8 @@ UBI_RATE = 1000000  #qty per day(100)
 UBI_AMOUNT = 100  #min size of installment
 
 #Committments/Revelations
-TIMEDELTA_1_HOURS = 1  #in minutes   delta
-TIMEDELTA_2_HOURS = 4 #in minutes    delta+epsilon
+TIMEDELTA_1_HOURS = 40  #in seconds   delta
+TIMEDELTA_2_HOURS = 220 #in seconds    delta+epsilon
 
 #CreateLinks
 NUM_LINKS = 10
