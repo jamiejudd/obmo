@@ -141,6 +141,7 @@ function checkPassword() {
 }
 
 function checkPhoto() {
+  console.log( 'dd ')
   console.log( $("#id_photo").get(0).files[0].size)
   if( $("#id_photo").get(0).files.length === 0 ){
     $('#id_photo_feedback').text('This field is required.');
