@@ -19,7 +19,7 @@ DEBUG = False
 
 ALLOWED_HOSTS = ['www.objectivemoney.org','objectivemoney.org','45.55.48.199','localhost','127.0.0.1']
 
-DATA_UPLOAD_MAX_MEMORY_SIZE = 10*1024*1024
+DATA_UPLOAD_MAX_MEMORY_SIZE = 3*1024*1024
 
 FILE_UPLOAD_PERMISSIONS=0o640
 
