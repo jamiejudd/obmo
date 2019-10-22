@@ -60,7 +60,7 @@
       <div class="imgerror" id="id_photo_feedback">This field is required.</div>
       </div>
       <div  style="display: flex;align-items: center;" >
-        <button type="button" class="btn btn-light" id="chooseImage"  onclick="HandleBrowseClick('id_photo');">Choose Image</button>
+      <button type="button" class="btn btn-light" id="chooseImage" onclick="HandleBrowseClick('id_photo');" data-toggle="tooltip" data-placement="bottom" title="Max size: 2MB">Choose Image</button>
       </div>
       <input style="display:none" type="file" class="custom-file-input" id="id_photo"  accept="image/*" onchange="updatePreview('id_photo');"  name="photo">
     </div>
