@@ -1,6 +1,6 @@
 #Registered Account
 MIN_BALANCE = 10 # aprox 18000
-UBI_RATE = 100  #qty per day(100)
+UBI_RATE = 100*24*60  #qty per day(100)
 UBI_AMOUNT = 100  #min size of installment
 
 #Committments/Revelations
@@ -13,8 +13,8 @@ LINK_WEIGHTING_PARAMETER = '1.3'  #as a string to be fed to Decimal
 
 #SettleMarkets
 MARKET_SETTLEMENT_TIME = 72*60*60 #in seconds
-BET_BAD = 500    # x
-BET_GOOD = 5000  # 10x
+BET_BAD = 200    # x
+BET_GOOD = 2000  # 10x
 
 #CreateChallenge
 CHALLENGER_BET = 2000
@@ -29,4 +29,6 @@ CHALLENGE_SETTLEMENT_TIME = 72*60*60 #in hours
 CHALLENGE_BET_BAD = 500
 CHALLENGE_BET_GOOD = 500
 CHALLENGE_BET_WHO = 500
+
+
 
