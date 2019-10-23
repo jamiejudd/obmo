@@ -1,7 +1,7 @@
 #Registered Account
-MIN_BALANCE = 10 # aprox 18000
+MIN_BALANCE = 0.10 # aprox 18000
 UBI_RATE = 100  #qty per day(100)
-UBI_AMOUNT = 100  #min size of installment
+UBI_AMOUNT = 0.1  #min size of installment
 
 #Committments/Revelations
 TIMEDELTA_1_HOURS = 40  #in seconds   delta
