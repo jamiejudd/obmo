@@ -25,7 +25,7 @@ urlpatterns = [
     url(r'^transactions/(?P<txno>[1-9][0-9]*)/$', core_views.txn, name='txn'), 
 
     url(r'^statistics/$', core_views.statistics, name='statistics'),
-    #url(r'^exchange2/$', core_views.exchange2, name='exchange2'),
+    url(r'^exchange2/$', core_views.exchange2, name='exchange2'),
     url(r'^exchange/$', core_views.exchange, name='exchange'),
     url(r'^faq/$', core_views.faq, name='faq'),
     url(r'^newkeypair/$', core_views.newkeypair, name='newkeypair'),
