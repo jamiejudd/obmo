@@ -11,8 +11,8 @@ import nacl.encoding
 import nacl.exceptions
 import binascii
 
-from random import randint
-import time
+#from random import randint
+#import time
 import core.constants as constants
 from decimal import *
 
@@ -21,8 +21,8 @@ from django.db import transaction
 from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
 
-import random, string
-from django.test import Client
+#import random, string
+#from django.test import Client
 
 
 def update_due_balances():
@@ -355,114 +355,115 @@ def do_next_settle_challenge_mkts_if_ready(): #run every few seconds
             return 'No challenge market ready'
 
 
-def register(self):
-    username = self.verify_key.encode(encoder=nacl.encoding.RawEncoder).hex()
-    name = ''.join(random.choices(string.ascii_lowercase, k=8)) 
-    photo_hash = self.encode(encoder=nacl.encoding.RawEncoder).hex() + '0'*64
-    message_string_bytes = bytes('Type:Register,PublicKey:'+username+',SeqNo:'+str(1)+',Name:'+name+',PhotoHash:'+photo_hash, 'utf8')
-    data = {}
-    data['username'] = username
-    data['sender_seq_no'] = 1
-    data['name'] = name
-    data['password1'] = 'a'
-    data['photo_hash'] = photo_hash
-    data['signature'] = self.sign(message_string_bytes).signature.hex()
-    #data['photo'] = open('C:/Users/jamie/Desktop/myprojects/obmo/media/account_photos/pretlogo.jpg', "rb")
-    data['photo'] = open('/home/jamie/obmo/static/core/images/icon.png', "rb")
-    client = Client()
-    res = client.post('/register/', data = data)
-    return res
+# def register(self):
+#     username = self.verify_key.encode(encoder=nacl.encoding.RawEncoder).hex()
+#     name = ''.join(random.choices(string.ascii_lowercase, k=8)) 
+#     photo_hash = self.encode(encoder=nacl.encoding.RawEncoder).hex() + '0'*64
+#     message_string_bytes = bytes('Type:Register,PublicKey:'+username+',SeqNo:'+str(1)+',Name:'+name+',PhotoHash:'+photo_hash, 'utf8')
+#     data = {}
+#     data['username'] = username
+#     data['sender_seq_no'] = 1
+#     data['name'] = name
+#     data['password1'] = 'a'
+#     data['photo_hash'] = photo_hash
+#     data['signature'] = self.sign(message_string_bytes).signature.hex()
+#     #data['photo'] = open('C:/Users/jamie/Desktop/myprojects/obmo/media/account_photos/pretlogo.jpg', "rb")
+#     data['photo'] = open('/home/jamie/obmo/static/core/images/icon.png', "rb")
+#     client = Client()
+#     res = client.post('/register/', data = data)
+#     return res
 
-def transfer(self,sk,amount):
-    master = Account.objects.first()
-    username = self.verify_key.encode(encoder=nacl.encoding.RawEncoder).hex()
-    recipient_pk = sk.verify_key.encode(encoder=nacl.encoding.RawEncoder).hex()
-    message_string_bytes = bytes('Type:Transfer,Sender:'+username+',SeqNo:'+str(master.sequence_next)+',Recipient:'+recipient_pk+',Amount:'+str(amount),'utf8') 
-    data = {}
-    data['username'] = username
-    data['sender_seq_no'] = master.sequence_next
-    data['recipient_pk'] = recipient_pk
-    data['amount'] = amount
-    data['signature'] = self.sign(message_string_bytes).signature.hex()
-    client = Client()
-    res = client.post('/transfer/', data = data)
-    return res
+# def transfer(self,sk,amount):
+#     master = Account.objects.first()
+#     username = self.verify_key.encode(encoder=nacl.encoding.RawEncoder).hex()
+#     recipient_pk = sk.verify_key.encode(encoder=nacl.encoding.RawEncoder).hex()
+#     message_string_bytes = bytes('Type:Transfer,Sender:'+username+',SeqNo:'+str(master.sequence_next)+',Recipient:'+recipient_pk+',Amount:'+str(amount),'utf8') 
+#     data = {}
+#     data['username'] = username
+#     data['sender_seq_no'] = master.sequence_next
+#     data['recipient_pk'] = recipient_pk
+#     data['amount'] = amount
+#     data['signature'] = self.sign(message_string_bytes).signature.hex()
+#     client = Client()
+#     res = client.post('/transfer/', data = data)
+#     return res
 
-def commit(self,r):
-    username = self.verify_key.encode(encoder=nacl.encoding.RawEncoder).hex()
-    account = Account.objects.get(public_key=username)
-    b = r.to_bytes(64, byteorder='big')
-    h = nacl.hash.sha512(b, encoder=nacl.encoding.RawEncoder)
-    message_string_bytes = bytes('Type:Commit,Sender:'+username+',SeqNo:'+str(account.sequence_next)+',Hash:'+h.hex(),'utf8') 
-    data = {}
-    data['username'] = username
-    data['sender_seq_no'] = account.sequence_next
-    data['committed_hash'] = h.hex()
-    data['signature'] = self.sign(message_string_bytes).signature.hex()
-    client = Client()
-    res = client.post('/commit/', data = data)
-    return res
+# def commit(self,r):
+#     username = self.verify_key.encode(encoder=nacl.encoding.RawEncoder).hex()
+#     account = Account.objects.get(public_key=username)
+#     b = r.to_bytes(64, byteorder='big')
+#     h = nacl.hash.sha512(b, encoder=nacl.encoding.RawEncoder)
+#     message_string_bytes = bytes('Type:Commit,Sender:'+username+',SeqNo:'+str(account.sequence_next)+',Hash:'+h.hex(),'utf8') 
+#     data = {}
+#     data['username'] = username
+#     data['sender_seq_no'] = account.sequence_next
+#     data['committed_hash'] = h.hex()
+#     data['signature'] = self.sign(message_string_bytes).signature.hex()
+#     client = Client()
+#     res = client.post('/commit/', data = data)
+#     return res
 
-def reveal(self,r):
-    username = self.verify_key.encode(encoder=nacl.encoding.RawEncoder).hex()
-    account = Account.objects.get(public_key=username)
-    b = r.to_bytes(64, byteorder='big')
-    h = nacl.hash.sha512(b, encoder=nacl.encoding.RawEncoder)
-    message_string_bytes = bytes('Type:Reveal,Sender:'+username+',SeqNo:'+str(account.sequence_next)+',Value:'+b.hex(),'utf8') 
-    data = {}
-    data['username'] = username
-    data['sender_seq_no'] = account.sequence_next
-    data['revealed_value'] = b.hex()
-    data['signature'] = self.sign(message_string_bytes).signature.hex()
-    client = Client()
-    res = client.post('/reveal/', data = data)
-    return res
+# def reveal(self,r):
+#     username = self.verify_key.encode(encoder=nacl.encoding.RawEncoder).hex()
+#     account = Account.objects.get(public_key=username)
+#     b = r.to_bytes(64, byteorder='big')
+#     h = nacl.hash.sha512(b, encoder=nacl.encoding.RawEncoder)
+#     message_string_bytes = bytes('Type:Reveal,Sender:'+username+',SeqNo:'+str(account.sequence_next)+',Value:'+b.hex(),'utf8') 
+#     data = {}
+#     data['username'] = username
+#     data['sender_seq_no'] = account.sequence_next
+#     data['revealed_value'] = b.hex()
+#     data['signature'] = self.sign(message_string_bytes).signature.hex()
+#     client = Client()
+#     res = client.post('/reveal/', data = data)
+#     return res
 
-def update_arrow(self,target_pk,arrow_status):
-    username = self.verify_key.encode(encoder=nacl.encoding.RawEncoder).hex()
-    account = Account.objects.get(public_key=username)
-    message_string_bytes = bytes('Type:ChangeVote,Sender:'+username+',SeqNo:'+str(account.sequence_next)+',Target:'+target_pk+',Vote:'+arrow_status,'utf8') 
-    data = {}
-    data['username'] = username
-    data['sender_seq_no'] = account.sequence_next
-    data['target_pk'] = target_pk
-    data['arrow_status'] = arrow_status
-    data['signature'] = self.sign(message_string_bytes).signature.hex()
-    client = Client()
-    res = client.post('/changevote/', data = data)
-    return res
-
-
-def create_challenge(self,acc1_pk,acc2_pk):
-    username = self.verify_key.encode(encoder=nacl.encoding.RawEncoder).hex()
-    account = Account.objects.get(public_key=username)
-    message_string_bytes = bytes('Type:Challenge,Sender:'+username+',SeqNo:'+str(account.sequence_next)+',Account1:'+acc1_pk+',Account2:'+acc2_pk,'utf8') 
-    data = {}
-    data['username'] = username
-    data['sender_seq_no'] = account.sequence_next
-    data['account_1'] = acc1_pk
-    data['account_2'] = acc2_pk
-    data['signature'] = self.sign(message_string_bytes).signature.hex()
-    client = Client()
-    res = client.post('/challenge/', data = data)
-    return res
+# def update_arrow(self,target_pk,arrow_status):
+#     username = self.verify_key.encode(encoder=nacl.encoding.RawEncoder).hex()
+#     account = Account.objects.get(public_key=username)
+#     message_string_bytes = bytes('Type:ChangeVote,Sender:'+username+',SeqNo:'+str(account.sequence_next)+',Target:'+target_pk+',Vote:'+arrow_status,'utf8') 
+#     data = {}
+#     data['username'] = username
+#     data['sender_seq_no'] = account.sequence_next
+#     data['target_pk'] = target_pk
+#     data['arrow_status'] = arrow_status
+#     data['signature'] = self.sign(message_string_bytes).signature.hex()
+#     client = Client()
+#     res = client.post('/changevote/', data = data)
+#     return res
 
 
+# def create_challenge(self,acc1_pk,acc2_pk):
+#     username = self.verify_key.encode(encoder=nacl.encoding.RawEncoder).hex()
+#     account = Account.objects.get(public_key=username)
+#     message_string_bytes = bytes('Type:Challenge,Sender:'+username+',SeqNo:'+str(account.sequence_next)+',Account1:'+acc1_pk+',Account2:'+acc2_pk,'utf8') 
+#     data = {}
+#     data['username'] = username
+#     data['sender_seq_no'] = account.sequence_next
+#     data['account_1'] = acc1_pk
+#     data['account_2'] = acc2_pk
+#     data['signature'] = self.sign(message_string_bytes).signature.hex()
+#     client = Client()
+#     res = client.post('/challenge/', data = data)
+#     return res
 
-def update_challengevote(self,challengeid,vote,choice):
-    username = self.verify_key.encode(encoder=nacl.encoding.RawEncoder).hex()
-    account = Account.objects.get(public_key=username)
-    message_string_bytes = bytes('Type:ChangeChallengeVote,Sender:'+username+',SeqNo:'+str(account.sequence_next)+',ChallengeID:'+str(challengeid)+',Vote:'+vote+',Choice:'+choice,'utf8') 
-    data = {}
-    data['username'] = username
-    data['sender_seq_no'] = account.sequence_next
-    data['challenge_id'] = challengeid
-    data['vote'] = vote
-    data['choice'] = choice
-    data['signature'] = self.sign(message_string_bytes).signature.hex()
-    client = Client()
-    res = client.post('/changevote-challenge/', data = data)
-    return res
+
+
+# def update_challengevote(self,challengeid,vote,choice):
+#     username = self.verify_key.encode(encoder=nacl.encoding.RawEncoder).hex()
+#     account = Account.objects.get(public_key=username)
+#     message_string_bytes = bytes('Type:ChangeChallengeVote,Sender:'+username+',SeqNo:'+str(account.sequence_next)+',ChallengeID:'+str(challengeid)+',Vote:'+vote+',Choice:'+choice,'utf8') 
+#     data = {}
+#     data['username'] = username
+#     data['sender_seq_no'] = account.sequence_next
+#     data['challenge_id'] = challengeid
+#     data['vote'] = vote
+#     data['choice'] = choice
+#     data['signature'] = self.sign(message_string_bytes).signature.hex()
+#     client = Client()
+#     res = client.post('/changevote-challenge/', data = data)
+#     return res
+
 
 
 
