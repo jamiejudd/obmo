@@ -257,13 +257,13 @@ def statistics(request):
     min_balance = constants.MIN_BALANCE
     bet_bad = constants.BET_BAD
     bet_good = constants.BET_GOOD
-    market_settlement_time = constants.MARKET_SETTLEMENT_TIME
+    market_settlement_time = constants.MARKET_SETTLEMENT_TIME//3600
     challenger_bet = constants.CHALLENGER_BET
     challenger_reward = constants.CHALLENGER_REWARD
     challenge_bet_good = constants.CHALLENGE_BET_GOOD
     challenge_bet_bad = constants.CHALLENGE_BET_BAD
     challenge_bet_who = constants.CHALLENGE_BET_WHO
-    challenge_settlement_time = constants.CHALLENGE_SETTLEMENT_TIME
+    challenge_settlement_time = constants.CHALLENGE_SETTLEMENT_TIME//3600
     num_links = constants.NUM_LINKS
     link_weighting_parameter = constants.LINK_WEIGHTING_PARAMETER
     num_challenge_links = constants.NUM_CHALLENGE_LINKS

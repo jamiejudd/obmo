@@ -183,11 +183,11 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         #setup_test_environment()
 
-        event_counter = EventCounter.objects.create(id=1,last_event_no=0)
-        end_time = timezone.now() + timezone.timedelta(seconds=50)
-        sks = []
-        master = nacl.signing.SigningKey.generate()
-        r = register(master)
+        # event_counter = EventCounter.objects.create(id=1,last_event_no=0)
+        # end_time = timezone.now() + timezone.timedelta(seconds=50)
+        # sks = []
+        # master = nacl.signing.SigningKey.generate()
+        # r = register(master)
 
 
         # all_messages = [msg for msg in get_messages(r.wsgi_request)]
@@ -217,27 +217,27 @@ class Command(BaseCommand):
 
 
 
-        thread = threading.Thread(target=create_new_accounts, args=(master, sks))
-        thread.start()
-        thread.join()
+        # thread = threading.Thread(target=create_new_accounts, args=(master, sks))
+        # thread.start()
+        # thread.join()
 
-        thread1 = threading.Thread(target=commit_and_reveal, args=(master, end_time,))
-        thread2 = threading.Thread(target=register_new_accounts, args=(sks,))
-        thread3 = threading.Thread(target=always_do_next_create_links_if_ready, args=(end_time,))
-        #thread4 = threading.Thread(target=create_new_challenges, args=(end_time,sks,))
-        #thread5 = threading.Thread(target=always_do_next_create_challenge_links_if_ready, args=(end_time,))
+        # thread1 = threading.Thread(target=commit_and_reveal, args=(master, end_time,))
+        # thread2 = threading.Thread(target=register_new_accounts, args=(sks,))
+        # thread3 = threading.Thread(target=always_do_next_create_links_if_ready, args=(end_time,))
+        # #thread4 = threading.Thread(target=create_new_challenges, args=(end_time,sks,))
+        # #thread5 = threading.Thread(target=always_do_next_create_challenge_links_if_ready, args=(end_time,))
 
-        thread1.start()
-        thread2.start()
-        thread3.start()
-        #thread4.start()
-        #thread5.start()
+        # thread1.start()
+        # thread2.start()
+        # thread3.start()
+        # #thread4.start()
+        # #thread5.start()
 
-        thread1.join()
-        thread2.join()
-        thread3.join()
-        #thread4.join()
-        #thread5.join()
+        # thread1.join()
+        # thread2.join()
+        # thread3.join()
+        # #thread4.join()
+        # #thread5.join()
  
 
         # time.sleep(14)
