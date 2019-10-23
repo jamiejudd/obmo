@@ -161,7 +161,7 @@ class UserRegistrationForm(UserCreationForm):
 class RegisterForm(forms.Form):
     username = forms.CharField(min_length=64,  max_length=64)
     sender_seq_no = forms.IntegerField()
-    name = forms.CharField(min_length=6, max_length=20)
+    name = forms.CharField(min_length=4, max_length=20)
     photo = forms.ImageField()
     photo_hash = forms.CharField(min_length=128, max_length=128)
     signature = forms.CharField(min_length=128, max_length=128)

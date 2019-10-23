@@ -115,8 +115,8 @@ function checkName() {
     $('#id_name_feedback').text('This field is required.');
     $("#id_name").addClass("is-invalid");
     return false;
-  } else if($("#id_name").val().length < 6){
-    $('#id_name_feedback').text('Name must be at least 6 characters long.');
+  } else if($("#id_name").val().length < 4){
+    $('#id_name_feedback').text('Name must be at least 4 characters long.');
     $("#id_name").addClass("is-invalid");
     return false;
   } else {
