@@ -22,7 +22,11 @@ from django.core.exceptions import ObjectDoesNotExist
 import random, string
 from requests import Session
 
+# home_url = 'https://objectivemoney.org'
+# photo_path = '/home/jamie/obmo/static/core/images/icon.png'
 
+home_url = 'http://127.0.0.1:8000'
+photo_path = 'C:/Users/jamie/Desktop/myprojects/obmo/media/account_photos/pretlogo.jpg'
 
 def register(self):
     username = self.verify_key.encode(encoder=nacl.encoding.RawEncoder).hex()
@@ -36,12 +40,12 @@ def register(self):
     data['password1'] = 'a'
     data['photo_hash'] = photo_hash
     data['signature'] = self.sign(message_string_bytes).signature.hex()
-    files = [('photo', ('pretlogo.jpeg', open('C:/Users/jamie/Desktop/myprojects/obmo/media/account_photos/pretlogo.jpg', 'rb'), 'image/jpeg'))]
+    files = [('photo', ('pretlogo.jpeg', open(photo_path, 'rb'), 'image/jpeg'))]
     client = Session()
-    client.get('http://127.0.0.1:8000/register/')
+    client.get(home_url+'/register/')
     csrftoken = client.cookies['csrftoken'] 
     data["csrfmiddlewaretoken"] = csrftoken
-    res = client.post('http://127.0.0.1:8000/register/', data = data, files = files)
+    res = client.post(home_url+'/register/', data = data, files = files)
     #res = client.get('http://127.0.0.1:8000/register/')
     return res
 
@@ -57,10 +61,10 @@ def transfer(self,sk,amount):
     data['amount'] = amount
     data['signature'] = self.sign(message_string_bytes).signature.hex()
     client = Session()
-    client.get('http://127.0.0.1:8000/transfer/')
+    client.get(home_url+'/transfer/')
     csrftoken = client.cookies['csrftoken'] 
     data["csrfmiddlewaretoken"] = csrftoken
-    res = client.post('http://127.0.0.1:8000/transfer/', data = data)
+    res = client.post(home_url+'/transfer/', data = data)
     #res = client.get('http://127.0.0.1:8000/transfer/')
     return res
 
@@ -76,10 +80,10 @@ def commit(self,r):
     data['committed_hash'] = h.hex()
     data['signature'] = self.sign(message_string_bytes).signature.hex()
     client = Session()
-    client.get('http://127.0.0.1:8000/commit/')
+    client.get(home_url+'/commit/')
     csrftoken = client.cookies['csrftoken'] 
     data["csrfmiddlewaretoken"] = csrftoken
-    res = client.post('http://127.0.0.1:8000/commit/', data = data)
+    res = client.post(home_url+'/commit/', data = data)
     return res
 
 def reveal(self,r):
@@ -94,10 +98,10 @@ def reveal(self,r):
     data['revealed_value'] = b.hex()
     data['signature'] = self.sign(message_string_bytes).signature.hex()
     client = Session()
-    client.get('http://127.0.0.1:8000/reveal/')
+    client.get(home_url+'/reveal/')
     csrftoken = client.cookies['csrftoken'] 
     data["csrfmiddlewaretoken"] = csrftoken
-    res = client.post('http://127.0.0.1:8000/reveal/', data = data)
+    res = client.post(home_url+'/reveal/', data = data)
     return res
 
 def update_arrow(self,target_pk,arrow_status):
@@ -111,10 +115,10 @@ def update_arrow(self,target_pk,arrow_status):
     data['arrow_status'] = arrow_status
     data['signature'] = self.sign(message_string_bytes).signature.hex()
     client = Session()
-    client.get('http://127.0.0.1:8000/changevote/')
+    client.get(home_url+'/changevote/')
     csrftoken = client.cookies['csrftoken'] 
     data["csrfmiddlewaretoken"] = csrftoken
-    res = client.post('http://127.0.0.1:8000/changevote/', data = data)
+    res = client.post(home_url+'/changevote/', data = data)
     return res
 
 def create_challenge(self,acc1_pk,acc2_pk):
@@ -128,10 +132,10 @@ def create_challenge(self,acc1_pk,acc2_pk):
     data['account_2'] = acc2_pk
     data['signature'] = self.sign(message_string_bytes).signature.hex()
     client = Session()
-    client.get('http://127.0.0.1:8000/challenge/')
+    client.get(home_url+'/challenge/')
     csrftoken = client.cookies['csrftoken'] 
     data["csrfmiddlewaretoken"] = csrftoken
-    res = client.post('http://127.0.0.1:8000/challenge/', data = data)
+    res = client.post(home_url+'/challenge/', data = data)
     return res
 
 
@@ -147,10 +151,10 @@ def update_challengevote(self,challengeid,vote,choice):
     data['choice'] = choice
     data['signature'] = self.sign(message_string_bytes).signature.hex()
     client = Session()
-    client.get('http://127.0.0.1:8000/changevote-challenge/')
+    client.get(home_url+'/changevote-challenge/')
     csrftoken = client.cookies['csrftoken'] 
     data["csrfmiddlewaretoken"] = csrftoken
-    res = client.post('http://127.0.0.1:8000/changevote-challenge/', data = data)
+    res = client.post(home_url+'/changevote-challenge/', data = data)
     return res
 
 

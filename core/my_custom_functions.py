@@ -367,7 +367,8 @@ def register(self):
     data['password1'] = 'a'
     data['photo_hash'] = photo_hash
     data['signature'] = self.sign(message_string_bytes).signature.hex()
-    data['photo'] = open('C:/Users/jamie/Desktop/myprojects/obmo/media/account_photos/pretlogo.jpg', "rb")
+    #data['photo'] = open('C:/Users/jamie/Desktop/myprojects/obmo/media/account_photos/pretlogo.jpg', "rb")
+    data['photo'] = open('/home/jamie/obmo/static/core/images/icon.png', "rb")
     client = Client()
     res = client.post('/register/', data = data)
     return res
