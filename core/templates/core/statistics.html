@@ -21,22 +21,22 @@
       <br>
       <div class="row"><div class="col-md-3">Stake (Trust):</div><div class="col-md-9">{{ bet_good }}</div></div>
       <div class="row"><div class="col-md-3">Stake (Distrust):</div><div class="col-md-9">{{ bet_bad }}</div></div>
-      <div class="row"><div class="col-md-3">Settlement time:</div><div class="col-md-9">{{ market_settlement_time }} hours</div></div>
+      <div class="row"><div class="col-md-3">Settlement time:</div><div class="col-md-9">{{ widthratio market_settlement_time 3600 1}} seconds</div></div>
       <br>
       <div class="row"><div class="col-md-3">Challenger Bet:</div><div class="col-md-9">{{ challenger_bet }}</div></div>
       <div class="row"><div class="col-md-3">Challenger Reward:</div><div class="col-md-9">{{ challenger_reward }}</div></div>
       <div class="row"><div class="col-md-3">Challenge Stake (Trust):</div><div class="col-md-9">{{ challenge_bet_good }}</div></div>
       <div class="row"><div class="col-md-3">Challenge Stake (Distrust):</div><div class="col-md-9">{{ challenge_bet_bad }}</div></div>
       <div class="row"><div class="col-md-3">Challenge Stake (Choice):</div><div class="col-md-9">{{ challenge_bet_who }}</div></div>
-      <div class="row"><div class="col-md-3">Challenge settlement time:</div><div class="col-md-9">{{ challenge_settlement_time }} hours</div></div>
+      <div class="row"><div class="col-md-3">Challenge settlement time:</div><div class="col-md-9">{{ challenge_settlement_time }} seconds</div></div>
       <br>
       <div class="row"><div class="col-md-3">Number of links:</div><div class="col-md-9">{{ num_links }}</div></div>
       <div class="row"><div class="col-md-3">Link weighting parameter:</div><div class="col-md-9">{{ link_weighting_parameter }}</div></div>
       <div class="row"><div class="col-md-3">Number of challenge links:</div><div class="col-md-9">{{ num_challenge_links }}</div></div>
       <div class="row"><div class="col-md-3">Challenge link weighting parameter:</div><div class="col-md-9">{{ challenge_link_weighting_parameter }}</div></div>
       <br>
-      <div class="row"><div class="col-md-3">Commit Reveal time min:</div><div class="col-md-9">{{ timedelta_1_hours }} hours</div></div>
-      <div class="row"><div class="col-md-3">Commit Reveal time max:</div><div class="col-md-9">{{ timedelta_2_hours }} hours</div></div>
+      <div class="row"><div class="col-md-3">Commit Reveal time min:</div><div class="col-md-9">{{ timedelta_1_hours }} seconds</div></div>
+      <div class="row"><div class="col-md-3">Commit Reveal time max:</div><div class="col-md-9">{{ timedelta_2_hours }} seconds</div></div>
     </div>
   </div>
 </div>
