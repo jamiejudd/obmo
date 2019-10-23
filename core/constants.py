@@ -1,6 +1,6 @@
 #Registered Account
 MIN_BALANCE = 1 # aprox 18000
-UBI_RATE = 1000  #qty per day(100)
+UBI_RATE = 100  #qty per day(100)
 UBI_AMOUNT = 1  #min size of installment
 
 #Committments/Revelations
