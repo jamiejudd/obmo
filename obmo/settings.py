@@ -86,31 +86,31 @@ WSGI_APPLICATION = 'obmo.wsgi.application'
 
 
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2', 
-        'NAME': 'obmo', 
-        'USER': 'dbadmin', 
-        'PASSWORD': 'Toilavua694', 
-        'HOST': 'localhost', 
-        'PORT': '5432', 
-  }
-}
-
-
-
-
-
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.postgresql', 
-#         'NAME': 'obmo7', 
-#         'USER': 'postgres', 
-#         'PASSWORD': 'toithichmia', 
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2', 
+#         'NAME': 'obmo', 
+#         'USER': 'dbadmin', 
+#         'PASSWORD': 'Toilavua694', 
 #         'HOST': 'localhost', 
 #         'PORT': '5432', 
 #   }
 # }
+
+
+
+
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql', 
+        'NAME': 'obmo7', 
+        'USER': 'postgres', 
+        'PASSWORD': 'toithichmia', 
+        'HOST': 'localhost', 
+        'PORT': '5432', 
+  }
+}
 
 
 

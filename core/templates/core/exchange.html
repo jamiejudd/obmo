@@ -14,13 +14,15 @@
 <div class="container" style="margin-top:50px;margin-bottom:50px;">
 
 
- <div class="card ">
+ <div class="card " style="font-family: 'Garamond'">
     <div class="card-body">
-      <h6 style="font-family: 'Garamond';text-align: center">Offers</h6>
-      <div class="table-responsive table-borderless">
+<!--       <h6 style="font-family: 'Garamond';text-align: center">Offers</h6>
+ -->      <div class="table-responsive table-borderless">
         <table class="table table-sm">
           <tbody>
-            {% for account in accounts_with_offers %}
+            The exchange is still being set up. If you want to register you can create a keypair and send a message with your Public Key to the telegram group <a class="textlink" href="https://t.me/joinchat/JHGXsRPaoRyKKs6DD306rg" target="_blank">here</a> or email objectivemoney.contact@gmail.com to recieve the currency.
+
+<!--             {% for account in accounts_with_offers %}
             {% if account %}
             <tr>
               <td style="vertical-align: middle;"><img src="{% get_media_prefix %}{{ account.photo }}" height="70" width="70"></td>
@@ -28,7 +30,7 @@
               <td style="vertical-align: middle;font-size:14px;">{{ account.offer }}</td>
             </tr>
             {% endif %}
-            {% endfor %}
+            {% endfor %} -->
           </tbody>
         </table>
       </div>
