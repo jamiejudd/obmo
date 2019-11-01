@@ -15,6 +15,7 @@ class Account(models.Model): # an account never gets deleted, it costs a txn fee
     name = models.CharField(max_length=20, null=True) 
     photo = models.ImageField(upload_to = 'account_photos/', null=True) #can exist before reg=true?
     photo_hash = models.CharField(max_length=128,null=True)
+    #show_photo = models.BooleanField(default=True)
 
     registered_date = models.DateTimeField(null=True) 
     linked = models.BooleanField(default=False) #iff deg>0
