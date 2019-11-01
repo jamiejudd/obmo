@@ -12,7 +12,7 @@ NUM_LINKS = 10
 LINK_WEIGHTING_PARAMETER = '1.3'  #as a string to be fed to Decimal
 
 #SettleMarkets
-MARKET_SETTLEMENT_TIME = 5*60 #72*60*60 #in seconds
+MARKET_SETTLEMENT_TIME = 72*60*60 #in seconds
 BET_BAD = 1 #200    # x
 BET_GOOD = 3 #2000  # 10x
 
